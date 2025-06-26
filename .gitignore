@@ -1,0 +1,7 @@
+# Ignore environment-specific docker files
+docker-compose.yml
+.env
+
+# Local build outputs
+**/build/
+**/out/
