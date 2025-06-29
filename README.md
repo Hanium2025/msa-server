@@ -23,16 +23,13 @@ MSA(Microservice Architecture)를 기반으로 설계된 중고거래 플랫폼�
 - 도메인 모델 식별 및 도메인 간 연관 관계 설계
 - ERD 설계 및 시각화 완료
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/59731b0c-881e-4647-8593-b7f46ed06804" width="300"/>
-  <img src="https://github.com/user-attachments/assets/b7dd908d-1b1e-46d8-bfaf-551bae4aca48" width="300"/>
-  <img src="https://github.com/user-attachments/assets/b041d071-f5ee-4afb-bfe4-69c041f42a9b" width="300"/>
-</p>
+| 전체 서비스 흐름 이벤트 스토밍 | 도메인 모델링 |  ERD |
+|:------------------------------:|:---------------------:|:------------------------------------:|
+| <img src="https://github.com/user-attachments/assets/59731b0c-881e-4647-8593-b7f46ed06804" width="250"/> | <img src="https://github.com/user-attachments/assets/b7dd908d-1b1e-46d8-bfaf-551bae4aca48" width="250"/> <br>  | <img src="https://github.com/user-attachments/assets/b041d071-f5ee-4afb-bfe4-69c041f42a9b" width="250"/> <br> |
+
 
 
 ### 4. 🔌 **스터디 세션**
-
-진행 시 추가 예정
 
 | 주제 | 담당자 | 관련 문서 |
 |------|--------|-------------|
@@ -40,6 +37,8 @@ MSA(Microservice Architecture)를 기반으로 설계된 중고거래 플랫폼�
 | Docker & Compose 환경 구축 | 김민주 | [바로가기 🔗](https://www.notion.so/Docker-220afe091f2380ed923af01cbba98a74) |
 | React Native (Expo) 환경 구성 | 남지연 | [바로가기 🔗](https://www.notion.so/Expo-21bafe091f23804f8ed8d65f0e277f94) |
 
+현재까지의 스터디 내용은 위 표에 정리되어 있으며,  
+추가 세션이 진행되는 대로 내용을 계속 업데이트할 예정입니다.
 
 ## ⚙️ 기술 스택
 
