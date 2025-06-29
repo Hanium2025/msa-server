@@ -41,7 +41,6 @@ MSA(Microservice Architecture)를 기반으로 설계된 중고거래 플랫폼�
 | React Native (Expo) 환경 구성 | 남지연 | [바로가기 🔗](https://www.notion.so/Expo-21bafe091f23804f8ed8d65f0e277f94) |
 
 
----
 ## ⚙️ 기술 스택
 
 ### Backend
