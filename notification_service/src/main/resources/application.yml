@@ -1,0 +1,59 @@
+server:
+  port: 8092
+
+app:
+  server:
+    type: NOTIFICATION_SERVER
+    id: notification-server-1
+
+spring:
+  application:
+    name: notification_service
+
+  datasource:
+    url: jdbc:mysql://localhost:3307/notification_db
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    database: MYSQL
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: create
+    open-in-view: false
+    # show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 10
+        highlight_sql: true
+
+
+grpc:
+  server:
+    port: 50053
+    maxInboundMessageSize: 10485760
+    security:
+      enabled: false
+
+jwt:
+  secret-key: "your-256-bit-secret-key-base64-encoded"
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka  # ???? Eureka ?? ???? ??? 'eureka-server'? ?
+    fetch-registry: true
+    register-with-eureka: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+logging:
+  level:
+    com.netflix.discovery: DEBUG
+    org.springframework.cloud.netflix.eureka: DEBUG
