@@ -112,6 +112,11 @@ protobuf {
 	}
 }
 
+tasks.named('compileJava') {
+	dependsOn 'generateProto'
+}
+
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
