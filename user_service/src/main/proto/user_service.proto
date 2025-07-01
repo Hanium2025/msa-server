@@ -1,0 +1,153 @@
+syntax = "proto3";
+
+package hanium.user_service;
+
+option java_package = "hanium.user_service";
+option java_multiple_files = true;
+option java_outer_classname = "UserServiceProto";
+
+service UserService {
+  // 1. 사용자 회원가입
+  rpc SignUp(SignUpRequest) returns (SignUpResponse);
+
+  // 2. 사용자 로그인
+  rpc Login(LoginRequest) returns (LoginResponse);
+
+  // 3. 사용자 로그아웃
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+
+  // 4. 사용자 계정 정보 조회
+  rpc GetAccountInfo(GetAccountInfoRequest) returns (GetAccountInfoResponse);
+
+  // 5. 사용자 프로필 정보 조회
+  rpc GetProfileInfo(GetProfileInfoRequest) returns (GetProfileInfoResponse);
+
+  // 6. 사용자 계정 삭제
+  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse);
+
+  // 7. 사용자 계정 정보 수정
+  rpc UpdateAccountInfo(UpdateAccountInfoRequest) returns (UpdateAccountInfoResponse);
+
+  // 8. 사용자 프로필 정보 수정
+  rpc UpdateProfileInfo(UpdateProfileInfoRequest) returns (UpdateProfileInfoResponse);
+
+  // 9. 소셜 로그인
+  rpc SocialLogin(SocialLoginRequest) returns (SocialLoginResponse);
+}
+
+// 1. 회원가입 요청
+message SignUpRequest {
+  string email = 1;
+  string password = 2;
+  string phone_number = 3;
+  string provider = 4;
+  string nickname = 5;
+}
+
+// 1. 회원가입 응답
+message SignUpResponse {
+  int64 user_id = 1;
+  string email = 2;
+  string phone_number = 3;
+  string provider = 4;
+  string nickname = 5;
+}
+
+// 2. 로그인 요청
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+// 2. 로그인 응답
+message LoginResponse {
+  string token = 1;
+  int64 user_id = 2;
+}
+
+// 3. 로그아웃 요청
+message LogoutRequest {
+  int64 user_id = 1;
+}
+
+// 3. 로그아웃 응답
+message LogoutResponse {
+  bool success = 1;
+}
+
+// 4. 계정 정보 조회 요청
+message GetAccountInfoRequest {
+  int64 user_id = 1;
+}
+
+// 4. 계정 정보 조회 응답
+message GetAccountInfoResponse {
+  string email = 1;
+  string phone_number = 2;
+  string provider = 3;
+}
+
+// 5. 프로필 정보 조회 요청
+message GetProfileInfoRequest {
+  int64 user_id = 1;
+}
+
+// 5. 프로필 정보 조회 응답
+message GetProfileInfoResponse {
+  string nickname = 1;
+  string image_url = 2;
+  int32 reliability_value = 3;
+}
+
+// 6. 계정 삭제 요청
+message DeleteAccountRequest {
+  int64 user_id = 1;
+}
+
+// 6. 계정 삭제 응답
+message DeleteAccountResponse {
+  bool success = 1;
+}
+
+// 7. 계정 정보 수정 요청
+message UpdateAccountInfoRequest {
+  int64 user_id = 1;
+  string email = 2;
+  string password = 3;
+  string phone_number = 4;
+}
+
+// 7. 계정 정보 수정 응답
+message UpdateAccountInfoResponse {
+  string email = 1;
+  string phone_number = 2;
+  string provider = 3;
+}
+
+// 8. 프로필 정보 수정 요청
+message UpdateProfileInfoRequest {
+  int64 user_id = 1;
+  string nickname = 2;
+  string image_url = 3;
+}
+
+// 8. 프로필 정보 수정 응답
+message UpdateProfileInfoResponse {
+  string nickname = 1;
+  string image_url = 2;
+}
+
+// 9. 소셜 로그인 요청
+message SocialLoginRequest {
+  string provider = 1;
+  string auth_code = 2;
+}
+
+// 9. 소셜 로그인 응답
+message SocialLoginResponse {
+  string token = 1;
+  int64 user_id = 2;
+  bool is_new_user = 3;
+  string email = 4;
+  string provider = 5;
+}
