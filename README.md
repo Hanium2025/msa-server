@@ -33,9 +33,11 @@ MSA(Microservice Architecture)를 기반으로 설계된 중고거래 플랫폼�
 
 | 주제 | 담당자 | 관련 문서 |
 |------|--------|-------------|
-| gRPC 통신 방식 스터디 | 허민영 | [바로가기 🔗](https://www.notion.so/gRPC-21bafe091f2380a78d59cecdb7c42e7f) |
+| gRPC 통신 방식 | 허민영 | [바로가기 🔗](https://www.notion.so/gRPC-21bafe091f2380a78d59cecdb7c42e7f) |
 | Docker & Compose 환경 구축 | 김민주 | [바로가기 🔗](https://www.notion.so/Docker-220afe091f2380ed923af01cbba98a74) |
 | React Native (Expo) 환경 구성 | 남지연 | [바로가기 🔗](https://www.notion.so/Expo-21bafe091f23804f8ed8d65f0e277f94) |
+| React Native + TypeScript를 활용한 홈화면 구성 (with Expo Router) | 선지오 | [바로가기 🔗](https://www.notion.so/2-21bafe091f23801ca0fbdb73f931d75b) |
+|프로젝트 초기 세팅 | 허민영 | [바로가기 🔗](https://www.notion.so/223afe091f2380c4a5def49adcd7f876) |
 
 현재까지의 스터디 내용은 위 표에 정리되어 있으며,  
 추가 세션이 진행되는 대로 내용을 계속 업데이트할 예정입니다.
