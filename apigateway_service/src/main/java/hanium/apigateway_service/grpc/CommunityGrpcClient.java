@@ -3,26 +3,24 @@ package hanium.apigateway_service.grpc;
 import hanium.community_service.grpc.CommunityServiceGrpc;
 import hanium.community_service.grpc.Empty;
 import hanium.community_service.grpc.PingResponse;
+
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 
-
+/**
+ * Community Service의 gRPC 클라이언트입니다.
+ * grpc-spring-boot-starter 기반 Eureka 연동을 통해 로드밸런싱 및 채널 관리 자동화.
+ */
 @Service
 @RequiredArgsConstructor
-public class CommunityGrpcClient  {
+public class CommunityGrpcClient {
 
-    @GrpcClient("community-service") // application.yml 혹은 properties 에 등록한 서비스 이름
+    @GrpcClient("community_service") //discovery:///community_service 사용
     private CommunityServiceGrpc.CommunityServiceBlockingStub stub;
 
     public String ping() {
-        // Empty 메시지 생성
-        Empty request = Empty.newBuilder().build();
-
-        // gRPC 호출
-        PingResponse response = stub.ping(request);
-
-        // 결과 반환
-        return response.getMessage();
+        PingResponse response = stub.ping(Empty.newBuilder().build());
+        return "[응답 메시지]: " + response.getMessage();
     }
 }
