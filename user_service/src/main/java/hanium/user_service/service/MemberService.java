@@ -1,13 +1,12 @@
 package hanium.user_service.service;
 
-import hanium.user_service.repository.MemberRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import hanium.user_service.dto.MemberSignupRequestDTO;
+import hanium.user_service.dto.ResponseMemberDTO;
+import hanium.user_service.domain.MemberEntity;
 
-@Service
-@RequiredArgsConstructor
-public class MemberService {
+public interface MemberService {
 
-    private final MemberRepository memberRepository;
-
+    public ResponseMemberDTO createMember(MemberSignupRequestDTO dto);
+    public ResponseMemberDTO getMemberById(Long memberId);
+    public MemberEntity getMemberByEmail(String email);
 }

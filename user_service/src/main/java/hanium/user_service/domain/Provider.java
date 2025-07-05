@@ -1,4 +1,4 @@
-package hanium.user_service.entity;
+package hanium.user_service.domain;
 
 public enum Provider {
     KAKAO,
