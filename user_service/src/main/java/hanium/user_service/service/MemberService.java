@@ -1,12 +1,14 @@
 package hanium.user_service.service;
 
-import hanium.user_service.dto.MemberSignupRequestDTO;
-import hanium.user_service.dto.ResponseMemberDTO;
-import hanium.user_service.domain.MemberEntity;
+import hanium.user_service.domain.Member;
+import hanium.user_service.dto.request.MemberSignupRequestDto;
+import hanium.user_service.dto.response.MemberResponseDto;
 
 public interface MemberService {
 
-    public ResponseMemberDTO createMember(MemberSignupRequestDTO dto);
-    public ResponseMemberDTO getMemberById(Long memberId);
-    public MemberEntity getMemberByEmail(String email);
+    public MemberResponseDto signup(MemberSignupRequestDto dto);
+
+    public MemberResponseDto getMemberById(Long memberId);
+
+    public Member getMemberByEmail(String email);
 }

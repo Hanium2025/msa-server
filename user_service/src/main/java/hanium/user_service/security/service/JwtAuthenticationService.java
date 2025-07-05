@@ -1,7 +1,11 @@
-package hanium.user_service.jwt;
+package hanium.user_service.security.service;
 
-import hanium.user_service.domain.MemberEntity;
-import hanium.user_service.service.MemberService;
+import hanium.user_service.domain.Member;
+import hanium.user_service.exception.CustomException;
+import hanium.user_service.exception.ErrorCode;
+import hanium.user_service.repository.MemberRepository;
+import hanium.user_service.security.common.JwtUtil;
+import hanium.user_service.security.token.GrpcAuthenticationToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -13,7 +17,7 @@ import org.springframework.stereotype.Service;
 public class JwtAuthenticationService {
 
     private final JwtUtil jwtUtil;
-    private final MemberService memberService;
+    private final MemberRepository memberRepository;
 
     public Authentication authenticateToken(String token) {
         try {
@@ -22,7 +26,7 @@ public class JwtAuthenticationService {
             // 토큰 유효성 검사
             if (!jwtUtil.isTokenValid(token)) {
                 log.warn("JWT 토큰이 유효하지 않음");
-                throw new JwtAuthenticationException("유효하지 않은 JWT 토큰");
+                throw new CustomException(ErrorCode.INVALID_TOKEN);
             }
 
             // 사용자 이름 추출
@@ -30,19 +34,17 @@ public class JwtAuthenticationService {
             log.info("토큰에서 추출한 사용자 이름: {}", email);
 
             // 사용자 정보 로드
-            MemberEntity member = memberService.getMemberByEmail(email);
+            Member member = memberRepository.findByEmail(email)
+                    .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
             return new GrpcAuthenticationToken(
                     member,
                     token,
                     member.getAuthorities()
             );
-//        } catch (JwtAuthenticationException e) {
-//            log.error("JWT 인증 실패: {}", e.getMessage());
-//            throw e;
-        } catch (Exception e) {
+        } catch (CustomException e) {
             log.error("JWT 인증 중 알 수 없는 오류 발생: {}", e.getMessage(), e);
-            throw new RuntimeException("JWT 인증 중 오류 발생", e);
+            throw e;
         }
     }
 }

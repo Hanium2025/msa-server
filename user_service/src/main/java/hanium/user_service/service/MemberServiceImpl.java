@@ -1,20 +1,24 @@
 package hanium.user_service.service;
 
-import hanium.user_service.dto.MemberSignupRequestDTO;
-import hanium.user_service.dto.ResponseMemberDTO;
-import hanium.user_service.domain.MemberEntity;
+import hanium.user_service.domain.Member;
+import hanium.user_service.domain.Profile;
+import hanium.user_service.dto.request.MemberSignupRequestDto;
+import hanium.user_service.dto.response.MemberResponseDto;
+import hanium.user_service.exception.CustomException;
+import hanium.user_service.exception.ErrorCode;
+import hanium.user_service.mapper.MemberMapper;
 import hanium.user_service.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
-    private final ModelMapper mapper;
+    private final BCryptPasswordEncoder encoder;
 
     /**
      * @param dto 회원 가입 요청
@@ -22,13 +26,36 @@ public class MemberServiceImpl implements MemberService {
      * @apiNote 회원을 생성합니다.
      */
     @Override
-    public ResponseMemberDTO createMember(MemberSignupRequestDTO dto) {
-        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+    @Transactional
+    public MemberResponseDto signup(MemberSignupRequestDto dto) {
+        if (memberRepository.findByEmail(dto.getEmail()).isPresent()) { // 이미 가입된 이메일인가?
+            throw new CustomException(ErrorCode.HAS_EMAIL);
 
-        MemberEntity memberEntity = mapper.map(dto, MemberEntity.class);
-        memberRepository.save(memberEntity);
+        } else if (!dto.getPassword().equals(dto.getConfirmPassword())) { // 비밀번호 확인 필드와 일치하는가?
+            throw new CustomException(ErrorCode.PASSWORD_NOT_MATCH);
 
-        return mapper.map(memberEntity, ResponseMemberDTO.class);
+        } else {
+            // 비밀번호 암호화
+            String encodedPassword = encoder.encode(dto.getPassword());
+
+            // Profile 엔티티 생성
+            Profile profile = Profile.builder()
+                    .nickname(dto.getNickname())
+                    .build();
+
+            // Member 엔티티 생성
+            Member member = Member.builder()
+                    .email(dto.getEmail())
+                    .password(encodedPassword)
+                    .phoneNumber(dto.getPhoneNumber())
+                    .isAgreeMarketing(dto.getAgreeMarketing())
+                    .isAgreeThirdParty(dto.getAgreeThirdParty())
+                    .profile(profile)
+                    .build();
+            memberRepository.save(member);
+
+            return MemberMapper.toMemberResponseDto(member);
+        }
     }
 
     /**
@@ -37,15 +64,15 @@ public class MemberServiceImpl implements MemberService {
      * @apiNote 회원 ID로 회원을 조회합니다.
      */
     @Override
-    public ResponseMemberDTO getMemberById(Long memberId) {
-        MemberEntity memberEntity = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 id 값입니다."));
-        return mapper.map(memberEntity, ResponseMemberDTO.class);
+    public MemberResponseDto getMemberById(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        return MemberMapper.toMemberResponseDto(member);
     }
 
     @Override
-    public MemberEntity getMemberByEmail(String email) {
+    public Member getMemberByEmail(String email) {
         return memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 이메일입니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
     }
 }

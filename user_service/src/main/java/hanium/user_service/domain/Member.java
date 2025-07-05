@@ -1,8 +1,7 @@
 package hanium.user_service.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,11 +11,16 @@ import java.util.Collection;
 import java.util.List;
 
 
-@Entity @Getter @Setter
+@Entity
+@Getter
+@Setter
+@Builder
 @Table(name = "MEMBER")
 // 삭제 시, 삭제 일시를 업데이트하는 쿼리 날림
 @SQLDelete(sql = "UPDATE MEMBER SET MEMBER.DELETED_AT = CURRENT_TIMESTAMP WHERE MEMBER.ID = ?")
-public class MemberEntity extends BaseEntity implements UserDetails {
+@NoArgsConstructor
+@AllArgsConstructor
+public class Member extends BaseEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -42,31 +46,36 @@ public class MemberEntity extends BaseEntity implements UserDetails {
 
     @OneToOne
     @JoinColumn(name = "PROFILE_ID")
-    private ProfileEntity profile;
+    private Profile profile;
 
     // UserDetails 메서드 구현
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("USER"));
     }
+
     @Override
     public String getUsername() {
         return this.email;
     }
+
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
+
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
+
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
+
     @Override
     public boolean isEnabled() {
-        return false;
+        return true;
     }
 }

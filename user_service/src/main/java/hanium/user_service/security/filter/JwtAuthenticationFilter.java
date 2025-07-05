@@ -1,5 +1,8 @@
-package hanium.user_service.jwt;
+package hanium.user_service.security.filter;
 
+import hanium.user_service.exception.JwtAuthenticationException;
+import hanium.user_service.security.common.JwtUtil;
+import hanium.user_service.security.service.JwtAuthenticationService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,12 +29,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
 
         try {
+            // "Authorization" 헤더에서 JWT token 추출
             jwtUtil.extractFromHeader(authHeader)
                     .ifPresent(token -> {
                         Authentication authentication = jwtAuthenticationService.authenticateToken(token);
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     });
-
+            // 다음 필터로 요청 전달
             filterChain.doFilter(request, response);
         } catch (JwtAuthenticationException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

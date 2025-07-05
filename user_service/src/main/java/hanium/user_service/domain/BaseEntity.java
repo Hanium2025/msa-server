@@ -20,16 +20,19 @@ public class BaseEntity {
     private LocalDateTime created_at;
 
     @LastModifiedDate
+    @Column
     private LocalDateTime updated_at;
 
+    @Column
     private LocalDateTime deletedAt;
 
     // soft delete 확인
     public boolean isSoftDeleted() {
         return deletedAt != null;
     }
+
     // 삭제 취소
-    public void undoDeletion(){
+    public void undoDeletion() {
         this.deletedAt = null;
     }
 }

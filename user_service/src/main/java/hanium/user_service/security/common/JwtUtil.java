@@ -1,4 +1,4 @@
-package hanium.user_service.jwt;
+package hanium.user_service.security.common;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -22,12 +22,13 @@ import java.util.Optional;
 @Slf4j
 public class JwtUtil {
 
-    // application.yml에 설정된 값 가져오기 //
+    // application.yml에 설정된 값 가져오기
     @Value("${jwt.secret}")
     private String secret;
     @Value("${jwt.expiration}")
     private long accessTokenValidityInSeconds;
 
+    // 사용할 상수 정의
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken"; // 토큰 제목 (sub)
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
     private static final String USERNAME_CLAIM = "email"; // username 클레임
@@ -36,7 +37,6 @@ public class JwtUtil {
             Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
 
     private final MemberRepository memberRepository;
-
 
     // JWT 토큰 생성
     public String generateToken(String email) {
