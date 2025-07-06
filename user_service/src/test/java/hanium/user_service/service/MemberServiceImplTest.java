@@ -86,4 +86,18 @@ class MemberServiceImplTest {
         // then
         assertThat(e.getErrorCode().name()).isEqualTo("PASSWORD_NOT_MATCH");
     }
+
+    @Test
+    @DisplayName("회원가입: 비밀번호 암호화 체크")
+    void signup_encode() {
+        // given
+        MemberSignupRequestDto dto = MemberSignupRequestDto.builder()
+                .email("email@example.com").password("test1234").confirmPassword("test1234")
+                .phoneNumber("010-1234-1234").nickname("nickname")
+                .agreeMarketing(true).agreeThirdParty(true).build();
+        // when
+        Member member = memberService.signup(dto);
+        // then
+        assertThat(member.getPassword()).isNotEqualTo("test1234");
+    }
 }
