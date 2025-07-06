@@ -3,11 +3,10 @@ package hanium.user_service.service;
 import hanium.user_service.domain.Member;
 import hanium.user_service.domain.Profile;
 import hanium.user_service.dto.request.MemberSignupRequestDto;
-import hanium.user_service.dto.response.MemberResponseDto;
 import hanium.user_service.exception.CustomException;
 import hanium.user_service.exception.ErrorCode;
-import hanium.user_service.mapper.MemberMapper;
 import hanium.user_service.repository.MemberRepository;
+import hanium.user_service.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final ProfileRepository profileRepository;
     private final BCryptPasswordEncoder encoder;
 
     /**
@@ -27,7 +27,7 @@ public class MemberServiceImpl implements MemberService {
      */
     @Override
     @Transactional
-    public MemberResponseDto signup(MemberSignupRequestDto dto) {
+    public Member signup(MemberSignupRequestDto dto) {
         if (memberRepository.findByEmail(dto.getEmail()).isPresent()) { // 이미 가입된 이메일인가?
             throw new CustomException(ErrorCode.HAS_EMAIL);
 
@@ -52,9 +52,11 @@ public class MemberServiceImpl implements MemberService {
                     .isAgreeThirdParty(dto.getAgreeThirdParty())
                     .profile(profile)
                     .build();
-            memberRepository.save(member);
 
-            return MemberMapper.toMemberResponseDto(member);
+            memberRepository.save(member);
+            profileRepository.save(profile);
+
+            return member;
         }
     }
 
@@ -64,10 +66,9 @@ public class MemberServiceImpl implements MemberService {
      * @apiNote 회원 ID로 회원을 조회합니다.
      */
     @Override
-    public MemberResponseDto getMemberById(Long memberId) {
-        Member member = memberRepository.findById(memberId)
+    public Member getMemberById(Long memberId) {
+        return memberRepository.findById(memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-        return MemberMapper.toMemberResponseDto(member);
     }
 
     @Override
