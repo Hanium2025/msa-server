@@ -40,7 +40,11 @@ dependencyManagement {
 	}
 }
 
-
+bootJar {
+	archiveBaseName.set('user_service')
+	archiveVersion.set('')
+	archiveClassifier.set('')
+}
 dependencies {
 	// spring
 	implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -82,12 +86,17 @@ dependencies {
 	// json 타입을 DB에 저장하기 위한 라이브러리
 	implementation 'com.vladmihalcea:hibernate-types-60:2.21.1'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation project(':common')
+
 	// Grpc-Test-Support
 //    testImplementation("io.grpc:grpc-testing")
 //    // Spring-Test-Support (Optional)
 //    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
+springBoot {
+	mainClass = 'hanium.user_service.UserServiceApplication'
+}
 
 protobuf {
 	// Protobuf 컴파일러를 지정하여 .proto 파일을 컴파일합니다.
