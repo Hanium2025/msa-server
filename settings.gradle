@@ -1,0 +1,10 @@
+rootProject.name = 'msa-server'
+
+// 여기에 각 모듈 경로를 설정
+include ':common'
+include ':community_service'
+include ':product_service'
+include ':user_service'
+include ':notification_service'
+include ':apigateway_service'
+include ':discovery_service'
