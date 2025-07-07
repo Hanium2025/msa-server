@@ -6,14 +6,14 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.scheduling.annotation.EnableAsync;
 
-@EnableDiscoveryClient
-@EnableAsync
-@ConfigurationPropertiesScan  // 설정 클래스 스캔을 활성화
+//@EnableDiscoveryClient
+//@EnableAsync
+//@ConfigurationPropertiesScan  // 설정 클래스 스캔을 활성화
 @SpringBootApplication
 public class UserServiceApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(UserServiceApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(UserServiceApplication.class, args);
+    }
 
 }
