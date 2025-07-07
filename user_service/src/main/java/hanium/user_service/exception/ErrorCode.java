@@ -17,7 +17,8 @@ public enum ErrorCode {
 
     LOGIN_FAILED(HttpStatus.UNAUTHORIZED, "AUTH-001", "이메일 또는 비밀번호가 일치하지 않습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-002", "유효하지 않은 토큰입니다."),
-    JWT_AUTH_FAILED(HttpStatus.UNAUTHORIZED, "AUTH-003", "JWT 인증에 실패했습니다.");
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "AUTH-003", "유효하지 않은 리프레시 토큰입니다."),
+    JWT_AUTH_FAILED(HttpStatus.UNAUTHORIZED, "AUTH-004", "JWT 인증에 실패했습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

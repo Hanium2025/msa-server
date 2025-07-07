@@ -3,14 +3,10 @@ package hanium.user_service.service;
 import hanium.user_service.domain.Member;
 import hanium.user_service.dto.request.MemberSignupRequestDto;
 import hanium.user_service.exception.CustomException;
-import hanium.user_service.repository.MemberRepository;
-import hanium.user_service.repository.ProfileRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,19 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class MemberServiceImplTest {
 
     @Autowired
-    private MemberRepository memberRepository;
-    @Autowired
-    private ProfileRepository profileRepository;
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
-    @Autowired
     private MemberService memberService;
-
-    @BeforeEach
-    void init() {
-        memberRepository.deleteAll();
-        profileRepository.deleteAll();
-    }
 
     @Test
     @DisplayName("정상 회원가입")

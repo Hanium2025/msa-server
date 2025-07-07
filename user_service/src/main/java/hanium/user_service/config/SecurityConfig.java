@@ -27,19 +27,21 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 // 토큰 방식에서 세션 사용하지 않음
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
                 // 인증, 인가가 필요한 url 지정
                 .authorizeHttpRequests(auth -> auth
                         // permitAll()로 지정된 url은 인증 없이도 요청 허용 - 로그인, 회원가입
                         .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/members/").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/members").permitAll()
                         // 나머지 요청은 인증 필요
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(e -> e
-                        .authenticationEntryPoint((request, response, authException) ->
-                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage()))
-                )
+//                .exceptionHandling(e -> e
+//                        .authenticationEntryPoint((request, response, authException) ->
+//                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage()))
+//                )
                 .build();
     }
 

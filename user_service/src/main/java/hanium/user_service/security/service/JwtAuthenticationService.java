@@ -29,9 +29,9 @@ public class JwtAuthenticationService {
                 throw new CustomException(ErrorCode.INVALID_TOKEN);
             }
 
-            // 사용자 이름 추출
+            // 사용자 이메일 추출
             String email = String.valueOf(jwtUtil.extractEmail(token));
-            log.info("토큰에서 추출한 사용자 이름: {}", email);
+            log.info("토큰에서 추출한 사용자 이메일: {}", email);
 
             // 사용자 정보 로드
             Member member = memberRepository.findByEmail(email)
@@ -43,7 +43,7 @@ public class JwtAuthenticationService {
                     member.getAuthorities()
             );
         } catch (CustomException e) {
-            log.error("JWT 인증 중 알 수 없는 오류 발생: {}", e.getMessage(), e);
+            log.error("JWT 인증 실패: {}", e.getMessage(), e);
             throw e;
         }
     }

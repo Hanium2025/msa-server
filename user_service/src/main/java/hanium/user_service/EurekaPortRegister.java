@@ -1,5 +1,13 @@
 package hanium.user_service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.web.context.WebServerApplicationContext;
+import org.springframework.cloud.netflix.eureka.serviceregistry.EurekaRegistration;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+
 /**
  * 동적으로 할당된 포트를 Eureka 서버에 반영하는 컴포넌트입니다.
  * <p>
@@ -18,6 +26,7 @@ package hanium.user_service;
 //    @Qualifier("eurekaRegistration")
 //    @Autowired
 //    private EurekaRegistration eurekaRegistration;
+//
 //    @EventListener
 //    public void onApplicationReady(ApplicationReadyEvent event) {
 //        // 실제 할당된 HTTP 포트 조회
