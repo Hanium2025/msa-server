@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
  * 응답에 사용되는 공용 DTO입니다.
  * code와 msg는 HttpStatus를 통해 설정합니다.
  * @param <T>
+ *
  */
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
