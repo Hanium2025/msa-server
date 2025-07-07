@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package hanium.common.proto;
+
+option java_multiple_files = true;
+option java_package = "hanium.common.proto";
+
+message CommonResponse {
+  bool success = 1;
+  string message = 2;
+  int32 error_code = 3;
+}
