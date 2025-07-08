@@ -2,6 +2,7 @@ package hanium.user_service.service.impl;
 
 import hanium.user_service.domain.Member;
 import hanium.user_service.domain.Profile;
+import hanium.user_service.dto.request.LoginRequestDTO;
 import hanium.user_service.dto.request.SignUpRequestDTO;
 import hanium.user_service.dto.response.LoginResponseDTO;
 import hanium.user_service.dto.response.TokenResponseDTO;
@@ -64,7 +65,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginResponseDTO login(String email, String password) {
+    public LoginResponseDTO login(LoginRequestDTO dto) {
+        String email = dto.getEmail();
+        String password = dto.getPassword();
         Member member = memberRepository.findByEmail(email)
                 .filter(m -> encoder.matches(password, m.getPassword()))
                 .orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAILED));

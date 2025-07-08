@@ -10,6 +10,9 @@ import "common.proto";  // common.proto 파일 import
 service UserService {
   // 1. 사용자 회원가입
   rpc SignUp(SignUpRequest) returns (CommonResponse);
+
+  // 2. 사용자 로그인
+  rpc Login(LoginRequest) returns (LoginResponse);
 }
 
 // 1. 회원가입 요청
@@ -23,9 +26,14 @@ message SignUpRequest {
   bool agree_third_party = 7;
 }
 
-// 1. 회원가입 응답
-message SignUpResponse {
-  int64 user_id = 1;
-  string email = 2;
-  string phone_number = 3;
+// 2. 로그인 요청
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+// 2. 로그인 응답
+message LoginResponse {
+  string email = 1;
+  string token = 2;
+  string token_type = 3;
 }

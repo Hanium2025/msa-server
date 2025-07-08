@@ -9,12 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MemberSignupRequestDTO {
+public class LoginRequestDTO {
     private String email;
     private String password;
-    private String confirmPassword;
-    private String phoneNumber;
-    private String nickname;
-    private boolean agreeMarketing;
-    private boolean agreeThirdParty;
 }
