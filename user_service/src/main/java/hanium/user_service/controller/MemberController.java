@@ -16,13 +16,6 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    // 회원가입 요청
-    @PostMapping
-    public ResponseEntity<MemberResponseDto> createMember(@RequestBody MemberSignupRequestDto dto) {
-        Member saved = memberService.signup(dto);
-        return ResponseEntity.ok(MemberMapper.toMemberResponseDto(saved));
-    }
-
     // 회원 조회 요청
     @GetMapping("/{memberId}")
     public ResponseEntity<MemberResponseDto> getMemberById(@PathVariable Long memberId) {

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
  * <p>
  * 테스트 코드 확인을 위해 잠시 주석 처리합니다.
  */
+
 //@Component
 //public class EurekaPortRegister {
 //

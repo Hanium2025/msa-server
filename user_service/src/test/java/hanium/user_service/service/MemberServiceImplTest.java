@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class MemberServiceImplTest {
 
     @Autowired
-    private MemberService memberService;
+    private AuthService authService;
 
     @Test
     @DisplayName("정상 회원가입")
@@ -33,7 +33,7 @@ class MemberServiceImplTest {
                 .agreeThirdParty(true)
                 .build();
         // when
-        Member savedMember = memberService.signup(memberSignupRequestDto);
+        Member savedMember = authService.signUp(memberSignupRequestDto);
         // then
         assertThat(savedMember.getId()).isNotNull();
     }
@@ -51,8 +51,8 @@ class MemberServiceImplTest {
                 .phoneNumber("010-1234-1234").nickname("nickname")
                 .agreeMarketing(true).agreeThirdParty(true).build();
         // when
-        Member member1 = memberService.signup(memberRequest1);
-        CustomException e = assertThrows(CustomException.class, () -> memberService.signup(memberRequest2));
+        Member member1 = authService.signUp(memberRequest1);
+        CustomException e = assertThrows(CustomException.class, () -> authService.signUp(memberRequest2));
         // then
         assertThat(e.getErrorCode().name()).isEqualTo("HAS_EMAIL");
     }
@@ -66,7 +66,7 @@ class MemberServiceImplTest {
                 .phoneNumber("010-1234-1234").nickname("nickname")
                 .agreeMarketing(true).agreeThirdParty(true).build();
         // when
-        CustomException e = assertThrows(CustomException.class, () -> memberService.signup(dto));
+        CustomException e = assertThrows(CustomException.class, () -> authService.signUp(dto));
         // then
         assertThat(e.getErrorCode().name()).isEqualTo("PASSWORD_NOT_MATCH");
     }
@@ -80,7 +80,7 @@ class MemberServiceImplTest {
                 .phoneNumber("010-1234-1234").nickname("nickname")
                 .agreeMarketing(true).agreeThirdParty(true).build();
         // when
-        Member member = memberService.signup(dto);
+        Member member = authService.signUp(dto);
         // then
         assertThat(member.getPassword()).isNotEqualTo("test1234");
     }

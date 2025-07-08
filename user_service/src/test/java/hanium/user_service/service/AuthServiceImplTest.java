@@ -22,8 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class AuthServiceImplTest {
 
     @Autowired
-    private MemberService memberService;
-    @Autowired
     private AuthService authService;
     private MemberSignupRequestDto signupDto;
 
@@ -39,7 +37,7 @@ class AuthServiceImplTest {
     @DisplayName("로그인: 성공")
     void login() {
         // given
-        Member member = memberService.signup(signupDto);
+        Member member = authService.signUp(signupDto);
         LoginRequestDto loginDto = LoginRequestDto.builder()
                 .email("email@example.com").password("test1234").build();
         // when
@@ -54,7 +52,7 @@ class AuthServiceImplTest {
     @DisplayName("로그인: 실패")
     void login_failed() {
         // given
-        Member member = memberService.signup(signupDto);
+        Member member = authService.signUp(signupDto);
         LoginRequestDto loginDto = LoginRequestDto.builder()
                 .email("email@example.com").password("wrongPassword").build();
         // when

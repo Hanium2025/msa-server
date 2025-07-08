@@ -5,7 +5,7 @@ import hanium.common.proto.user.SignUpRequest;
 import hanium.common.proto.user.UserServiceGrpc;
 import hanium.user_service.dto.request.MemberSignupRequestDto;
 import hanium.user_service.mapper.MemberMapper;
-import hanium.user_service.service.MemberService;
+import hanium.user_service.service.AuthService;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ public class UserServiceGrpcImpl extends UserServiceGrpc.UserServiceImplBase {
     @Value("${eureka.instance.hostname:unknown-host}")
     private String hostname;
 
-    private final MemberService memberService;
+    private final AuthService authService;
 
     @Override
     public void signUp(SignUpRequest request, StreamObserver<CommonResponse> responseObserver) {
@@ -30,7 +30,7 @@ public class UserServiceGrpcImpl extends UserServiceGrpc.UserServiceImplBase {
             // grpc -> dto 변환
             MemberSignupRequestDto dto = MemberMapper.toSignupDto(request);
             // 서비스 호출
-            memberService.signup(dto);
+            authService.signUp(dto);
             // 성공 응답 생성
             CommonResponse response = CommonResponse.newBuilder()
                     .setSuccess(true)
