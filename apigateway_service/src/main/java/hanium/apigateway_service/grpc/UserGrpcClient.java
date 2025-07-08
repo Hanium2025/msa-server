@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class GrpcUserClient {
+public class UserGrpcClient {
 
     @GrpcClient("user_service") //discovery:///user_service 사용
     private UserServiceGrpc.UserServiceBlockingStub stub;

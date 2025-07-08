@@ -1,16 +1,16 @@
-package hanium.user_service.service;
+package hanium.user_service.service.impl;
 
 import hanium.user_service.domain.Member;
 import hanium.user_service.domain.Profile;
-import hanium.user_service.dto.request.MemberSignupRequestDto;
-import hanium.user_service.dto.response.LoginResponseDto;
-import hanium.user_service.dto.response.TokenResponseDto;
+import hanium.user_service.dto.request.SignUpRequestDTO;
+import hanium.user_service.dto.response.LoginResponseDTO;
+import hanium.user_service.dto.response.TokenResponseDTO;
 import hanium.user_service.exception.CustomException;
 import hanium.user_service.exception.ErrorCode;
 import hanium.user_service.repository.MemberRepository;
 import hanium.user_service.repository.ProfileRepository;
-import hanium.user_service.security.common.JwtUtil;
-import hanium.user_service.security.service.JwtAuthenticationService;
+import hanium.user_service.security.JwtUtil;
+import hanium.user_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -29,7 +29,7 @@ public class AuthServiceImpl implements AuthService {
     private final ProfileRepository profileRepository;
 
     @Override
-    public Member signUp(MemberSignupRequestDto dto) {
+    public Member signUp(SignUpRequestDTO dto) {
         if (memberRepository.findByEmail(dto.getEmail()).isPresent()) { // 이미 가입된 이메일인가?
             throw new CustomException(ErrorCode.HAS_EMAIL);
         } else if (!dto.getPassword().equals(dto.getConfirmPassword())) { // 비밀번호 확인 필드와 일치하는가?
@@ -64,21 +64,21 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginResponseDto login(String email, String password) {
+    public LoginResponseDTO login(String email, String password) {
         Member member = memberRepository.findByEmail(email)
                 .filter(m -> encoder.matches(password, m.getPassword()))
                 .orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAILED));
         // 로그인 성공 시 토큰 생성
         String token = jwtUtil.generateToken(member.getEmail());
-        return LoginResponseDto.of(email, token, "Bearer");
+        return LoginResponseDTO.of(email, token, "Bearer");
     }
 
     @Override
-    public TokenResponseDto refreshToken(String refreshToken) throws CustomException {
+    public TokenResponseDTO refreshToken(String refreshToken) throws CustomException {
         if (jwtUtil.isTokenValid(refreshToken)) {
             String username = String.valueOf(jwtUtil.extractEmail(refreshToken));
             String newAccessToken = jwtUtil.generateToken(username);
-            return new TokenResponseDto(newAccessToken, refreshToken);
+            return new TokenResponseDTO(newAccessToken, refreshToken);
         } else {
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }

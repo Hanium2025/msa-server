@@ -19,22 +19,26 @@ import org.springframework.stereotype.Component;
  * 테스트 코드 확인을 위해 잠시 주석 처리합니다.
  */
 
-//@Component
-//public class EurekaPortRegister {
-//
-//    @Autowired
-//    private WebServerApplicationContext webServerAppCtxt;
-//    @Qualifier("eurekaRegistration")
-//    @Autowired
-//    private EurekaRegistration eurekaRegistration;
-//
-//    @EventListener
-//    public void onApplicationReady(ApplicationReadyEvent event) {
-//        // 실제 할당된 HTTP 포트 조회
-//        int actualPort = webServerAppCtxt.getWebServer().getPort();
-//        System.out.println("실제 할당된 HTTP 포트: " + actualPort);
-//        // Eureka 등록 정보에 실제 포트 반영
-//        eurekaRegistration.getInstanceConfig().setNonSecurePort(actualPort);
-//
-//    }
-//}
+@Component
+public class EurekaPortRegister {
+
+    private final WebServerApplicationContext webServerAppContext;
+    @Qualifier("eurekaRegistration")
+    private final EurekaRegistration eurekaRegistration;
+
+    @Autowired
+    public EurekaPortRegister(WebServerApplicationContext webServerAppContext,
+                              @Qualifier("eurekaRegistration") EurekaRegistration eurekaRegistration) {
+        this.webServerAppContext = webServerAppContext;
+        this.eurekaRegistration = eurekaRegistration;
+    }
+
+    @EventListener
+    public void onApplicationReady(ApplicationReadyEvent event) {
+        // 실제 할당된 HTTP 포트 조회
+        int actualPort = webServerAppContext.getWebServer().getPort();
+        System.out.println("실제 할당된 HTTP 포트: " + actualPort);
+        // Eureka 등록 정보에 실제 포트 반영
+        eurekaRegistration.getInstanceConfig().setNonSecurePort(actualPort);
+    }
+}

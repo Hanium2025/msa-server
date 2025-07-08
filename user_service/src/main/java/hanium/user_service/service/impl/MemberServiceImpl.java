@@ -1,17 +1,14 @@
-package hanium.user_service.service;
+package hanium.user_service.service.impl;
 
 import hanium.user_service.domain.Member;
-import hanium.user_service.domain.Profile;
-import hanium.user_service.dto.request.MemberSignupRequestDto;
 import hanium.user_service.exception.CustomException;
 import hanium.user_service.exception.ErrorCode;
 import hanium.user_service.repository.MemberRepository;
-import hanium.user_service.repository.ProfileRepository;
+import hanium.user_service.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,8 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
-    private final ProfileRepository profileRepository;
-    private final BCryptPasswordEncoder encoder;
 
     /**
      * @param memberId 회원 ID

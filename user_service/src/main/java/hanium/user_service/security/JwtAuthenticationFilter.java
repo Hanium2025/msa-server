@@ -1,8 +1,6 @@
-package hanium.user_service.security.filter;
+package hanium.user_service.security;
 
 import hanium.user_service.exception.CustomException;
-import hanium.user_service.security.common.JwtUtil;
-import hanium.user_service.security.service.JwtAuthenticationService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

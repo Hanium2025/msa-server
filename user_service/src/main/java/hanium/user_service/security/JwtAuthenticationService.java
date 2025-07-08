@@ -1,11 +1,9 @@
-package hanium.user_service.security.service;
+package hanium.user_service.security;
 
 import hanium.user_service.domain.Member;
 import hanium.user_service.exception.CustomException;
 import hanium.user_service.exception.ErrorCode;
 import hanium.user_service.repository.MemberRepository;
-import hanium.user_service.security.common.JwtUtil;
-import hanium.user_service.security.token.GrpcAuthenticationToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;

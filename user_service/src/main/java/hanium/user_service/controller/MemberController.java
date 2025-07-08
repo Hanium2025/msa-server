@@ -1,9 +1,8 @@
 package hanium.user_service.controller;
 
 import hanium.user_service.domain.Member;
-import hanium.user_service.dto.request.MemberSignupRequestDto;
-import hanium.user_service.dto.response.MemberResponseDto;
-import hanium.user_service.mapper.MemberMapper;
+import hanium.user_service.dto.response.MemberResponseDTO;
+import hanium.user_service.mapper.entity.MemberEntityMapper;
 import hanium.user_service.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +17,8 @@ public class MemberController {
 
     // 회원 조회 요청
     @GetMapping("/{memberId}")
-    public ResponseEntity<MemberResponseDto> getMemberById(@PathVariable Long memberId) {
+    public ResponseEntity<MemberResponseDTO> getMemberById(@PathVariable Long memberId) {
         Member member = memberService.getMemberById(memberId);
-        return ResponseEntity.ok(MemberMapper.toMemberResponseDto(member));
+        return ResponseEntity.ok(MemberEntityMapper.toMemberResponseDto(member));
     }
 }

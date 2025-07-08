@@ -2,7 +2,7 @@ package hanium.apigateway_service.controller;
 
 import hanium.apigateway_service.dto.CommonResponseDTO;
 import hanium.apigateway_service.dto.MemberSignupRequestDTO;
-import hanium.apigateway_service.grpc.GrpcUserClient;
+import hanium.apigateway_service.grpc.UserGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import hanium.common.proto.CommonResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/user")
 public class UserController {
 
-    private final GrpcUserClient grpcUserClient;
+    private final UserGrpcClient userGrpcClient;
 
-    @PostMapping("/signup")
+    @PostMapping("/auth/signup")
     public ResponseEntity<ResponseDTO<CommonResponseDTO>> signUp(@RequestBody MemberSignupRequestDTO dto){
-        CommonResponse protoResponse = grpcUserClient.signUp(dto);
+        CommonResponse protoResponse = userGrpcClient.signUp(dto);
         CommonResponseDTO commonResponseDTO = CommonResponseDTO.fromProto(protoResponse);
 
         ResponseDTO<CommonResponseDTO> response = new ResponseDTO<>(
