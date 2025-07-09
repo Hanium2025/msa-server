@@ -1,11 +1,10 @@
 package hanium.user_service.config;
 
-import hanium.user_service.security.filter.JwtAuthenticationFilter;
+import hanium.user_service.security.JwtAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -32,16 +31,15 @@ public class SecurityConfig {
                 // 인증, 인가가 필요한 url 지정
                 .authorizeHttpRequests(auth -> auth
                         // permitAll()로 지정된 url은 인증 없이도 요청 허용 - 로그인, 회원가입
-                        .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/members").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/signup","/error").permitAll()
                         // 나머지 요청은 인증 필요
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .exceptionHandling(e -> e
-//                        .authenticationEntryPoint((request, response, authException) ->
-//                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage()))
-//                )
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage()))
+                )
                 .build();
     }
 

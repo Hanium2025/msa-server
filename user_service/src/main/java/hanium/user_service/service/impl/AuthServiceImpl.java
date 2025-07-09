@@ -1,16 +1,19 @@
-package hanium.user_service.service;
+package hanium.user_service.service.impl;
 
 import hanium.user_service.domain.Member;
 import hanium.user_service.domain.Profile;
-import hanium.user_service.dto.request.MemberSignupRequestDto;
+import hanium.user_service.dto.request.LoginRequestDTO;
+import hanium.user_service.dto.request.SignUpRequestDTO;
+import hanium.user_service.dto.response.LoginResponseDTO;
+import hanium.user_service.dto.response.TokenResponseDTO;
 import hanium.user_service.exception.CustomException;
 import hanium.user_service.exception.ErrorCode;
 import hanium.user_service.repository.MemberRepository;
 import hanium.user_service.repository.ProfileRepository;
+import hanium.user_service.security.JwtUtil;
+import hanium.user_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,19 +22,15 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 @Slf4j
-public class MemberServiceImpl implements MemberService {
+public class AuthServiceImpl implements AuthService {
 
     private final MemberRepository memberRepository;
-    private final ProfileRepository profileRepository;
     private final BCryptPasswordEncoder encoder;
+    private final JwtUtil jwtUtil;
+    private final ProfileRepository profileRepository;
 
-    /**
-     * @param dto 회원 가입 요청
-     * @return 회원 가입 응답
-     * @apiNote 회원을 생성합니다.
-     */
     @Override
-    public Member signup(MemberSignupRequestDto dto) {
+    public Member signUp(SignUpRequestDTO dto) {
         if (memberRepository.findByEmail(dto.getEmail()).isPresent()) { // 이미 가입된 이메일인가?
             throw new CustomException(ErrorCode.HAS_EMAIL);
         } else if (!dto.getPassword().equals(dto.getConfirmPassword())) { // 비밀번호 확인 필드와 일치하는가?
@@ -58,27 +57,33 @@ public class MemberServiceImpl implements MemberService {
             memberRepository.save(member);
             profileRepository.save(profile);
 
-            log.info("Member has been signed up with email: {}", member.getEmail());
-            log.info("Profile has been saved: {}", profile.getNickname());
+            log.info("✅ Member 회원가입 됨: {}", member.getEmail());
+            log.info("✅ Profile 등록됨: {} == ID: {}", member.getProfile().getId(), profile.getId());
 
             return member;
         }
     }
 
-    /**
-     * @param memberId 회원 ID
-     * @return 회원 조회 응답
-     * @apiNote 회원 ID로 회원을 조회합니다.
-     */
     @Override
-    public Member getMemberById(Long memberId) {
-        return memberRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+    public LoginResponseDTO login(LoginRequestDTO dto) {
+        String email = dto.getEmail();
+        String password = dto.getPassword();
+        Member member = memberRepository.findByEmail(email)
+                .filter(m -> encoder.matches(password, m.getPassword()))
+                .orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAILED));
+        // 로그인 성공 시 토큰 생성
+        String token = jwtUtil.generateToken(member.getEmail());
+        return LoginResponseDTO.of(email, token, "Bearer");
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return memberRepository.findByEmail(username)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+    public TokenResponseDTO refreshToken(String refreshToken) throws CustomException {
+        if (jwtUtil.isTokenValid(refreshToken)) {
+            String username = String.valueOf(jwtUtil.extractEmail(refreshToken));
+            String newAccessToken = jwtUtil.generateToken(username);
+            return new TokenResponseDTO(newAccessToken, refreshToken);
+        } else {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
     }
 }

@@ -1,11 +1,16 @@
 package hanium.user_service.service;
 
-import hanium.user_service.dto.response.LoginResponseDto;
-import hanium.user_service.dto.response.TokenResponseDto;
+import hanium.user_service.domain.Member;
+import hanium.user_service.dto.request.LoginRequestDTO;
+import hanium.user_service.dto.request.SignUpRequestDTO;
+import hanium.user_service.dto.response.LoginResponseDTO;
+import hanium.user_service.dto.response.TokenResponseDTO;
 
 public interface AuthService {
 
-    public LoginResponseDto login(String email, String password);
+    public Member signUp(SignUpRequestDTO dto);
 
-    public TokenResponseDto refreshToken(String refreshToken);
+    public LoginResponseDTO login(LoginRequestDTO dto);
+
+    public TokenResponseDTO refreshToken(String refreshToken);
 }

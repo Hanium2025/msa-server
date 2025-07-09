@@ -1,13 +1,13 @@
-package hanium.user_service.mapper;
+package hanium.user_service.mapper.entity;
 
 import hanium.user_service.domain.Member;
-import hanium.user_service.dto.response.MemberResponseDto;
+import hanium.user_service.dto.response.MemberResponseDTO;
 
-public class MemberMapper {
+public class MemberEntityMapper {
 
     // Member 엔티티 -> MemberResponseDto
-    public static MemberResponseDto toMemberResponseDto(Member member) {
-        return MemberResponseDto.builder()
+    public static MemberResponseDTO toMemberResponseDto(Member member) {
+        return MemberResponseDTO.builder()
                 .id(member.getId())
                 .email(member.getEmail())
                 .phoneNumber(member.getPhoneNumber())

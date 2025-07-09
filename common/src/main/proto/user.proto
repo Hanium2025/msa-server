@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package hanium.common.proto.user;
+
+option java_package = "hanium.common.proto.user";
+option java_multiple_files = true;
+
+import "common.proto";  // common.proto 파일 import
+
+service UserService {
+  // 1. 사용자 회원가입
+  rpc SignUp(SignUpRequest) returns (CommonResponse);
+
+  // 2. 사용자 로그인
+  rpc Login(LoginRequest) returns (LoginResponse);
+}
+
+// 1. 회원가입 요청
+message SignUpRequest {
+  string email = 1;
+  string password = 2;
+  string confirm_password = 3;
+  string phone_number = 4;
+  string nickname = 5;
+  bool agree_marketing = 6;
+  bool agree_third_party = 7;
+}
+
+// 2. 로그인 요청
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+// 2. 로그인 응답
+message LoginResponse {
+  string email = 1;
+  string token = 2;
+  string token_type = 3;
+}
