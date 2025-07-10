@@ -1,4 +1,4 @@
-package hanium.apigateway_service.dto;
+package hanium.apigateway_service.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,9 +7,10 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class LoginRequestDTO {
+@AllArgsConstructor
+public class LoginResponseDTO {
     private String email;
-    private String password;
+    private String accessToken;
+    private String tokenType;
 }

@@ -9,10 +9,13 @@ import "common.proto";  // common.proto 파일 import
 
 service UserService {
   // 1. 사용자 회원가입
-  rpc SignUp(SignUpRequest) returns (CommonResponse);
+  rpc SignUp(SignUpRequest) returns (SignUpResponse);
 
   // 2. 사용자 로그인
   rpc Login(LoginRequest) returns (LoginResponse);
+
+  // 3. 사용자 정보 조회
+  rpc GetMember(GetMemberRequest) returns (GetMemberResponse);
 }
 
 // 1. 회원가입 요청
@@ -22,6 +25,16 @@ message SignUpRequest {
   string confirm_password = 3;
   string phone_number = 4;
   string nickname = 5;
+  bool agree_marketing = 6;
+  bool agree_third_party = 7;
+}
+// 2. 회원가입 응답
+message SignUpResponse {
+  int64 member_id = 1;
+  string email = 2;
+  string phone_number = 3;
+  string provider = 4;
+  string role = 5;
   bool agree_marketing = 6;
   bool agree_third_party = 7;
 }
@@ -36,4 +49,16 @@ message LoginResponse {
   string email = 1;
   string token = 2;
   string token_type = 3;
+}
+
+// 3. 사용자 정보 조회 요청
+message GetMemberRequest {
+  int64 member_id = 1;
+}
+// 4. 사용자 정보 조회 응답
+message GetMemberResponse {
+  string email = 1;
+  string phone_number = 2;
+  string provider = 3;
+  string role = 4;
 }
