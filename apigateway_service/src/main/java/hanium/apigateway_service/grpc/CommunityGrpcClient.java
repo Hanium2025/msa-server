@@ -1,7 +1,7 @@
 package hanium.apigateway_service.grpc;
 
 
-import hanium.apigateway_service.dto.CreatePostRequestDTO;
+import hanium.apigateway_service.dto.community.CreatePostRequestDTO;
 import hanium.apigateway_service.mapper.PostGrpcMapperForGateway;
 import hanium.common.proto.CommonResponse;
 import hanium.common.proto.community.CommunityServiceGrpc;

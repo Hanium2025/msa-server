@@ -1,22 +1,28 @@
 package hanium.user_service.grpc;
 
 import hanium.common.proto.CommonResponse;
-import hanium.common.proto.user.LoginRequest;
-import hanium.common.proto.user.LoginResponse;
-import hanium.common.proto.user.SignUpRequest;
-import hanium.common.proto.user.UserServiceGrpc;
+import hanium.common.proto.user.*;
+import hanium.user_service.domain.Member;
 import hanium.user_service.dto.request.LoginRequestDTO;
 import hanium.user_service.dto.request.SignUpRequestDTO;
 import hanium.user_service.dto.response.LoginResponseDTO;
+import hanium.user_service.dto.response.MemberResponseDTO;
+import hanium.user_service.dto.response.SignUpResponseDTO;
+import hanium.user_service.mapper.entity.MemberEntityMapper;
 import hanium.user_service.mapper.grpc.MemberGrpcMapper;
 import hanium.user_service.service.AuthService;
+import hanium.user_service.service.MemberService;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @GrpcService
 @Slf4j
@@ -24,37 +30,29 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
 
+    private final MemberService memberService;
     @Value("${eureka.instance.hostname:unknown-host}")
     private String hostname;
 
     private final AuthService authService;
 
     @Override
-    public void signUp(SignUpRequest request, StreamObserver<CommonResponse> responseObserver) {
+    public void signUp(SignUpRequest request, StreamObserver<SignUpResponse> responseObserver) {
         try {
             // grpc -> dto 변환
-            SignUpRequestDTO dto = MemberGrpcMapper.toSignupDto(request);
+            SignUpRequestDTO requestDTO = MemberGrpcMapper.toSignupDto(request);
             // 서비스 호출
-            authService.signUp(dto);
+            SignUpResponseDTO responseDTO = MemberEntityMapper.toSignupResponseDTO(authService.signUp(requestDTO));
             // 성공 응답 생성
-            CommonResponse response = CommonResponse.newBuilder()
-                    .setSuccess(true)
-                    .setMessage("회원가입에 성공했습니다 - " + hostname)
-                    .setErrorCode(0)
-                    .build();
-            // 응답 전송
-            responseObserver.onNext(response);
+            responseObserver.onNext(MemberGrpcMapper.toSignupResponse(responseDTO));
             responseObserver.onCompleted();
-
         } catch (Exception e) {
             log.error("⚠️ 회원가입 실패", e);
-            CommonResponse response = CommonResponse.newBuilder()
-                    .setSuccess(false)
-                    .setMessage("회원가입에 실패했습니다 - " + hostname + " : " + e.getMessage())
-                    .setErrorCode(-1)
-                    .build();
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException()
+            );
         }
     }
 
@@ -70,6 +68,42 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
             responseObserver.onCompleted();
         } catch (Exception e) {
             log.error("⚠️ 로그인 실패", e);
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void getMember(GetMemberRequest request, StreamObserver<GetMemberResponse> responseObserver) {
+        try {
+            MemberResponseDTO responseDTO = MemberEntityMapper.toMemberResponseDto(
+                    memberService.getMemberById(request.getMemberId()));
+            responseObserver.onNext(MemberGrpcMapper.toGetMemberResponse(responseDTO));
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void getAuthority(GetAuthorityRequest request, StreamObserver<GetAuthorityResponse> responseObserver) {
+        try {
+            Member member = memberService.getMemberByEmail(request.getEmail());
+            Collection<? extends GrantedAuthority> authorities = member.getAuthorities();
+            GrantedAuthority grantedAuthority = authorities.stream().findAny()
+                    .orElseThrow(() -> new Exception("권한을 조회할 수 없습니다."));
+            String result = grantedAuthority.getAuthority();
+            log.info("✅ gRPC 서비스 - getAuthority 호출 : String authority = {}",  result);
+            responseObserver.onNext(MemberGrpcMapper.toAuthorityResponse(result));
+            responseObserver.onCompleted();
+        } catch (Exception e) {
             responseObserver.onError(
                     Status.INTERNAL
                             .withDescription(e.getMessage())

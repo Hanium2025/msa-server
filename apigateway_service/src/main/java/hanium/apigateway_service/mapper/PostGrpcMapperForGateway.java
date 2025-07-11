@@ -1,6 +1,6 @@
 package hanium.apigateway_service.mapper;
 
-import hanium.apigateway_service.dto.CreatePostRequestDTO;
+import hanium.apigateway_service.dto.community.CreatePostRequestDTO;
 import hanium.common.proto.community.CreatePostRequest;
 
 /**

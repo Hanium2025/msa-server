@@ -2,6 +2,8 @@ package hanium.user_service.service.impl;
 
 import hanium.user_service.domain.Member;
 import hanium.user_service.domain.Profile;
+import hanium.user_service.domain.Provider;
+import hanium.user_service.domain.Role;
 import hanium.user_service.dto.request.LoginRequestDTO;
 import hanium.user_service.dto.request.SignUpRequestDTO;
 import hanium.user_service.dto.response.LoginResponseDTO;
@@ -49,6 +51,8 @@ public class AuthServiceImpl implements AuthService {
                     .email(dto.getEmail())
                     .password(encodedPassword)
                     .phoneNumber(dto.getPhoneNumber())
+                    .provider(Provider.ORIGINAL)
+                    .role(Role.USER)
                     .isAgreeMarketing(dto.getAgreeMarketing())
                     .isAgreeThirdParty(dto.getAgreeThirdParty())
                     .profile(profile)
@@ -59,6 +63,7 @@ public class AuthServiceImpl implements AuthService {
 
             log.info("✅ Member 회원가입 됨: {}", member.getEmail());
             log.info("✅ Profile 등록됨: {} == ID: {}", member.getProfile().getId(), profile.getId());
+            log.info("✅ 권한 확인: {}", member.getAuthorities());
 
             return member;
         }
