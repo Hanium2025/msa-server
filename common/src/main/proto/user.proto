@@ -14,8 +14,11 @@ service UserService {
   // 2. 사용자 로그인
   rpc Login(LoginRequest) returns (LoginResponse);
 
-  // 3. 사용자 정보 조회
+  // 3. 사용자 정보 조회 by id
   rpc GetMember(GetMemberRequest) returns (GetMemberResponse);
+
+  // 4. 사용자 권한 조회
+  rpc GetAuthority(GetAuthorityRequest) returns (GetAuthorityResponse);
 }
 
 // 1. 회원가입 요청
@@ -55,10 +58,19 @@ message LoginResponse {
 message GetMemberRequest {
   int64 member_id = 1;
 }
-// 4. 사용자 정보 조회 응답
+// 3. 사용자 정보 조회 응답
 message GetMemberResponse {
   string email = 1;
   string phone_number = 2;
   string provider = 3;
   string role = 4;
+}
+
+// 4. 사용자 권한 조회 요청
+message GetAuthorityRequest {
+  string email = 1;
+}
+// 4. 사용자 권한 조회 응답
+message GetAuthorityResponse {
+  string authority = 1;
 }

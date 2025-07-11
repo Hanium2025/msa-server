@@ -63,6 +63,7 @@ public class AuthServiceImpl implements AuthService {
 
             log.info("✅ Member 회원가입 됨: {}", member.getEmail());
             log.info("✅ Profile 등록됨: {} == ID: {}", member.getProfile().getId(), profile.getId());
+            log.info("✅ 권한 확인: {}", member.getAuthorities());
 
             return member;
         }

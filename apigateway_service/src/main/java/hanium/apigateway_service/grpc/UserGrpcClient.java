@@ -26,7 +26,7 @@ public class UserGrpcClient {
         try {
             return stub.signUp(request); // UserGrpcService > signUp
         } catch (StatusRuntimeException e) {
-            log.error("[gRPC] signUp 호출 실패 - {}", e.getStatus().getDescription());
+            log.error("⚠️ [gRPC] signUp 호출 실패 - {}", e.getStatus().getDescription());
             throw e;
         }
     }
@@ -38,7 +38,7 @@ public class UserGrpcClient {
         try {
             return stub.login(request);
         } catch (StatusRuntimeException e) {
-            log.error("[gRPC] login 호출 실패 - {}", e.getStatus().getDescription());
+            log.error("⚠️ [gRPC] login 호출 실패 - {}", e.getStatus().getDescription());
             throw e;
         }
     }
@@ -49,7 +49,18 @@ public class UserGrpcClient {
         try {
             return stub.getMember(request);
         } catch (StatusRuntimeException e) {
-            log.error("[gRPC] getMemberById 호출 실패 - {}", e.getStatus().getDescription());
+            log.error("⚠️ [gRPC] getMemberById 호출 실패 - {}", e.getStatus().getDescription());
+            throw e;
+        }
+    }
+
+    // 회원 권한 조회 by email
+    public GetAuthorityResponse getAuthority(String email) {
+        GetAuthorityRequest request = GetAuthorityRequest.newBuilder().setEmail(email).build();
+        try {
+            return stub.getAuthority(request);
+        } catch (StatusRuntimeException e) {
+            log.error("⚠️ [gRPC] getAuthority 호출 실패 - {}", e.getStatus().getDescription());
             throw e;
         }
     }

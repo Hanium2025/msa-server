@@ -2,6 +2,7 @@ package hanium.user_service.grpc;
 
 import hanium.common.proto.CommonResponse;
 import hanium.common.proto.user.*;
+import hanium.user_service.domain.Member;
 import hanium.user_service.dto.request.LoginRequestDTO;
 import hanium.user_service.dto.request.SignUpRequestDTO;
 import hanium.user_service.dto.response.LoginResponseDTO;
@@ -17,7 +18,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @GrpcService
 @Slf4j
@@ -77,6 +82,26 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
             MemberResponseDTO responseDTO = MemberEntityMapper.toMemberResponseDto(
                     memberService.getMemberById(request.getMemberId()));
             responseObserver.onNext(MemberGrpcMapper.toGetMemberResponse(responseDTO));
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription(e.getMessage())
+                            .asRuntimeException()
+            );
+        }
+    }
+
+    @Override
+    public void getAuthority(GetAuthorityRequest request, StreamObserver<GetAuthorityResponse> responseObserver) {
+        try {
+            Member member = memberService.getMemberByEmail(request.getEmail());
+            Collection<? extends GrantedAuthority> authorities = member.getAuthorities();
+            GrantedAuthority grantedAuthority = authorities.stream().findAny()
+                    .orElseThrow(() -> new Exception("권한을 조회할 수 없습니다."));
+            String result = grantedAuthority.getAuthority();
+            log.info("✅ gRPC 서비스 - getAuthority 호출 : String authority = {}",  result);
+            responseObserver.onNext(MemberGrpcMapper.toAuthorityResponse(result));
             responseObserver.onCompleted();
         } catch (Exception e) {
             responseObserver.onError(

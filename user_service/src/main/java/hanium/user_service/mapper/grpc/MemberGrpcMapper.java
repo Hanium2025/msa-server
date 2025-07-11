@@ -61,4 +61,11 @@ public class MemberGrpcMapper {
                 .setRole(dto.getRole())
                 .build();
     }
+
+    // 회원 권한 조회 응답 String -> gRPC
+    public static GetAuthorityResponse toAuthorityResponse(String authority) {
+        return GetAuthorityResponse.newBuilder()
+                .setAuthority(authority)
+                .build();
+    }
 }

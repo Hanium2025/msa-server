@@ -51,7 +51,7 @@ public class UserController {
     @GetMapping("/member/{memberId}")
     public ResponseEntity<ResponseDTO<MemberResponseDTO>> getMemberById(@PathVariable Long memberId) {
         GetMemberResponse protoResponse = userGrpcClient.getMemberById(memberId);
-        MemberResponseDTO responseDTO =UserGrpcMapperForGateway.toMemberDTO(protoResponse);
+        MemberResponseDTO responseDTO = UserGrpcMapperForGateway.toMemberDTO(protoResponse);
 
         ResponseDTO<MemberResponseDTO> response = new ResponseDTO<>(
                 responseDTO, HttpStatus.OK, "해당하는 회원이 정상적으로 조회되었습니다."
