@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/members")
 public class MemberController {
 
-    private final Environment env;
     private final MemberService memberService;
     @Value("${jwt.secret:NOT_FOUND}")
     private String jwtSecret;
@@ -25,7 +24,7 @@ public class MemberController {
     private String jwtExpiration;
     @GetMapping("/health-check")
     public String status() {
-        return String.format("It's Working in User Service"
+        return String.format("User Service 설정:"
                 + ", jwt secret = %s"
                 + ", jwt exp = %s", jwtSecret, jwtExpiration);
     }
