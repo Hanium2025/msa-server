@@ -28,7 +28,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // csrf 사용하지 않음
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용하지 않음
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/auth/signup", "/user/auth/login").permitAll() // 로그인, 회원가입 인증 없이 허용
+                        .requestMatchers("/user/auth/signup", "/user/auth/login","/user/health-check").permitAll() // 로그인, 회원가입 인증 없이 허용
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(e -> e

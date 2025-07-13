@@ -1,8 +1,8 @@
 package hanium.apigateway_service.mapper;
 
 
+import hanium.apigateway_service.dto.community.CreatePostRequestDTO;
 import hanium.common.proto.community.CreatePostRequest;
-import hanium.community_service.dto.CreatePostRequestDTO;
 
 /**
  * PostGrpcMapperForGateway는 API Gateway 레이어에서 사용하는

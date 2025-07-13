@@ -7,14 +7,14 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class SignUpRequestDTO {
+@AllArgsConstructor
+public class SignUpResponseDTO {
+    private Long id;
     private String email;
-    private String password;
-    private String confirmPassword;
     private String phoneNumber;
-    private String nickname;
+    private String provider;
+    private String role;
     private boolean agreeMarketing;
     private boolean agreeThirdParty;
 }

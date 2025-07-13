@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserGrpcClient {
 
-    @GrpcClient("user_service") //discovery:///user_service 사용
+    @GrpcClient("user-service") //discovery:///user-service 사용
     private UserServiceGrpc.UserServiceBlockingStub stub;
 
     // 회원가입
