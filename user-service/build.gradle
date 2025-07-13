@@ -81,6 +81,7 @@ dependencies {
 
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
+
 	// json 타입을 DB에 저장하기 위한 라이브러리
 	implementation 'com.vladmihalcea:hibernate-types-60:2.21.1'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -110,6 +111,9 @@ dependencies {
 
     // common 모듈 사용
     implementation project(':common')
+
+    //
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
 }
 
 springBoot {
