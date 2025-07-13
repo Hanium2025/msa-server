@@ -36,4 +36,10 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.findByEmail(username)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
     }
+
+    @Override
+    public Member getMemberByEmail(String email) {
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+    }
 }

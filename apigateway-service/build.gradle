@@ -44,7 +44,7 @@ dependencyManagement {
 dependencies {
     // spring
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    //implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -91,6 +91,13 @@ dependencies {
 //    testImplementation("io.grpc:grpc-testing")
 //    // Spring-Test-Support (Optional)
 //    testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+    implementation 'commons-codec:commons-codec:1.13'
+    implementation 'com.auth0:java-jwt:3.13.0'
 }
 
 

@@ -1,17 +1,16 @@
-package hanium.user_service.dto.response;
+package hanium.apigateway_service.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-public class MemberResponseDTO {
+public class LoginResponseDTO {
     private String email;
-    private String phoneNumber;
-    private String provider;
-    private String role;
+    private String accessToken;
+    private String tokenType;
 }

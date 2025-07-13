@@ -1,10 +1,11 @@
 package hanium.apigateway_service.controller;
 
 import hanium.apigateway_service.dto.CommonResponseDTO;
-import hanium.apigateway_service.dto.CreatePostRequestDTO;
+
 import hanium.apigateway_service.grpc.CommunityGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import hanium.common.proto.CommonResponse;
+import hanium.community_service.dto.CreatePostRequestDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
