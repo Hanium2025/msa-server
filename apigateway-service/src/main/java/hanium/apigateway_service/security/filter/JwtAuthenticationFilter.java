@@ -1,16 +1,12 @@
 package hanium.apigateway_service.security.filter;
 
 import hanium.apigateway_service.security.JwtUtil;
-import hanium.apigateway_service.security.service.JwtAuthenticationService;
-import hanium.common.exception.CustomException;
-import hanium.common.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -20,13 +16,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * 매 요청 전, 사용자의 JWT 토큰을 검사하는 필터입니다.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final JwtAuthenticationService jwtAuthenticationService;
     private final List<String> NO_CHECK_URLS = new ArrayList<>(Arrays.asList(
             "/user/auth/login", "/user/auth/signup"
     ));
@@ -35,6 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+
         // 로그인, 회원가입은 Authorization 헤더 검사 pass
         if (NO_CHECK_URLS.contains(request.getRequestURI())) {
             filterChain.doFilter(request, response);
@@ -42,24 +41,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String header = request.getHeader("Authorization");
-        try {
-            // "Authorization" 헤더에서 JWT token 추출
-            jwtUtil.extractAccessToken(header)
-                    .ifPresent(token -> {
-                        log.info("✅ on JwtAuthenticationFilter - 추출된 토큰: {}", token);
-                        Authentication authentication = null;
-                        try {
-                            authentication = jwtAuthenticationService.authenticateToken(token);
-                        } catch (Exception e) {
-                            throw new CustomException(ErrorCode.TOKEN_AUTH_ERROR);
-                        }
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-                    });
-            filterChain.doFilter(request, response);
-        } catch (CustomException e) {
-            log.error("⚠️ 에러 발생: {}", e.getMessage());
-            throw e;
+        // 요청에서 Access, Refresh 토큰 추출
+        String refreshToken = jwtUtil.extractRefreshToken(request);
+
+        // Refresh 토큰이 존재하는 경우 -> Refresh, Access 재발급
+        if (!refreshToken.equals("NULL")) {
+            checkRefreshTokenAndReissue(response, refreshToken);
+            return;
         }
+
+        // Refresh 없고 Access 존재하는 경우 -> Access 토큰 인증해 Authentication 객체 생성
+        String accessToken = jwtUtil.extractAccessToken(request.getHeader("Authorization"));
+        SecurityContextHolder.getContext()
+                .setAuthentication(jwtUtil.authenticateToken(accessToken));
+        filterChain.doFilter(request, response);
+    }
+
+    private void checkRefreshTokenAndReissue(HttpServletResponse response, String refreshToken) {
+        // 데이터베이스에서 Refresh 토큰 찾음 -> 검증
+        // 해당 토큰으로 email 찾음
+        // 기존 Refresh 토큰 삭제
+        // 새 Access, Refresh 발급
     }
 }

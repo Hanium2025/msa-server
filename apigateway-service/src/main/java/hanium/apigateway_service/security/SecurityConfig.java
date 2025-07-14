@@ -1,7 +1,8 @@
-package hanium.apigateway_service.security.config;
+package hanium.apigateway_service.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hanium.apigateway_service.response.ResponseDTO;
+import hanium.apigateway_service.security.filter.ExceptionHandlerFilter;
 import hanium.apigateway_service.security.filter.JwtAuthenticationFilter;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
@@ -14,6 +15,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 
 @RequiredArgsConstructor
 @Configuration
@@ -21,6 +23,7 @@ public class SecurityConfig {
 
     private final ObjectMapper objectMapper;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final ExceptionHandlerFilter exceptionHandlerFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -28,8 +31,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // csrf 사용하지 않음
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용하지 않음
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/user/auth/signup", "/user/auth/login","/user/health-check").permitAll() // 로그인, 회원가입 인증 없이 허용
+                        .requestMatchers("/user/auth/signup", "/user/auth/login", "/user/health-check").permitAll() // 로그인, 회원가입 인증 없이 허용
                         .anyRequest().authenticated())
+                .addFilterBefore(exceptionHandlerFilter, LogoutFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(e -> e
                         .authenticationEntryPoint(((request, response, authException) -> {
