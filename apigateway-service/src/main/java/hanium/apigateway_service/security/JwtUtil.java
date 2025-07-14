@@ -42,29 +42,10 @@ public class JwtUtil {
     private final UserGrpcClient userGrpcClient;
 
     // 사용할 상수 정의
-    private static final String ACCESS_TOKEN = "AccessToken"; // 토큰 제목 (sub)
-    private static final String REFRESH_TOKEN = "RefreshToken";
     private static final String EMAIL_CLAIM = "email"; // username 클레임
     private static final String BEARER = "Bearer ";
     private static final Metadata.Key<String> AUTHORIZATION_METADATA_KEY =
             Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
-
-    // JWT 토큰 생성
-    public String createAccessToken(String email) {
-        return JWT.create()
-                .withSubject(ACCESS_TOKEN) // 토큰 제목을 "AccessToken"으로 지정
-                .withExpiresAt(new Date(System.currentTimeMillis() + accessExpiration * 1000))
-                .withClaim(EMAIL_CLAIM, email) // 클레임 키 "email"에 받아온 email 값 추가
-                .sign(Algorithm.HMAC512(secret)); // 지정한 secret 값으로 암호화
-    }
-
-    // Refresh Token 생성
-    public String createRefreshToken() {
-        return JWT.create()
-                .withSubject(REFRESH_TOKEN)
-                .withExpiresAt(new Date(System.currentTimeMillis() + refreshExpiration * 1000))
-                .sign(Algorithm.HMAC512(secret));
-    }
 
     // HTTP 요청 헤더에서 Access 토큰 추출
     public String extractAccessToken(String authorizationHeader) throws CustomException {
@@ -94,7 +75,7 @@ public class JwtUtil {
         if (isTokenValid(accessToken)) {
             return JWT.require(Algorithm.HMAC512(secret)).build()
                     .verify(accessToken)
-                    // 검증됐다면 USERNAME_CLAIM, 즉 email 가져옴
+                    // 검증됐다면 email 가져옴
                     .getClaim(EMAIL_CLAIM)
                     // 값을 String로 변환
                     .asString();

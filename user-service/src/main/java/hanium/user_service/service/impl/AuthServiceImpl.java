@@ -1,5 +1,7 @@
 package hanium.user_service.service.impl;
 
+import hanium.common.exception.CustomException;
+import hanium.common.exception.ErrorCode;
 import hanium.user_service.domain.Member;
 import hanium.user_service.domain.Profile;
 import hanium.user_service.domain.Provider;
@@ -8,8 +10,6 @@ import hanium.user_service.dto.request.LoginRequestDTO;
 import hanium.user_service.dto.request.SignUpRequestDTO;
 import hanium.user_service.dto.response.LoginResponseDTO;
 import hanium.user_service.dto.response.TokenResponseDTO;
-import hanium.user_service.exception.CustomException;
-import hanium.user_service.exception.ErrorCode;
 import hanium.user_service.repository.MemberRepository;
 import hanium.user_service.repository.ProfileRepository;
 import hanium.user_service.security.JwtUtil;
@@ -77,15 +77,15 @@ public class AuthServiceImpl implements AuthService {
                 .filter(m -> encoder.matches(password, m.getPassword()))
                 .orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAILED));
         // 로그인 성공 시 토큰 생성
-        String token = jwtUtil.generateToken(member.getEmail());
+        String token = jwtUtil.createAccessToken(member.getEmail());
         return LoginResponseDTO.of(email, token, "Bearer");
     }
 
     @Override
     public TokenResponseDTO refreshToken(String refreshToken) throws CustomException {
         if (jwtUtil.isTokenValid(refreshToken)) {
-            String username = String.valueOf(jwtUtil.extractEmail(refreshToken));
-            String newAccessToken = jwtUtil.generateToken(username);
+            String username = jwtUtil.extractEmail(refreshToken);
+            String newAccessToken = jwtUtil.createAccessToken(username);
             return new TokenResponseDTO(newAccessToken, refreshToken);
         } else {
             throw new CustomException(ErrorCode.INVALID_TOKEN);

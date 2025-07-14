@@ -2,8 +2,8 @@ package hanium.user_service.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import hanium.user_service.repository.MemberRepository;
-import io.grpc.Metadata;
+import hanium.common.exception.CustomException;
+import hanium.common.exception.ErrorCode;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.Optional;
 
 @Component
 @Transactional
@@ -25,42 +24,44 @@ public class JwtUtil {
     // application.yml에 설정된 값 가져오기
     @Value("${jwt.secret}")
     private String secret;
-    @Value("${jwt.expiration}")
-    private long accessTokenValidityInSeconds;
+    @Value("${jwt.access.expiration}")
+    private long accessExpiration;
+    @Value("${jwt.refresh.expiration}")
+    private long refreshExpiration;
 
     // 사용할 상수 정의
-    private static final String ACCESS_TOKEN_SUBJECT = "AccessToken"; // 토큰 제목 (sub)
-    private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
-    private static final String USERNAME_CLAIM = "email"; // username 클레임
-    private static final String BEARER = "Bearer ";
-    private static final Metadata.Key<String> AUTHORIZATION_METADATA_KEY =
-            Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
+    private static final String ACCESS_TOKEN = "AccessToken"; // 토큰 제목 (sub)
+    private static final String REFRESH_TOKEN = "RefreshToken";
+    private static final String EMAIL_CLAIM = "email"; // username 클레임
 
-    private final MemberRepository memberRepository;
-
-    // JWT 토큰 생성
-    public String generateToken(String email) {
+    // Access Token 토큰 생성
+    public String createAccessToken(String email) {
         return JWT.create()
-                .withSubject(ACCESS_TOKEN_SUBJECT) // 토큰 제목을 "AccessToken"으로 지정
-                .withExpiresAt(new Date(System.currentTimeMillis() + accessTokenValidityInSeconds * 1000))
-                .withClaim(USERNAME_CLAIM, email) // 클레임 키 "email"에 받아온 email 값 추가
+                .withSubject(ACCESS_TOKEN) // 토큰 제목을 "AccessToken"으로 지정
+                .withExpiresAt(new Date(System.currentTimeMillis() + accessExpiration * 1000))
+                .withClaim(EMAIL_CLAIM, email) // 클레임 키 "email"에 받아온 email 값 추가
                 .sign(Algorithm.HMAC512(secret)); // 지정한 secret 값으로 암호화
     }
 
+    // Refresh Token 생성
+    public String createRefreshToken() {
+        return JWT.create()
+                .withSubject(REFRESH_TOKEN)
+                .withExpiresAt(new Date(System.currentTimeMillis() + refreshExpiration * 1000))
+                .sign(Algorithm.HMAC512(secret));
+    }
+
     // 토큰에서 사용자 이메일 추출
-    public Optional<String> extractEmail(String accessToken) {
-        try {
-            return Optional.ofNullable(
-                    JWT.require(Algorithm.HMAC512(secret))
-                            .build()
-                            .verify(accessToken)
-                            // 검증됐다면 USERNAME_CLAIM, 즉 email 가져옴
-                            .getClaim(USERNAME_CLAIM)
-                            // 값을 String로 변환
-                            .asString());
-        } catch (Exception e) {
-            log.error(e.getMessage());
-            return Optional.empty();
+    public String extractEmail(String accessToken) throws CustomException {
+        if (isTokenValid(accessToken)) {
+            return JWT.require(Algorithm.HMAC512(secret)).build()
+                    .verify(accessToken)
+                    // 검증됐다면 email 가져옴
+                    .getClaim(EMAIL_CLAIM)
+                    // 값을 String로 변환
+                    .asString();
+        } else {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
     }
 
@@ -78,19 +79,5 @@ public class JwtUtil {
             log.error("유효하지 않은 토큰");
             return false;
         }
-    }
-
-    // HTTP 요청에서 토큰 추출
-    public Optional<String> extractFromHeader(String authorizationHeader) {
-        if (authorizationHeader != null && authorizationHeader.startsWith(BEARER)) {
-            return Optional.of(authorizationHeader.substring(BEARER.length()));
-        }
-        return Optional.empty();
-    }
-
-    // gRPC 메타데이터에서 토큰 추출
-    public Optional<String> extractFromMetadata(Metadata metadata) {
-        String authorizationHeader = metadata.get(AUTHORIZATION_METADATA_KEY);
-        return extractFromHeader(authorizationHeader);
     }
 }

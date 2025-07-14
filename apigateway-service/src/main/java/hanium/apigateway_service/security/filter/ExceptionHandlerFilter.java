@@ -2,7 +2,6 @@ package hanium.apigateway_service.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hanium.apigateway_service.dto.CommonResponseDTO;
-import hanium.apigateway_service.response.ResponseDTO;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
