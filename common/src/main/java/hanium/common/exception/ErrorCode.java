@@ -5,7 +5,7 @@ import lombok.Getter;
 /**
  * ErrorCode 열거형은 애플리케이션에서 발생할 수 있는 다양한 오류 상황을
  * 코드와 메시지로 정의합니다.
- *
+ * <p>
  * 각 상수는 HTTP 상태 코드와 사용자에게 보여질 메시지를 포함합니다.
  */
 
@@ -15,10 +15,20 @@ public enum ErrorCode {
     POST_NOT_FOUND(404, "게시글을 찾을 수 없습니다."),
     INTERNAL_ERROR(500, "서버 오류입니다."),
 
+    // -- USER-SERVICE -- //
+    HAS_EMAIL(400, "이미 존재하는 이메일입니다."),
+    PASSWORD_NOT_MATCH(400, "재확인 비밀번호가 일치하지 않습니다."),
+    INVALID_CONTENT_TYPE(400, "요청은 application/json 타입이어야 합니다."),
+    NULL_ACCESS_TOKEN(400, "Access 토큰이 존재하지 않습니다."),
+    NULL_REFRESH_TOKEN(400, "Refresh 토큰이 존재하지 않습니다."),
+    TOKEN_NOT_BEARER(400, "토큰은 Bearer로 시작해야 합니다."),
+    LOGIN_FAILED(401, "이메일 또는 비밀번호가 일치하지 않습니다."),
+    JWT_AUTH_FAILED(401, "JWT 인증에 실패했습니다."),
     NOT_AUTHORIZED(401, "인증되지 않은 요청입니다."),
     INVALID_TOKEN(401, "유효하지 않은 토큰입니다."),
-    TOKEN_AUTH_ERROR(500, "토큰 인증 중 오류가 발생했습니다."),
-    USER_NOT_FOUND(404, "사용자를 찾을 수 없습니다.");
+    MEMBER_NOT_FOUND(404, "해당하는 Member를 찾을 수 없습니다."),
+    REFRESH_NOT_FOUND(404, "데이터베이스에서 Refresh 토큰을 찾을 수 없습니다."),
+    TOKEN_AUTH_ERROR(500, "토큰 인증 중 오류가 발생했습니다.");
 
     private final int code;
     private final String message;

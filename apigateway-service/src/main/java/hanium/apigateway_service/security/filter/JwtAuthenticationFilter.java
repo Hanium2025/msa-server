@@ -45,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
         try {
             // "Authorization" 헤더에서 JWT token 추출
-            jwtUtil.extractFromHeader(header)
+            jwtUtil.extractAccessToken(header)
                     .ifPresent(token -> {
                         log.info("✅ on JwtAuthenticationFilter - 추출된 토큰: {}", token);
                         Authentication authentication = null;
