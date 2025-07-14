@@ -1,6 +1,5 @@
 package hanium.apigateway_service.controller;
 
-import hanium.apigateway_service.dto.*;
 import hanium.apigateway_service.dto.user.*;
 import hanium.apigateway_service.grpc.UserGrpcClient;
 import hanium.apigateway_service.mapper.UserGrpcMapperForGateway;
@@ -23,7 +22,7 @@ public class UserController {
     private final UserGrpcClient userGrpcClient;
 
     @PostMapping("/auth/signup")
-    public ResponseEntity<ResponseDTO<SignUpResponseDTO>> signUp(@RequestBody SignUpRequestDTO dto){
+    public ResponseEntity<ResponseDTO<SignUpResponseDTO>> signUp(@RequestBody SignUpRequestDTO dto) {
         log.trace("✅[gRPC] 회원가입 요청: email = {}", dto.getEmail());
         // grpc 클라이언트 호출
         SignUpResponse protoResponse = userGrpcClient.signUp(dto);
@@ -32,11 +31,11 @@ public class UserController {
         ResponseDTO<SignUpResponseDTO> response = new ResponseDTO<>(
                 responseDTO, HttpStatus.CREATED, "정상적으로 회원가입되었습니다."
         );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<ResponseDTO<LoginResponseDTO>> login(@RequestBody LoginRequestDTO dto){
+    public ResponseEntity<ResponseDTO<LoginResponseDTO>> login(@RequestBody LoginRequestDTO dto) {
         log.trace("✅[gRPC] 로그인 요청: email = {}", dto.getEmail());
         // grpc 클라이언트 호출
         LoginResponse protoResponse = userGrpcClient.login(dto);

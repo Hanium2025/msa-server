@@ -1,6 +1,7 @@
 package hanium.user_service.grpc;
 
-import hanium.common.proto.CommonResponse;
+import hanium.common.exception.CustomException;
+import hanium.common.exception.ErrorCode;
 import hanium.common.proto.user.*;
 import hanium.user_service.domain.Member;
 import hanium.user_service.dto.request.LoginRequestDTO;
@@ -12,7 +13,10 @@ import hanium.user_service.mapper.entity.MemberEntityMapper;
 import hanium.user_service.mapper.grpc.MemberGrpcMapper;
 import hanium.user_service.service.AuthService;
 import hanium.user_service.service.MemberService;
+import io.grpc.Metadata;
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import io.grpc.protobuf.ProtoUtils;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +26,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 @GrpcService
 @Slf4j
@@ -30,49 +33,33 @@ import java.util.stream.Collectors;
 @Transactional
 public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
 
-    private final MemberService memberService;
     @Value("${eureka.instance.hostname:unknown-host}")
     private String hostname;
 
+    private final MemberService memberService;
     private final AuthService authService;
 
     @Override
     public void signUp(SignUpRequest request, StreamObserver<SignUpResponse> responseObserver) {
         try {
-            // grpc -> dto 변환
             SignUpRequestDTO requestDTO = MemberGrpcMapper.toSignupDto(request);
-            // 서비스 호출
             SignUpResponseDTO responseDTO = MemberEntityMapper.toSignupResponseDTO(authService.signUp(requestDTO));
-            // 성공 응답 생성
             responseObserver.onNext(MemberGrpcMapper.toSignupResponse(responseDTO));
             responseObserver.onCompleted();
-        } catch (Exception e) {
-            log.error("⚠️ 회원가입 실패", e);
-            responseObserver.onError(
-                    Status.INTERNAL
-                            .withDescription(e.getMessage())
-                            .asRuntimeException()
-            );
+        } catch (CustomException e) {
+            responseObserver.onError(generateException(e.getErrorCode()));
         }
     }
 
     @Override
     public void login(LoginRequest request, StreamObserver<LoginResponse> responseObserver) {
         try {
-            // grpc -> dto 변환
             LoginRequestDTO requestDTO = MemberGrpcMapper.toLoginDto(request);
-            // 서비스 호출
             LoginResponseDTO responseDTO = authService.login(requestDTO);
-            // 성공 응답 생성
             responseObserver.onNext(MemberGrpcMapper.toLoginResponse(responseDTO));
             responseObserver.onCompleted();
-        } catch (Exception e) {
-            log.error("⚠️ 로그인 실패", e);
-            responseObserver.onError(
-                    Status.INTERNAL
-                            .withDescription(e.getMessage())
-                            .asRuntimeException()
-            );
+        } catch (CustomException e) {
+            responseObserver.onError(generateException(e.getErrorCode()));
         }
     }
 
@@ -83,12 +70,8 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
                     memberService.getMemberById(request.getMemberId()));
             responseObserver.onNext(MemberGrpcMapper.toGetMemberResponse(responseDTO));
             responseObserver.onCompleted();
-        } catch (Exception e) {
-            responseObserver.onError(
-                    Status.INTERNAL
-                            .withDescription(e.getMessage())
-                            .asRuntimeException()
-            );
+        } catch (CustomException e) {
+            responseObserver.onError(generateException(e.getErrorCode()));
         }
     }
 
@@ -98,17 +81,32 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
             Member member = memberService.getMemberByEmail(request.getEmail());
             Collection<? extends GrantedAuthority> authorities = member.getAuthorities();
             GrantedAuthority grantedAuthority = authorities.stream().findAny()
-                    .orElseThrow(() -> new Exception("권한을 조회할 수 없습니다."));
+                    .orElseThrow(() -> new CustomException(ErrorCode.AUTHORITY_NOT_FOUND));
             String result = grantedAuthority.getAuthority();
-            log.info("✅ gRPC 서비스 - getAuthority 호출 : String authority = {}",  result);
+
             responseObserver.onNext(MemberGrpcMapper.toAuthorityResponse(result));
             responseObserver.onCompleted();
-        } catch (Exception e) {
-            responseObserver.onError(
-                    Status.INTERNAL
-                            .withDescription(e.getMessage())
-                            .asRuntimeException()
-            );
+
+        } catch (CustomException e) {
+            responseObserver.onError(generateException(e.getErrorCode()));
         }
+    }
+
+    /**
+     * 서비스 로직의 CustomException을 캐치해 ErrorCode를 가지고
+     * proto 메시지인 CustomError에 해당 ErrorCode 정보를 Metadata 로써 삽입합니다.
+     * 해당 Metadata를 가진 StatusRuntimeException을 반환합니다.
+     *
+     * @param e 발생한 CustomError의 ErrorCode
+     * @return gRPC client에 전달할 StatusRuntimeException
+     */
+    private StatusRuntimeException generateException(ErrorCode e) {
+        Metadata metadata = new Metadata();
+        Metadata.Key<CustomError> customErrorKey = ProtoUtils.keyForProto(CustomError.getDefaultInstance());
+        metadata.put(customErrorKey, CustomError.newBuilder()
+                .setErrorName(e.name())
+                .setMessage(e.getMessage())
+                .build());
+        return Status.INTERNAL.asRuntimeException(metadata);
     }
 }

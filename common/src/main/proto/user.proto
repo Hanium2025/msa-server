@@ -21,6 +21,11 @@ service UserService {
   rpc GetAuthority(GetAuthorityRequest) returns (GetAuthorityResponse);
 }
 
+message CustomError {
+  string error_name = 1;
+  string message = 2;
+}
+
 // 1. 회원가입 요청
 message SignUpRequest {
   string email = 1;

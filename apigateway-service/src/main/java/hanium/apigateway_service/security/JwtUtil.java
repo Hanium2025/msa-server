@@ -60,14 +60,13 @@ public class JwtUtil {
 
     // HTTP 요청 쿠키에서 Refresh 토큰 추출
     public String extractRefreshToken(HttpServletRequest request) {
+        if (request.getCookies() == null || request.getCookies().length == 0) {
+            return "NULL";
+        }
         Cookie cookie = Arrays.stream(request.getCookies()).filter(c -> c
                         .getName().equals("RefreshToken")).findFirst()
                 .orElse(null);
-        if (cookie != null) {
-            return cookie.getValue();
-        } else {
-            return "NULL";
-        }
+        return Objects.requireNonNull(cookie).getValue();
     }
 
     // 토큰에서 사용자 이메일 추출
@@ -119,7 +118,7 @@ public class JwtUtil {
     // JWT 토큰을 인증하는 메서드, 완료하면 Authentication 객체를 생성
     public Authentication authenticateToken(String accessToken) {
         // 토큰 유효성 검사
-        if (isTokenValid(accessToken)) {
+        if (!isTokenValid(accessToken)) {
             log.error("⚠️ authenticateToken: Access 토큰이 유효하지 않습니다.");
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
