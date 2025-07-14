@@ -35,10 +35,6 @@ public class JwtUtil {
     // application.yml에 설정된 값 가져오기
     @Value("${jwt.secret}")
     private String secret;
-    @Value("${jwt.access.expiration}")
-    private long accessExpiration;
-    @Value("${jwt.refresh.expiration}")
-    private long refreshExpiration;
     private final UserGrpcClient userGrpcClient;
 
     // 사용할 상수 정의

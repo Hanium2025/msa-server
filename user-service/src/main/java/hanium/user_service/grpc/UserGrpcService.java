@@ -33,9 +33,6 @@ import java.util.Collection;
 @Transactional
 public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
 
-    @Value("${eureka.instance.hostname:unknown-host}")
-    private String hostname;
-
     private final MemberService memberService;
     private final AuthService authService;
 
