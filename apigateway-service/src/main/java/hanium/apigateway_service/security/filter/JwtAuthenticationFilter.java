@@ -1,5 +1,9 @@
 package hanium.apigateway_service.security.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import hanium.apigateway_service.dto.user.response.TokenResponseDTO;
+import hanium.apigateway_service.grpc.UserGrpcClient;
+import hanium.apigateway_service.response.ResponseDTO;
 import hanium.apigateway_service.security.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -7,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -25,6 +30,8 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final UserGrpcClient userGrpcClient;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final List<String> NO_CHECK_URLS = new ArrayList<>(Arrays.asList(
             "/user/auth/login", "/user/auth/signup", "/user/health-check"
     ));
@@ -42,9 +49,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // 요청에서 Access, Refresh 토큰 추출
-        String refreshToken = jwtUtil.extractRefreshToken(request);
+        String refreshToken = jwtUtil.extractRefreshToken(request.getHeader("Authorization-refresh"));
 
-        // Refresh 토큰이 존재하는 경우 -> Refresh, Access 재발급
+        // Refresh 토큰이 존재하는 경우 -> Refresh, Access 재발급, 필터 진행 X
         if (!refreshToken.equals("NULL")) {
             checkRefreshTokenAndReissue(response, refreshToken);
             return;
@@ -54,13 +61,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String accessToken = jwtUtil.extractAccessToken(request.getHeader("Authorization"));
         SecurityContextHolder.getContext()
                 .setAuthentication(jwtUtil.authenticateToken(accessToken));
+
         filterChain.doFilter(request, response);
     }
 
-    private void checkRefreshTokenAndReissue(HttpServletResponse response, String refreshToken) {
-        // 데이터베이스에서 Refresh 토큰 찾음 -> 검증
-        // 해당 토큰으로 email 찾음
-        // 기존 Refresh 토큰 삭제
-        // 새 Access, Refresh 발급
+    private void checkRefreshTokenAndReissue(HttpServletResponse response,
+                                             String refreshToken) throws IOException {
+        TokenResponseDTO dto = TokenResponseDTO.from(userGrpcClient.reissueToken(refreshToken));
+        ResponseDTO<TokenResponseDTO> result = new ResponseDTO<>(
+                dto, HttpStatus.OK, "요청에 Refresh 토큰이 확인되어, 토큰 재발급에 성공했습니다."
+        );
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(result));
     }
 }

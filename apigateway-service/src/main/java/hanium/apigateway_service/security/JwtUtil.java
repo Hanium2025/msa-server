@@ -7,8 +7,6 @@ import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import hanium.common.proto.user.GetAuthorityResponse;
 import io.grpc.Metadata;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -21,9 +19,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 @Component
 @Transactional
@@ -43,7 +40,13 @@ public class JwtUtil {
     private static final Metadata.Key<String> AUTHORIZATION_METADATA_KEY =
             Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
 
-    // HTTP 요청 헤더에서 Access 토큰 추출
+
+    /**
+     * http 요청 헤더에서 Access 토큰을 추출합니다.
+     *
+     * @param authorizationHeader 요청 헤더 키 값 ("Authorization")
+     * @return Access 토큰
+     */
     public String extractAccessToken(String authorizationHeader) throws CustomException {
         if (authorizationHeader == null || authorizationHeader.isBlank()) {
             throw new CustomException(ErrorCode.NULL_ACCESS_TOKEN);
@@ -54,18 +57,28 @@ public class JwtUtil {
         }
     }
 
-    // HTTP 요청 쿠키에서 Refresh 토큰 추출
-    public String extractRefreshToken(HttpServletRequest request) {
-        if (request.getCookies() == null || request.getCookies().length == 0) {
+    /**
+     * http 요청 헤더에서 Refresh 토큰을 추출합니다.
+     *
+     * @param authorizationHeader 요청 헤더 키 값 ("Authorization-refresh")
+     * @return Refresh 토큰 또는 "NULL" 문자열
+     */
+    public String extractRefreshToken(String authorizationHeader) throws CustomException {
+        if (authorizationHeader == null || authorizationHeader.isBlank()) {
             return "NULL";
+        } else if (!authorizationHeader.startsWith(BEARER)) {
+            throw new CustomException(ErrorCode.TOKEN_NOT_BEARER);
+        } else {
+            return authorizationHeader.substring(BEARER.length());
         }
-        Cookie cookie = Arrays.stream(request.getCookies()).filter(c -> c
-                        .getName().equals("RefreshToken")).findFirst()
-                .orElse(null);
-        return Objects.requireNonNull(cookie).getValue();
     }
 
-    // 토큰에서 사용자 이메일 추출
+    /**
+     * Access 토큰의 Claim 중 email 키에서 사용자 이메일을 추출합니다.
+     *
+     * @param accessToken 전달된 Access 토큰
+     * @return 사용자 이메일
+     */
     public String extractEmail(String accessToken) throws CustomException {
         if (isTokenValid(accessToken)) {
             return JWT.require(Algorithm.HMAC512(secret)).build()
@@ -79,23 +92,18 @@ public class JwtUtil {
         }
     }
 
-    // 토큰에서 만료시간 추출
-    public Optional<LocalDateTime> extractExpiration(String token) throws CustomException {
-        try {
-            return Optional.ofNullable(JWT.require(Algorithm.HMAC512(secret)).build().verify(token)
-                    .getExpiresAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
-        } catch (Exception e) {
-            throw new CustomException(ErrorCode.INVALID_TOKEN);
-        }
-    }
-
     // gRPC 메타데이터에서 토큰 추출
     public String extractFromMetadata(Metadata metadata) {
         String authorizationHeader = metadata.get(AUTHORIZATION_METADATA_KEY);
         return extractAccessToken(authorizationHeader);
     }
 
-    // 토큰 유효성 검증
+    /**
+     * 토큰의 유효성을 검증해 여부를 반환합니다.
+     *
+     * @param token 전달된 토큰
+     * @return 유효한 토큰인가? (true/false)
+     */
     public boolean isTokenValid(String token) {
         try {
             /*
@@ -111,7 +119,13 @@ public class JwtUtil {
         }
     }
 
-    // JWT 토큰을 인증하는 메서드, 완료하면 Authentication 객체를 생성
+    /**
+     * 사용자 요청의 Access 토큰을 검증 후, 유효하다면 사용자 권한 정보(authority)를 가져옵니다.
+     * 가져온 권한을 통해 UsernamePasswordAuthenticationToken 객체를 생성해 반환합니다.
+     *
+     * @param accessToken 전달된 Access 토큰
+     * @return 인증 완료된 Authentication 객체
+     */
     public Authentication authenticateToken(String accessToken) {
         // 토큰 유효성 검사
         if (!isTokenValid(accessToken)) {

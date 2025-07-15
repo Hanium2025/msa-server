@@ -1,4 +1,4 @@
-package hanium.apigateway_service.dto.user;
+package hanium.apigateway_service.dto.user.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,14 +7,14 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class SignUpResponseDTO {
-    private Long id;
+@NoArgsConstructor
+public class SignUpRequestDTO {
     private String email;
+    private String password;
+    private String confirmPassword;
     private String phoneNumber;
-    private String provider;
-    private String role;
+    private String nickname;
     private boolean agreeMarketing;
     private boolean agreeThirdParty;
 }

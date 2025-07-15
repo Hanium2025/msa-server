@@ -6,11 +6,11 @@ import hanium.common.proto.user.*;
 import hanium.user_service.domain.Member;
 import hanium.user_service.dto.request.LoginRequestDTO;
 import hanium.user_service.dto.request.SignUpRequestDTO;
-import hanium.user_service.dto.response.LoginResponseDTO;
 import hanium.user_service.dto.response.MemberResponseDTO;
 import hanium.user_service.dto.response.SignUpResponseDTO;
-import hanium.user_service.mapper.entity.MemberEntityMapper;
-import hanium.user_service.mapper.grpc.MemberGrpcMapper;
+import hanium.user_service.dto.response.TokenResponseDTO;
+import hanium.user_service.mapper.MemberGrpcMapper;
+import hanium.user_service.security.JwtUtil;
 import hanium.user_service.service.AuthService;
 import hanium.user_service.service.MemberService;
 import io.grpc.Metadata;
@@ -21,7 +21,6 @@ import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,12 +34,14 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
 
     private final MemberService memberService;
     private final AuthService authService;
+    private final JwtUtil jwtUtil;
 
+    // 회원가입
     @Override
     public void signUp(SignUpRequest request, StreamObserver<SignUpResponse> responseObserver) {
         try {
-            SignUpRequestDTO requestDTO = MemberGrpcMapper.toSignupDto(request);
-            SignUpResponseDTO responseDTO = MemberEntityMapper.toSignupResponseDTO(authService.signUp(requestDTO));
+            SignUpResponseDTO responseDTO = SignUpResponseDTO.from(
+                    authService.signUp(SignUpRequestDTO.from(request)));
             responseObserver.onNext(MemberGrpcMapper.toSignupResponse(responseDTO));
             responseObserver.onCompleted();
         } catch (CustomException e) {
@@ -48,22 +49,23 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
         }
     }
 
+    // 로그인
     @Override
-    public void login(LoginRequest request, StreamObserver<LoginResponse> responseObserver) {
+    public void login(LoginRequest request, StreamObserver<TokenResponse> responseObserver) {
         try {
-            LoginRequestDTO requestDTO = MemberGrpcMapper.toLoginDto(request);
-            LoginResponseDTO responseDTO = authService.login(requestDTO);
-            responseObserver.onNext(MemberGrpcMapper.toLoginResponse(responseDTO));
+            TokenResponseDTO responseDTO = authService.login(LoginRequestDTO.from(request));
+            responseObserver.onNext(MemberGrpcMapper.toTokenResponse(responseDTO));
             responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(generateException(e.getErrorCode()));
         }
     }
 
+    // 회원 조회
     @Override
     public void getMember(GetMemberRequest request, StreamObserver<GetMemberResponse> responseObserver) {
         try {
-            MemberResponseDTO responseDTO = MemberEntityMapper.toMemberResponseDto(
+            MemberResponseDTO responseDTO = MemberResponseDTO.from(
                     memberService.getMemberById(request.getMemberId()));
             responseObserver.onNext(MemberGrpcMapper.toGetMemberResponse(responseDTO));
             responseObserver.onCompleted();
@@ -72,6 +74,7 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
         }
     }
 
+    // 회원 권한 조회
     @Override
     public void getAuthority(GetAuthorityRequest request, StreamObserver<GetAuthorityResponse> responseObserver) {
         try {
@@ -84,6 +87,18 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
             responseObserver.onNext(MemberGrpcMapper.toAuthorityResponse(result));
             responseObserver.onCompleted();
 
+        } catch (CustomException e) {
+            responseObserver.onError(generateException(e.getErrorCode()));
+        }
+    }
+
+    // 토큰 재발급
+    @Override
+    public void reissueToken(ReissueTokenRequest request, StreamObserver<TokenResponse> responseObserver) {
+        try {
+            TokenResponseDTO dto = jwtUtil.checkRefreshTokenAndReissue(request.getRefreshToken());
+            responseObserver.onNext(MemberGrpcMapper.toTokenResponse(dto));
+            responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(generateException(e.getErrorCode()));
         }

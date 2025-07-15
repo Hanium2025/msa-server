@@ -4,6 +4,10 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
+import hanium.user_service.domain.Member;
+import hanium.user_service.domain.RefreshToken;
+import hanium.user_service.dto.response.TokenResponseDTO;
+import hanium.user_service.repository.RefreshTokenRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -12,6 +16,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 @Component
@@ -34,7 +40,15 @@ public class JwtUtil {
     private static final String REFRESH_TOKEN = "RefreshToken";
     private static final String EMAIL_CLAIM = "email"; // username 클레임
 
-    // Access Token 토큰 생성
+    private final RefreshTokenRepository refreshRepository;
+
+
+    /**
+     * Access 토큰을 생성합니다.
+     *
+     * @param email 사용자 이메일
+     * @return 생성한 토큰 String
+     */
     public String createAccessToken(String email) {
         return JWT.create()
                 .withSubject(ACCESS_TOKEN) // 토큰 제목을 "AccessToken"으로 지정
@@ -43,7 +57,11 @@ public class JwtUtil {
                 .sign(Algorithm.HMAC512(secret)); // 지정한 secret 값으로 암호화
     }
 
-    // Refresh Token 생성
+    /**
+     * Refresh 토큰을 생성합니다.
+     *
+     * @return 생성한 토큰 String
+     */
     public String createRefreshToken() {
         return JWT.create()
                 .withSubject(REFRESH_TOKEN)
@@ -51,21 +69,72 @@ public class JwtUtil {
                 .sign(Algorithm.HMAC512(secret));
     }
 
-    // 토큰에서 사용자 이메일 추출
-    public String extractEmail(String accessToken) throws CustomException {
-        if (isTokenValid(accessToken)) {
-            return JWT.require(Algorithm.HMAC512(secret)).build()
-                    .verify(accessToken)
-                    // 검증됐다면 email 가져옴
-                    .getClaim(EMAIL_CLAIM)
-                    // 값을 String로 변환
-                    .asString();
-        } else {
+    /**
+     * 새 Access, Refresh 토큰을 생성한 후 Refresh 토큰은 데이터베이스에 저장합니다.
+     * 생성된 토큰들과 해당 사용자 이메일 정보를 반환합니다.
+     *
+     * @param member 토큰 생성 대상 사용자
+     * @return (사용자 이메일, Access, Refresh 토큰) dto
+     */
+    public TokenResponseDTO respondTokens(Member member) {
+        // 새 토큰 생성
+        String accessToken = createAccessToken(member.getEmail());
+        String refreshToken = createRefreshToken();
+
+        // Refresh 토큰 저장
+        RefreshToken refreshEntity = RefreshToken.builder()
+                .token(refreshToken)
+                .expiresAt(extractExpiration(refreshToken))
+                .member(member).build();
+        refreshRepository.save(refreshEntity);
+
+        // 응답 생성
+        return TokenResponseDTO.of(member.getEmail(), accessToken, refreshToken);
+    }
+
+    /**
+     * Refresh 토큰의 유효성 체크 -> 데이터베이스에 존재하는지 확인 후,
+     * 기존의 Refresh 토큰은 삭제하고 새 Access, Refresh 토큰 생성해 응답을 반환합니다.
+     *
+     * @param refreshToken 전달된 Refresh 토큰
+     * @return (사용자 이메일, Access, Refresh 토큰) dto
+     */
+    public TokenResponseDTO checkRefreshTokenAndReissue(String refreshToken) {
+        if (!isTokenValid(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+        RefreshToken refreshEntity = refreshRepository.findByToken(refreshToken)
+                .orElseThrow(() -> new CustomException(ErrorCode.REFRESH_NOT_FOUND));
+
+        // 기존 Refresh 토큰 삭제
+        refreshRepository.delete(refreshEntity);
+
+        // 새 토큰 생성해 응답
+        Member member = refreshEntity.getMember();
+        return respondTokens(member);
+    }
+
+    /**
+     * 토큰의 Claim 중 만료 일시를 추출해 LocalDateTime로 변환 후 반환합니다.
+     *
+     * @param token 전달된 토큰
+     * @return 만료 일시
+     */
+    public LocalDateTime extractExpiration(String token) {
+        try {
+            return JWT.require(Algorithm.HMAC512(secret)).build().verify(token)
+                    .getExpiresAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        } catch (Exception e) {
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
     }
 
-    // 토큰 유효성 검증
+    /**
+     * 토큰의 유효성을 검증해 여부를 반환합니다.
+     *
+     * @param token 전달된 토큰
+     * @return 유효한 토큰인가? (true/false)
+     */
     public boolean isTokenValid(String token) {
         try {
             /*

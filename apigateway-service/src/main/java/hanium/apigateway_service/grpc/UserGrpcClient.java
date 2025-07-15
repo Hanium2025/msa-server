@@ -1,7 +1,7 @@
 package hanium.apigateway_service.grpc;
 
-import hanium.apigateway_service.dto.user.LoginRequestDTO;
-import hanium.apigateway_service.dto.user.SignUpRequestDTO;
+import hanium.apigateway_service.dto.user.request.LoginRequestDTO;
+import hanium.apigateway_service.dto.user.request.SignUpRequestDTO;
 import hanium.apigateway_service.mapper.UserGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
@@ -34,7 +34,7 @@ public class UserGrpcClient {
     }
 
     // 로그인
-    public LoginResponse login(LoginRequestDTO dto) {
+    public TokenResponse login(LoginRequestDTO dto) {
         LoginRequest request = UserGrpcMapperForGateway.toLoginGrpc(dto);
         try {
             return stub.login(request);
@@ -58,6 +58,16 @@ public class UserGrpcClient {
         GetAuthorityRequest request = GetAuthorityRequest.newBuilder().setEmail(email).build();
         try {
             return stub.getAuthority(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(extractErrorCode(e));
+        }
+    }
+
+    // 토큰 재발급
+    public TokenResponse reissueToken(String refreshToken) {
+        ReissueTokenRequest request = ReissueTokenRequest.newBuilder().setRefreshToken(refreshToken).build();
+        try {
+            return stub.reissueToken(request);
         } catch (StatusRuntimeException e) {
             throw new CustomException(extractErrorCode(e));
         }

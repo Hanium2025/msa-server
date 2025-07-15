@@ -1,28 +1,16 @@
-package hanium.user_service.mapper.grpc;
+package hanium.user_service.mapper;
 
-import hanium.common.proto.user.*;
-import hanium.user_service.dto.request.LoginRequestDTO;
-import hanium.user_service.dto.request.SignUpRequestDTO;
-import hanium.user_service.dto.response.LoginResponseDTO;
+import hanium.common.proto.user.GetAuthorityResponse;
+import hanium.common.proto.user.GetMemberResponse;
+import hanium.common.proto.user.SignUpResponse;
+import hanium.common.proto.user.TokenResponse;
 import hanium.user_service.dto.response.MemberResponseDTO;
 import hanium.user_service.dto.response.SignUpResponseDTO;
+import hanium.user_service.dto.response.TokenResponseDTO;
 
 public class MemberGrpcMapper {
 
-    // SignUpRequest gRPC -> dto
-    public static SignUpRequestDTO toSignupDto(SignUpRequest request) {
-        return SignUpRequestDTO.builder()
-                .email(request.getEmail())
-                .password(request.getPassword())
-                .confirmPassword(request.getConfirmPassword())
-                .phoneNumber(request.getPhoneNumber())
-                .nickname(request.getNickname())
-                .agreeMarketing(request.getAgreeMarketing())
-                .agreeThirdParty(request.getAgreeThirdParty())
-                .build();
-    }
-
-    // SignupResponse dto -> gRPC
+    // 회원가입 응답 dto -> gRPC
     public static SignUpResponse toSignupResponse(SignUpResponseDTO dto) {
         return SignUpResponse.newBuilder()
                 .setMemberId(dto.getId())
@@ -35,20 +23,12 @@ public class MemberGrpcMapper {
                 .build();
     }
 
-    // LoginRequest gRPC -> dto
-    public static LoginRequestDTO toLoginDto(LoginRequest request) {
-        return LoginRequestDTO.builder()
-                .email(request.getEmail())
-                .password(request.getPassword())
-                .build();
-    }
-
-    // LoginResponse dto -> gRPC
-    public static LoginResponse toLoginResponse(LoginResponseDTO dto) {
-        return LoginResponse.newBuilder()
+    // 로그인 응답 (토큰) dto -> gRPC
+    public static TokenResponse toTokenResponse(TokenResponseDTO dto) {
+        return TokenResponse.newBuilder()
                 .setEmail(dto.getEmail())
-                .setToken(dto.getAccessToken())
-                .setTokenType(dto.getTokenType())
+                .setAccessToken(dto.getAccessToken())
+                .setRefreshToken(dto.getRefreshToken())
                 .build();
     }
 

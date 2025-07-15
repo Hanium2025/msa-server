@@ -20,7 +20,6 @@ public enum ErrorCode {
     PASSWORD_NOT_MATCH(400, "재확인 비밀번호가 일치하지 않습니다."),
     INVALID_CONTENT_TYPE(400, "요청은 application/json 타입이어야 합니다."),
     NULL_ACCESS_TOKEN(400, "Access 토큰이 존재하지 않습니다."),
-    NULL_REFRESH_TOKEN(400, "Refresh 토큰이 존재하지 않습니다."),
     TOKEN_NOT_BEARER(400, "토큰은 Bearer로 시작해야 합니다."),
     LOGIN_FAILED(401, "이메일 또는 비밀번호가 일치하지 않습니다."),
     JWT_AUTH_FAILED(401, "JWT 인증에 실패했습니다."),
