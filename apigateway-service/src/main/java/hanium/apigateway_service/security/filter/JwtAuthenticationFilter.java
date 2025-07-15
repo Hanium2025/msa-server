@@ -5,6 +5,7 @@ import hanium.apigateway_service.dto.user.response.TokenResponseDTO;
 import hanium.apigateway_service.grpc.UserGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import hanium.apigateway_service.security.JwtUtil;
+import hanium.common.exception.CustomException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,10 +49,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 요청에서 Access, Refresh 토큰 추출
-        String refreshToken = jwtUtil.extractRefreshToken(request.getHeader("Authorization-refresh"));
+        // 요청에서 Refresh 토큰 추출
+        String refreshToken;
+        try {
+            refreshToken = jwtUtil.extractRefreshToken(request.getHeader("Authorization-refresh"));
+        } catch (CustomException e) {
+            // Refresh 토큰 전달됐으나, 유효하지 않거나 데이터베이스에서 확인 불가한 경우
+            refreshToken = "NULL";
+        }
 
-        // Refresh 토큰이 존재하는 경우 -> Refresh, Access 재발급, 필터 진행 X
+        // Refresh 토큰이 제대로 존재하는 경우 -> Refresh, Access 재발급, 필터 진행 X
         if (!refreshToken.equals("NULL")) {
             checkRefreshTokenAndReissue(response, refreshToken);
             return;
@@ -67,6 +74,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private void checkRefreshTokenAndReissue(HttpServletResponse response,
                                              String refreshToken) throws IOException {
+
         TokenResponseDTO dto = TokenResponseDTO.from(userGrpcClient.reissueToken(refreshToken));
         ResponseDTO<TokenResponseDTO> result = new ResponseDTO<>(
                 dto, HttpStatus.OK, "요청에 Refresh 토큰이 확인되어, 토큰 재발급에 성공했습니다."

@@ -92,12 +92,6 @@ public class JwtUtil {
         }
     }
 
-    // gRPC 메타데이터에서 토큰 추출
-    public String extractFromMetadata(Metadata metadata) {
-        String authorizationHeader = metadata.get(AUTHORIZATION_METADATA_KEY);
-        return extractAccessToken(authorizationHeader);
-    }
-
     /**
      * 토큰의 유효성을 검증해 여부를 반환합니다.
      *

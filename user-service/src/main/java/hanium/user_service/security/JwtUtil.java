@@ -14,14 +14,12 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
 @Component
-@Transactional
 @RequiredArgsConstructor
 @Setter(value = AccessLevel.PRIVATE)
 @Slf4j
@@ -93,23 +91,25 @@ public class JwtUtil {
     }
 
     /**
-     * Refresh 토큰의 유효성 체크 -> 데이터베이스에 존재하는지 확인 후,
-     * 기존의 Refresh 토큰은 삭제하고 새 Access, Refresh 토큰 생성해 응답을 반환합니다.
+     * Refresh 토큰이 데이터베이스에 존재하는지 확인하고 기존 토큰을 삭제합니다.
+     * 새 Access, Refresh 토큰 생성해 응답을 반환합니다.
      *
      * @param refreshToken 전달된 Refresh 토큰
      * @return (사용자 이메일, Access, Refresh 토큰) dto
      */
     public TokenResponseDTO checkRefreshTokenAndReissue(String refreshToken) {
-        if (!isTokenValid(refreshToken)) {
-            throw new CustomException(ErrorCode.INVALID_TOKEN);
-        }
         RefreshToken refreshEntity = refreshRepository.findByToken(refreshToken)
                 .orElseThrow(() -> new CustomException(ErrorCode.REFRESH_NOT_FOUND));
 
         // 기존 Refresh 토큰 삭제
         refreshRepository.delete(refreshEntity);
 
-        // 새 토큰 생성해 응답
+        // 유효성 검사
+        if (isTokenExpired(refreshToken)) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+
+        // 새 토큰으로 응답 생성
         Member member = refreshEntity.getMember();
         return respondTokens(member);
     }
@@ -133,9 +133,9 @@ public class JwtUtil {
      * 토큰의 유효성을 검증해 여부를 반환합니다.
      *
      * @param token 전달된 토큰
-     * @return 유효한 토큰인가? (true/false)
+     * @return 만료된 토큰인가? (true/false)
      */
-    public boolean isTokenValid(String token) {
+    public boolean isTokenExpired(String token) {
         try {
             /*
              * require: HMAC512 알고리즘과 secret을 사용해 토큰 서명을 검증하도록 설정
@@ -143,10 +143,10 @@ public class JwtUtil {
              * verify:  파라미터의 token 검증
              */
             JWT.require(Algorithm.HMAC512(secret)).build().verify(token);
-            return true;
+            return false;
         } catch (Exception e) {
             log.error("유효하지 않은 토큰");
-            return false;
+            return true;
         }
     }
 }

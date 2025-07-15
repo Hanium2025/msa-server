@@ -22,7 +22,7 @@ public class RefreshToken extends BaseEntity {
     @Column
     private LocalDateTime expiresAt;
 
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "MEMBER_ID")
-    @ManyToOne(fetch = FetchType.EAGER) //TODO: 변경 가능 (매번 Member 같이 가져오는 로직이라 Eager로 설정)
     private Member member;
 }

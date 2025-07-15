@@ -7,7 +7,7 @@ import hanium.user_service.dto.response.TokenResponseDTO;
 
 public interface AuthService {
 
-    public Member signUp(SignUpRequestDTO dto);
+    Member signUp(SignUpRequestDTO dto);
 
-    public TokenResponseDTO login(LoginRequestDTO dto);
+    TokenResponseDTO login(LoginRequestDTO dto);
 }

@@ -2,15 +2,13 @@ package hanium.user_service.service.impl;
 
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
-import hanium.user_service.domain.Member;
-import hanium.user_service.domain.Profile;
-import hanium.user_service.domain.Provider;
-import hanium.user_service.domain.Role;
+import hanium.user_service.domain.*;
 import hanium.user_service.dto.request.LoginRequestDTO;
 import hanium.user_service.dto.request.SignUpRequestDTO;
 import hanium.user_service.dto.response.TokenResponseDTO;
 import hanium.user_service.repository.MemberRepository;
 import hanium.user_service.repository.ProfileRepository;
+import hanium.user_service.repository.RefreshTokenRepository;
 import hanium.user_service.security.JwtUtil;
 import hanium.user_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +17,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -26,9 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthServiceImpl implements AuthService {
 
     private final MemberRepository memberRepository;
+    private final ProfileRepository profileRepository;
+    private final RefreshTokenRepository refreshRepository;
     private final BCryptPasswordEncoder encoder;
     private final JwtUtil jwtUtil;
-    private final ProfileRepository profileRepository;
 
     @Override
     public Member signUp(SignUpRequestDTO dto) {
@@ -72,7 +73,11 @@ public class AuthServiceImpl implements AuthService {
                 .filter(m -> encoder.matches(password, m.getPassword()))
                 .orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAILED));
 
-        // 로그인 성공 시 토큰 생성
+        // 로그인 성공 시 (기존 Refresh 삭제 후) 새 토큰 생성
+        List<RefreshToken> refreshToken = refreshRepository.findByMember(member);
+        if (!refreshToken.isEmpty()) {
+            refreshRepository.deleteAll(refreshToken);
+        }
         return jwtUtil.respondTokens(member);
     }
 }
