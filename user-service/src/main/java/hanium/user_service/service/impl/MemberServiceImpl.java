@@ -1,8 +1,8 @@
 package hanium.user_service.service.impl;
 
+import hanium.common.exception.CustomException;
+import hanium.common.exception.ErrorCode;
 import hanium.user_service.domain.Member;
-import hanium.user_service.exception.CustomException;
-import hanium.user_service.exception.ErrorCode;
 import hanium.user_service.repository.MemberRepository;
 import hanium.user_service.service.MemberService;
 import lombok.RequiredArgsConstructor;

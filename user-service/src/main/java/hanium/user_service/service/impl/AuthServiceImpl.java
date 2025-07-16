@@ -1,17 +1,14 @@
 package hanium.user_service.service.impl;
 
-import hanium.user_service.domain.Member;
-import hanium.user_service.domain.Profile;
-import hanium.user_service.domain.Provider;
-import hanium.user_service.domain.Role;
+import hanium.common.exception.CustomException;
+import hanium.common.exception.ErrorCode;
+import hanium.user_service.domain.*;
 import hanium.user_service.dto.request.LoginRequestDTO;
 import hanium.user_service.dto.request.SignUpRequestDTO;
-import hanium.user_service.dto.response.LoginResponseDTO;
 import hanium.user_service.dto.response.TokenResponseDTO;
-import hanium.user_service.exception.CustomException;
-import hanium.user_service.exception.ErrorCode;
 import hanium.user_service.repository.MemberRepository;
 import hanium.user_service.repository.ProfileRepository;
+import hanium.user_service.repository.RefreshTokenRepository;
 import hanium.user_service.security.JwtUtil;
 import hanium.user_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +17,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -27,9 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthServiceImpl implements AuthService {
 
     private final MemberRepository memberRepository;
+    private final ProfileRepository profileRepository;
+    private final RefreshTokenRepository refreshRepository;
     private final BCryptPasswordEncoder encoder;
     private final JwtUtil jwtUtil;
-    private final ProfileRepository profileRepository;
 
     @Override
     public Member signUp(SignUpRequestDTO dto) {
@@ -43,9 +43,7 @@ public class AuthServiceImpl implements AuthService {
 
             // Profile 엔티티 생성
             Profile profile = Profile.builder()
-                    .nickname(dto.getNickname())
-                    .build();
-
+                    .nickname(dto.getNickname()).build();
             // Member 엔티티 생성
             Member member = Member.builder()
                     .email(dto.getEmail())
@@ -55,13 +53,11 @@ public class AuthServiceImpl implements AuthService {
                     .role(Role.USER)
                     .isAgreeMarketing(dto.getAgreeMarketing())
                     .isAgreeThirdParty(dto.getAgreeThirdParty())
-                    .profile(profile)
-                    .build();
-
+                    .profile(profile).build();
             memberRepository.save(member);
             profileRepository.save(profile);
 
-            log.info("✅ Member 회원가입 됨: {}", member.getEmail());
+            log.info("✅ Member 회원가입: {}", member.getEmail());
             log.info("✅ Profile 등록됨: {} == ID: {}", member.getProfile().getId(), profile.getId());
             log.info("✅ 권한 확인: {}", member.getAuthorities());
 
@@ -70,25 +66,18 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginResponseDTO login(LoginRequestDTO dto) {
+    public TokenResponseDTO login(LoginRequestDTO dto) {
         String email = dto.getEmail();
         String password = dto.getPassword();
         Member member = memberRepository.findByEmail(email)
                 .filter(m -> encoder.matches(password, m.getPassword()))
                 .orElseThrow(() -> new CustomException(ErrorCode.LOGIN_FAILED));
-        // 로그인 성공 시 토큰 생성
-        String token = jwtUtil.generateToken(member.getEmail());
-        return LoginResponseDTO.of(email, token, "Bearer");
-    }
 
-    @Override
-    public TokenResponseDTO refreshToken(String refreshToken) throws CustomException {
-        if (jwtUtil.isTokenValid(refreshToken)) {
-            String username = String.valueOf(jwtUtil.extractEmail(refreshToken));
-            String newAccessToken = jwtUtil.generateToken(username);
-            return new TokenResponseDTO(newAccessToken, refreshToken);
-        } else {
-            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        // 로그인 성공 시 (기존 Refresh 삭제 후) 새 토큰 생성
+        List<RefreshToken> refreshToken = refreshRepository.findByMember(member);
+        if (!refreshToken.isEmpty()) {
+            refreshRepository.deleteAll(refreshToken);
         }
+        return jwtUtil.respondTokens(member);
     }
 }

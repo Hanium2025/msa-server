@@ -7,14 +7,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 /**
  * GlobalExceptionHandler는 애플리케이션 전역에서 발생하는 예외를
  * 처리하는 컨트롤러 조언(Controller Advice) 클래스입니다.
- *
+ * <p>
  * 주로 CustomException을 잡아 HTTP 응답으로 적절한 에러 메시지와 상태 코드를 반환합니다.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
     /**
      * CustomException이 발생했을 때 실행되는 예외 처리 메서드입니다.
      *

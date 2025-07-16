@@ -1,15 +1,15 @@
-package hanium.user_service.dto.response;
+package hanium.apigateway_service.dto.user.response;
 
-import hanium.user_service.domain.Member;
+import hanium.common.proto.user.GetMemberResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
 public class MemberResponseDTO {
 
     private String email;
@@ -17,12 +17,12 @@ public class MemberResponseDTO {
     private String provider;
     private String role;
 
-    public static MemberResponseDTO from(Member member) {
+    public static MemberResponseDTO from(GetMemberResponse proto) {
         return MemberResponseDTO.builder()
-                .email(member.getEmail())
-                .phoneNumber(member.getPhoneNumber())
-                .provider(String.valueOf(member.getProvider()))
-                .role(String.valueOf(member.getRole()))
+                .email(proto.getEmail())
+                .phoneNumber(proto.getPhoneNumber())
+                .provider(proto.getProvider())
+                .role(proto.getRole())
                 .build();
     }
 }
