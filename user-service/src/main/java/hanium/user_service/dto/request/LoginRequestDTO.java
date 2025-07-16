@@ -1,5 +1,6 @@
 package hanium.user_service.dto.request;
 
+import hanium.common.proto.user.LoginRequest;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -9,4 +10,11 @@ public class LoginRequestDTO {
 
     private String email;
     private String password;
+
+    public static LoginRequestDTO from(LoginRequest request) {
+        return LoginRequestDTO.builder()
+                .email(request.getEmail())
+                .password(request.getPassword())
+                .build();
+    }
 }

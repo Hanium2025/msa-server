@@ -1,4 +1,4 @@
-package hanium.apigateway_service.dto.user;
+package hanium.apigateway_service.dto.user.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
