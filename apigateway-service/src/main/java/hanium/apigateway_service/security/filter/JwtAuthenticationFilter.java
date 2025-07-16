@@ -5,9 +5,9 @@ import hanium.apigateway_service.dto.user.response.TokenResponseDTO;
 import hanium.apigateway_service.grpc.UserGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import hanium.apigateway_service.security.JwtUtil;
-import hanium.common.exception.CustomException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -52,8 +52,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 요청에서 Refresh 토큰 추출
         String refreshToken;
         try {
-            refreshToken = jwtUtil.extractRefreshToken(request.getHeader("Authorization-refresh"));
-        } catch (CustomException e) {
+            refreshToken = jwtUtil.extractRefreshToken(request);
+        } catch (Exception e) {
             // Refresh 토큰 전달됐으나, 유효하지 않거나 데이터베이스에서 확인 불가한 경우
             refreshToken = "NULL";
         }
@@ -72,6 +72,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    /**
+     * gRPC 통신으로 토큰 재발급 메서드를 호출한 후, 성공적으로 결과 반환되었다면
+     * 응답 바디에는 해당 이메일과 토큰들,
+     * 응답 헤더와 쿠키에는 Access 토큰과 Refresh 토큰을 담아 전달합니다.
+     *
+     * @param refreshToken 재발급 검사할 Refresh 토큰
+     */
     private void checkRefreshTokenAndReissue(HttpServletResponse response,
                                              String refreshToken) throws IOException {
 
@@ -82,6 +89,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
+        response.addCookie(createCookie(refreshToken));
+        response.setHeader("Authorization", dto.getAccessToken());
         response.getWriter().write(objectMapper.writeValueAsString(result));
+    }
+
+    /**
+     * Refresh 토큰 문자열로 쿠키를 생성해 반환합니다.
+     *
+     * @param refreshToken 전달할 Refresh 토큰
+     * @return 헤더의 쿠키 객체
+     */
+    private Cookie createCookie(String refreshToken) {
+        Cookie cookie = new Cookie("RefreshToken", refreshToken);
+        cookie.setMaxAge(12 * 60 * 60); // 12h
+        cookie.setHttpOnly(true);   // JS로 접근 불가, 탈취 위험 감소
+        return cookie;
     }
 }

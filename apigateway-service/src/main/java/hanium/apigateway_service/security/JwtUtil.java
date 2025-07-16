@@ -6,7 +6,8 @@ import hanium.apigateway_service.grpc.UserGrpcClient;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import hanium.common.proto.user.GetAuthorityResponse;
-import io.grpc.Metadata;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -20,7 +21,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 
 @Component
 @Transactional
@@ -37,8 +40,6 @@ public class JwtUtil {
     // 사용할 상수 정의
     private static final String EMAIL_CLAIM = "email"; // username 클레임
     private static final String BEARER = "Bearer ";
-    private static final Metadata.Key<String> AUTHORIZATION_METADATA_KEY =
-            Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER);
 
 
     /**
@@ -58,19 +59,19 @@ public class JwtUtil {
     }
 
     /**
-     * http 요청 헤더에서 Refresh 토큰을 추출합니다.
+     * http 요청 쿠키에서 Refresh 토큰을 추출합니다.
      *
-     * @param authorizationHeader 요청 헤더 키 값 ("Authorization-refresh")
+     * @param request http 요청
      * @return Refresh 토큰 또는 "NULL" 문자열
      */
-    public String extractRefreshToken(String authorizationHeader) throws CustomException {
-        if (authorizationHeader == null || authorizationHeader.isBlank()) {
+    public String extractRefreshToken(HttpServletRequest request) {
+        if (request.getCookies() == null || request.getCookies().length == 0) {
             return "NULL";
-        } else if (!authorizationHeader.startsWith(BEARER)) {
-            throw new CustomException(ErrorCode.TOKEN_NOT_BEARER);
-        } else {
-            return authorizationHeader.substring(BEARER.length());
         }
+        Cookie cookie = Arrays.stream(request.getCookies()).filter(c -> c
+                        .getName().equals("RefreshToken")).findFirst()
+                .orElse(null);
+        return Objects.requireNonNull(cookie).getValue();
     }
 
     /**

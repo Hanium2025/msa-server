@@ -10,6 +10,8 @@ import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
@@ -34,10 +36,13 @@ public class UserGrpcClient {
     }
 
     // 로그인
-    public TokenResponse login(LoginRequestDTO dto) {
+    public TokenResponse login(LoginRequestDTO dto, HttpServletResponse response) {
         LoginRequest request = UserGrpcMapperForGateway.toLoginGrpc(dto);
         try {
-            return stub.login(request);
+            TokenResponse tokenResponse = stub.login(request);
+            response.addCookie(createCookie(tokenResponse.getRefreshToken()));
+            response.setHeader("Authorization", tokenResponse.getAccessToken());
+            return tokenResponse;
         } catch (StatusRuntimeException e) {
             throw new CustomException(extractErrorCode(e));
         }
@@ -90,5 +95,18 @@ public class UserGrpcClient {
         assert customError != null;
         String errorName = customError.getErrorName();
         return ErrorCode.valueOf(errorName);
+    }
+
+    /**
+     * Refresh 토큰 문자열로 쿠키를 생성해 반환합니다.
+     *
+     * @param refreshToken 전달할 Refresh 토큰
+     * @return 헤더의 쿠키 객체
+     */
+    private Cookie createCookie(String refreshToken) {
+        Cookie cookie = new Cookie("RefreshToken", refreshToken);
+        cookie.setMaxAge(12 * 60 * 60); // 12h
+        cookie.setHttpOnly(true);   // JS로 접근 불가, 탈취 위험 감소
+        return cookie;
     }
 }

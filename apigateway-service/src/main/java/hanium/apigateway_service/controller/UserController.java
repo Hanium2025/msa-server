@@ -7,6 +7,7 @@ import hanium.apigateway_service.dto.user.response.SignUpResponseDTO;
 import hanium.apigateway_service.dto.user.response.TokenResponseDTO;
 import hanium.apigateway_service.grpc.UserGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -33,12 +34,13 @@ public class UserController {
     }
 
     @PostMapping("/auth/login")
-    public ResponseEntity<ResponseDTO<TokenResponseDTO>> login(@RequestBody LoginRequestDTO dto) {
-        TokenResponseDTO responseDTO = TokenResponseDTO.from(userGrpcClient.login(dto));
-        ResponseDTO<TokenResponseDTO> response = new ResponseDTO<>(
+    public ResponseEntity<ResponseDTO<TokenResponseDTO>> login(@RequestBody LoginRequestDTO dto,
+                                                               HttpServletResponse response) {
+        TokenResponseDTO responseDTO = TokenResponseDTO.from(userGrpcClient.login(dto, response));
+        ResponseDTO<TokenResponseDTO> result = new ResponseDTO<>(
                 responseDTO, HttpStatus.OK, "정상적으로 로그인되었습니다."
         );
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/member/{memberId}")
