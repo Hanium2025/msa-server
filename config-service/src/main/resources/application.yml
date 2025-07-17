@@ -1,27 +1,5 @@
-server:
-  port: 8888
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://eureka-server:8761/eureka
-    fetch-registry: true
-    register-with-eureka: true
-
 spring:
   application:
-    name: config_service
-  cloud:
-    config:
-      server:
-        git:
-          uri: https://github.com/Hanium2025/msa-config-repo.git
-          default-label: main
-          username: ${GIT_USERNAME}
-          password: ${GIT_TOKEN}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
+    name: config-service
+  profiles:
+    active: dev
