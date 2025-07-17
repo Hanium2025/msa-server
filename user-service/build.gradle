@@ -95,7 +95,9 @@ dependencies {
 //    testImplementation("io.grpc:grpc-testing")
 
     // Spring-Test-Support
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.springframework.cloud', module: 'spring-cloud-starter-config'
+    }
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.springframework.security:spring-security-test'
 //    testRuntimeOnly 'com.h2database:h2'

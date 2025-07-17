@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.cloud.netflix.eureka.serviceregistry.EurekaRegistration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
  * 이 설정은 server.port=0 과 같이 포트를 자동 할당하는 경우에 필수입니다.
  */
 @Component
+@Profile("!test")
 public class EurekaPortRegister {
 
     @Autowired
