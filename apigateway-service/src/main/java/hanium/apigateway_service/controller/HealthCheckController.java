@@ -3,11 +3,11 @@ package hanium.apigateway_service.controller;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @RestController
+@RequestMapping("/health")
 public class HealthCheckController {
 
     private final WebClient webClient;
@@ -17,11 +17,11 @@ public class HealthCheckController {
         this.webClient = webClientBuilder.build();
     }
 
-    @GetMapping("/user/health-check")
-    public ResponseEntity<String> userHealthCheck() {
+    @GetMapping("/{service}")
+    public ResponseEntity<String> healthCheck(@PathVariable String service) {
         try {
             String response = webClient.get()
-                    .uri("http://user-service/health-check")
+                    .uri("http://" + service + "/health-check")
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
@@ -29,8 +29,8 @@ public class HealthCheckController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                    .body("사용자 서비스 사용 불가 : " + e.getMessage());
+                    .body(service + " 서비스 사용 불가: " + e.getMessage());
         }
     }
-
 }
+

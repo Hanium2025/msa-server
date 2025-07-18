@@ -34,7 +34,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserGrpcClient userGrpcClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final List<String> NO_CHECK_URLS = new ArrayList<>(Arrays.asList(
-            "/user/auth/login", "/user/auth/signup", "/user/health-check"
+            "/user/auth/login", "/user/auth/signup", "/health/user-service",
+            "/health/community-service", "/health/notification-service", "/health/product-service", "/health/discovery-service","/health-check"
     ));
 
     @Override

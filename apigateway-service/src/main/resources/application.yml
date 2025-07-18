@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: apigateway-service
+  profiles:
+    active: dev
