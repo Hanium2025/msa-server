@@ -5,12 +5,14 @@ import hanium.common.exception.ErrorCode;
 import hanium.user_service.domain.*;
 import hanium.user_service.dto.request.LoginRequestDTO;
 import hanium.user_service.dto.request.SignUpRequestDTO;
+import hanium.user_service.dto.request.SmsRequestDTO;
 import hanium.user_service.dto.response.TokenResponseDTO;
 import hanium.user_service.repository.MemberRepository;
 import hanium.user_service.repository.ProfileRepository;
 import hanium.user_service.repository.RefreshTokenRepository;
 import hanium.user_service.security.JwtUtil;
 import hanium.user_service.service.AuthService;
+import hanium.user_service.service.CoolSmsUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,6 +32,7 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenRepository refreshRepository;
     private final BCryptPasswordEncoder encoder;
     private final JwtUtil jwtUtil;
+    private final CoolSmsUtil coolSmsUtil;
 
     @Override
     public Member signUp(SignUpRequestDTO dto) {
@@ -79,5 +82,15 @@ public class AuthServiceImpl implements AuthService {
             refreshRepository.deleteAll(refreshToken);
         }
         return jwtUtil.respondTokens(member);
+    }
+
+    @Override
+    public void sendSms(SmsRequestDTO dto) {
+        String phoneNumber = dto.getPhoneNumber();
+        // 6자리 랜덤 인증번호 생성
+        String smsCode = Integer.toString((int)
+                (Math.random() * (999999 - 100000 + 1)) + 100000);
+        // sms 발송
+        coolSmsUtil.send(phoneNumber, smsCode);
     }
 }
