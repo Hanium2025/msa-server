@@ -49,6 +49,13 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    //zipkin
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    implementation 'io.zipkin.reporter2:zipkin-reporter-brave:2.16.3'
+    implementation 'io.zipkin.reporter2:zipkin-sender-okhttp3:2.16.3' // optional, HTTP 전송 시
+    implementation 'io.zipkin.brave:brave-instrumentation-grpc:5.13.3' // gRPC 추적 시
+
     // data jpa, h2, postgresql
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'com.mysql:mysql-connector-j'

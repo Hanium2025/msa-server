@@ -7,6 +7,7 @@ import hanium.community_service.dto.CreatePostRequestDTO;
 import hanium.community_service.entity.Post;
 import hanium.community_service.mapper.entity.PostEntityMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import hanium.community_service.Repository.PostRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
  * PostServiceImpl은 PostService 인터페이스의 구현체로,
  * 게시글 생성과 관련된 비즈니스 로직을 담당합니다.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
@@ -29,6 +31,7 @@ public class PostServiceImpl implements PostService {
         }
         Post post = PostEntityMapper.toEntity(dto);
 
+        log.info("✅ 글 작성 성공: {}", post.getTitle());
         postRepository.save(post);
     }
 }
