@@ -7,7 +7,6 @@ import hanium.user_service.dto.request.SignUpRequestDTO;
 import hanium.user_service.dto.response.TokenResponseDTO;
 import hanium.user_service.repository.MemberRepository;
 import hanium.user_service.repository.ProfileRepository;
-import hanium.user_service.repository.RefreshTokenRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +30,7 @@ class AuthServiceImplTest {
 
     @Autowired
     public AuthServiceImplTest(AuthService authService, MemberRepository memberRepository,
-                               ProfileRepository profileRepository, RefreshTokenRepository refreshTokenRepository) {
+                               ProfileRepository profileRepository) {
         this.authService = authService;
         this.memberRepository = memberRepository;
         this.profileRepository = profileRepository;
@@ -66,9 +65,8 @@ class AuthServiceImplTest {
                 .phoneNumber("010-1234-1234").nickname("nickname")
                 .agreeMarketing(true).agreeThirdParty(true).build();
         // when
-        Member member1 = authService.signUp(signupDto);
-        CustomException e = assertThrows(CustomException.class,
-                () -> authService.signUp(duplicate));
+        authService.signUp(signupDto);
+        CustomException e = assertThrows(CustomException.class, () -> authService.signUp(duplicate));
         // then
         assertThat(e.getErrorCode().name()).isEqualTo("HAS_EMAIL");
     }
@@ -91,7 +89,7 @@ class AuthServiceImplTest {
     @DisplayName("로그인: 성공")
     void login() {
         // given
-        Member member = authService.signUp(signupDto);
+        authService.signUp(signupDto);
         LoginRequestDTO dto = LoginRequestDTO.of(signupDto.getEmail(), signupDto.getPassword());
         // when
         TokenResponseDTO result = authService.login(dto);
@@ -103,7 +101,7 @@ class AuthServiceImplTest {
     @DisplayName("로그인: 실패")
     void login_failed() {
         // given
-        Member member = authService.signUp(signupDto);
+        authService.signUp(signupDto);
         LoginRequestDTO loginDto = LoginRequestDTO.of(signupDto.getEmail(), "wrong1234");
         // when
         CustomException e = assertThrows(CustomException.class, () ->
