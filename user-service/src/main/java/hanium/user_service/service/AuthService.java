@@ -3,7 +3,6 @@ package hanium.user_service.service;
 import hanium.user_service.domain.Member;
 import hanium.user_service.dto.request.LoginRequestDTO;
 import hanium.user_service.dto.request.SignUpRequestDTO;
-import hanium.user_service.dto.request.SmsRequestDTO;
 import hanium.user_service.dto.response.TokenResponseDTO;
 
 public interface AuthService {
@@ -12,5 +11,5 @@ public interface AuthService {
 
     TokenResponseDTO login(LoginRequestDTO dto);
 
-    void sendSms(SmsRequestDTO dto);
+    void sendSms(String phoneNumber);
 }

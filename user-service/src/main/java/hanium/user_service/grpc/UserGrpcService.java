@@ -104,6 +104,17 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
         }
     }
 
+    @Override
+    public void sendSms(SendSmsRequest request, StreamObserver<SendSmsResponse> responseObserver) {
+        try {
+            authService.sendSms(request.getPhoneNumber());
+            responseObserver.onNext(SendSmsResponse.newBuilder().setMessage("메시지 발송 완료").build());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(generateException(e.getErrorCode()));
+        }
+    }
+
     /**
      * 서비스 로직의 CustomException을 캐치해 ErrorCode를 가지고
      * proto 메시지인 CustomError에 해당 ErrorCode 정보를 Metadata 로써 삽입합니다.

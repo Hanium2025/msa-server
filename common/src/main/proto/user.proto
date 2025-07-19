@@ -22,6 +22,9 @@ service UserService {
 
   // 5. 토큰 검증과 새 토큰 발급
   rpc ReissueToken(ReissueTokenRequest) returns (TokenResponse);
+
+  // 6. SMS 인증번호 전송
+  rpc SendSms(SendSmsRequest) returns (SendSmsResponse);
 }
 
 message CustomError {
@@ -29,7 +32,7 @@ message CustomError {
   string message = 2;
 }
 
-// 1. 회원가입 요청
+// 1. 회원가입
 message SignUpRequest {
   string email = 1;
   string password = 2;
@@ -39,7 +42,6 @@ message SignUpRequest {
   bool agree_marketing = 6;
   bool agree_third_party = 7;
 }
-// 2. 회원가입 응답
 message SignUpResponse {
   int64 member_id = 1;
   string email = 2;
@@ -50,7 +52,7 @@ message SignUpResponse {
   bool agree_third_party = 7;
 }
 
-// 2. 로그인 요청
+// 2. 로그인
 message LoginRequest {
   string email = 1;
   string password = 2;
@@ -62,11 +64,10 @@ message TokenResponse {
   string refresh_token = 3;
 }
 
-// 3. 사용자 정보 조회 요청
+// 3. 사용자 정보 조회
 message GetMemberRequest {
   int64 member_id = 1;
 }
-// 3. 사용자 정보 조회 응답
 message GetMemberResponse {
   string email = 1;
   string phone_number = 2;
@@ -74,11 +75,10 @@ message GetMemberResponse {
   string role = 4;
 }
 
-// 4. 사용자 권한 조회 요청
+// 4. 사용자 권한 조회
 message GetAuthorityRequest {
   string email = 1;
 }
-// 4. 사용자 권한 조회 응답
 message GetAuthorityResponse {
   string authority = 1;
 }
@@ -86,4 +86,12 @@ message GetAuthorityResponse {
 // 5. 토큰 조회/검증 요청
 message ReissueTokenRequest {
   string refresh_token = 1;
+}
+
+// 6. SMS 인증번호 전송
+message SendSmsRequest {
+  string phone_number = 1;
+}
+message SendSmsResponse {
+  string message = 1;
 }

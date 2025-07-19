@@ -2,14 +2,13 @@ package hanium.apigateway_service.controller;
 
 import hanium.apigateway_service.dto.user.request.LoginRequestDTO;
 import hanium.apigateway_service.dto.user.request.SignUpRequestDTO;
-import hanium.apigateway_service.dto.user.request.smsRequestDTO;
+import hanium.apigateway_service.dto.user.request.SmsRequestDTO;
 import hanium.apigateway_service.dto.user.response.MemberResponseDTO;
 import hanium.apigateway_service.dto.user.response.SignUpResponseDTO;
 import hanium.apigateway_service.dto.user.response.TokenResponseDTO;
 import hanium.apigateway_service.grpc.UserGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -55,8 +54,11 @@ public class UserController {
     }
 
     @PostMapping("/sms/send")
-    public ResponseEntity<?> sendSms(@RequestBody @Valid smsRequestDTO dto) {
-        // TODO: sendSms 컨트롤러 작성, 수정
-        return (ResponseEntity<?>) ResponseEntity.ok();
+    public ResponseEntity<?> sendSms(@RequestBody SmsRequestDTO dto) {
+        String message = userGrpcClient.sendSms(dto.getPhoneNumber()).getMessage();
+        ResponseDTO<String> response = new ResponseDTO<>(
+                null, HttpStatus.OK, message
+        );
+        return ResponseEntity.ok(response);
     }
 }

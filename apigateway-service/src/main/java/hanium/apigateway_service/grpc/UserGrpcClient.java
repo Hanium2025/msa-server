@@ -78,6 +78,16 @@ public class UserGrpcClient {
         }
     }
 
+    // SMS 인증번호 전송
+    public SendSmsResponse sendSms(String phoneNumber) {
+        SendSmsRequest request = SendSmsRequest.newBuilder().setPhoneNumber(phoneNumber).build();
+        try {
+            return stub.sendSms(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(extractErrorCode(e));
+        }
+    }
+
     /**
      * 전달된 StatusRuntimeException서 CustomError proto 메시지를 가져오고
      * 해당 메시지에서 errorName을 가져와 알맞은 ErrorCode를 반환합니다.

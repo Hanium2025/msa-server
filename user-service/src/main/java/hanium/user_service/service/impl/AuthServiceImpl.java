@@ -5,7 +5,6 @@ import hanium.common.exception.ErrorCode;
 import hanium.user_service.domain.*;
 import hanium.user_service.dto.request.LoginRequestDTO;
 import hanium.user_service.dto.request.SignUpRequestDTO;
-import hanium.user_service.dto.request.SmsRequestDTO;
 import hanium.user_service.dto.response.TokenResponseDTO;
 import hanium.user_service.repository.MemberRepository;
 import hanium.user_service.repository.ProfileRepository;
@@ -85,11 +84,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void sendSms(SmsRequestDTO dto) {
-        String phoneNumber = dto.getPhoneNumber();
+    public void sendSms(String phoneNumber) {
         // 6자리 랜덤 인증번호 생성
         String smsCode = Integer.toString((int)
                 (Math.random() * (999999 - 100000 + 1)) + 100000);
+        log.info("✅ 인증번호 생성됨: {}", smsCode);
         // sms 발송
         coolSmsUtil.send(phoneNumber, smsCode);
     }

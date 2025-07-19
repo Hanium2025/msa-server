@@ -1,12 +1,14 @@
 package hanium.apigateway_service.dto.user.request;
 
-import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
-public class smsRequestDTO {
-    @NotEmpty(message = "휴대폰 번호를 입력해주세요.")
+@NoArgsConstructor
+@AllArgsConstructor
+public class SmsRequestDTO {
     private String phoneNumber;
 }
