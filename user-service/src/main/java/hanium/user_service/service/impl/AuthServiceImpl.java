@@ -80,6 +80,7 @@ public class AuthServiceImpl implements AuthService {
         if (!refreshToken.isEmpty()) {
             refreshRepository.deleteAll(refreshToken);
         }
+        log.info("✅ 로그인 성공: {}", member.getId());
         return jwtUtil.respondTokens(member);
     }
 
