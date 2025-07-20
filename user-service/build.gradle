@@ -65,7 +65,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 
-    // data jpa, h2, postgresql
+    // data jpa, h2, postgresql, redis
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'com.mysql:mysql-connector-j'
     runtimeOnly 'com.h2database:h2'
