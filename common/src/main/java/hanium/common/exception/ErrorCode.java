@@ -17,6 +17,7 @@ public enum ErrorCode {
 
     // -- USER-SERVICE -- //
     HAS_EMAIL(400, "이미 존재하는 이메일입니다."),
+    HAS_PHONE(400, "이미 존재하는 전화번호입니다."),
     PASSWORD_NOT_MATCH(400, "재확인 비밀번호가 일치하지 않습니다."),
     INVALID_CONTENT_TYPE(400, "요청은 application/json 타입이어야 합니다."),
     NULL_ACCESS_TOKEN(400, "Access 토큰이 존재하지 않습니다."),

@@ -6,6 +6,7 @@ import hanium.common.proto.user.*;
 import hanium.user_service.domain.Member;
 import hanium.user_service.dto.request.LoginRequestDTO;
 import hanium.user_service.dto.request.SignUpRequestDTO;
+import hanium.user_service.dto.request.VerifySmsDTO;
 import hanium.user_service.dto.response.MemberResponseDTO;
 import hanium.user_service.dto.response.SignUpResponseDTO;
 import hanium.user_service.dto.response.TokenResponseDTO;
@@ -13,6 +14,7 @@ import hanium.user_service.mapper.MemberGrpcMapper;
 import hanium.user_service.security.JwtUtil;
 import hanium.user_service.service.AuthService;
 import hanium.user_service.service.MemberService;
+import hanium.user_service.service.SmsService;
 import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -35,6 +37,7 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
     private final MemberService memberService;
     private final AuthService authService;
     private final JwtUtil jwtUtil;
+    private final SmsService smsService;
 
     // 회원가입
     @Override
@@ -104,11 +107,24 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
         }
     }
 
+    // sms 인증번호 전송
     @Override
     public void sendSms(SendSmsRequest request, StreamObserver<SendSmsResponse> responseObserver) {
         try {
-            authService.sendSms(request.getPhoneNumber());
+            smsService.sendSms(request.getPhoneNumber());
             responseObserver.onNext(SendSmsResponse.newBuilder().setMessage("메시지 발송 완료").build());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(generateException(e.getErrorCode()));
+        }
+    }
+
+    // sms 인증번호 검증
+    @Override
+    public void verifySmsCode(VerifySmsRequest request, StreamObserver<VerifySmsResponse> responseObserver) {
+        try {
+            boolean isVerified = smsService.verifyCode(VerifySmsDTO.from(request));
+            responseObserver.onNext(VerifySmsResponse.newBuilder().setVerified(isVerified).build());
             responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(generateException(e.getErrorCode()));

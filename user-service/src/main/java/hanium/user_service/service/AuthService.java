@@ -10,6 +10,4 @@ public interface AuthService {
     Member signUp(SignUpRequestDTO dto);
 
     TokenResponseDTO login(LoginRequestDTO dto);
-
-    void sendSms(String phoneNumber);
 }

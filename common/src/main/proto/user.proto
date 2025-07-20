@@ -25,6 +25,9 @@ service UserService {
 
   // 6. SMS 인증번호 전송
   rpc SendSms(SendSmsRequest) returns (SendSmsResponse);
+
+  // 7. SMS 인증번호 검증
+  rpc VerifySmsCode(VerifySmsRequest) returns (VerifySmsResponse);
 }
 
 message CustomError {
@@ -94,4 +97,13 @@ message SendSmsRequest {
 }
 message SendSmsResponse {
   string message = 1;
+}
+
+// 7. SMS 인증번호 검증
+message VerifySmsRequest {
+  string phone_number = 1;
+  string sms_code = 2;
+}
+message VerifySmsResponse {
+  bool verified = 1;
 }

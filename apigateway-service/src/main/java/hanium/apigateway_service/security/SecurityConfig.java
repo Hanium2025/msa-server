@@ -30,8 +30,9 @@ public class SecurityConfig {
                                 "/user/auth/signup",
                                 "/user/auth/login",
                                 "/user/sms/send",
-                                "/health/**",  //나머지 서비스 헬스 체크
-                                "/health-check" //apigateway 헬스체크
+                                "/user/sms/verify",
+                                "/health/**",       // 나머지 서비스 헬스 체크
+                                "/health-check"     // apigateway 헬스체크
                         ).permitAll() // 로그인, 회원가입 인증 없이 허용
                         .anyRequest().authenticated())
                 .addFilterBefore(exceptionHandlerFilter, AbstractPreAuthenticatedProcessingFilter.class)

@@ -11,7 +11,6 @@ import hanium.user_service.repository.ProfileRepository;
 import hanium.user_service.repository.RefreshTokenRepository;
 import hanium.user_service.security.JwtUtil;
 import hanium.user_service.service.AuthService;
-import hanium.user_service.service.CoolSmsUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -31,7 +30,6 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenRepository refreshRepository;
     private final BCryptPasswordEncoder encoder;
     private final JwtUtil jwtUtil;
-    private final CoolSmsUtil coolSmsUtil;
 
     @Override
     public Member signUp(SignUpRequestDTO dto) {
@@ -82,15 +80,5 @@ public class AuthServiceImpl implements AuthService {
         }
         log.info("✅ 로그인 성공: {}", member.getId());
         return jwtUtil.respondTokens(member);
-    }
-
-    @Override
-    public void sendSms(String phoneNumber) {
-        // 6자리 랜덤 인증번호 생성
-        String smsCode = Integer.toString((int)
-                (Math.random() * (999999 - 100000 + 1)) + 100000);
-        log.info("✅ 인증번호 생성됨: {}", smsCode);
-        // sms 발송
-        coolSmsUtil.send(phoneNumber, smsCode);
     }
 }

@@ -37,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/user/auth/login",
             "/user/auth/signup",
             "/user/sms/send",
+            "/user/sms/verify",
             "/health/user-service",
             "/health/community-service",
             "/health/notification-service",
