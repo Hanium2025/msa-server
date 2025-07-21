@@ -2,6 +2,8 @@ package hanium.apigateway_service.controller;
 
 import hanium.apigateway_service.dto.user.request.LoginRequestDTO;
 import hanium.apigateway_service.dto.user.request.SignUpRequestDTO;
+import hanium.apigateway_service.dto.user.request.SmsRequestDTO;
+import hanium.apigateway_service.dto.user.request.VerifySmsRequestDTO;
 import hanium.apigateway_service.dto.user.response.MemberResponseDTO;
 import hanium.apigateway_service.dto.user.response.SignUpResponseDTO;
 import hanium.apigateway_service.dto.user.response.TokenResponseDTO;
@@ -9,12 +11,10 @@ import hanium.apigateway_service.grpc.UserGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/user")
@@ -50,5 +50,29 @@ public class UserController {
                 responseDTO, HttpStatus.OK, "정상적으로 회원이 조회되었습니다."
         );
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/sms/send")
+    public ResponseEntity<?> sendSms(@RequestBody SmsRequestDTO dto) {
+        String message = userGrpcClient.sendSms(dto.getPhoneNumber()).getMessage();
+        ResponseDTO<String> response = new ResponseDTO<>(
+                null, HttpStatus.OK, message
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/sms/verify")
+    public ResponseEntity<?> verifySms(@RequestBody VerifySmsRequestDTO dto) {
+        if (userGrpcClient.verifySms(dto).getVerified()) {
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    null, HttpStatus.OK, "인증번호 확인되었습니다."
+            );
+            return ResponseEntity.ok(response);
+        } else {
+            ResponseDTO<String> response = new ResponseDTO<>(
+                    null, HttpStatus.BAD_REQUEST, "인증번호를 다시 확인해주세요."
+            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
     }
 }

@@ -2,6 +2,7 @@ package hanium.apigateway_service.grpc;
 
 import hanium.apigateway_service.dto.user.request.LoginRequestDTO;
 import hanium.apigateway_service.dto.user.request.SignUpRequestDTO;
+import hanium.apigateway_service.dto.user.request.VerifySmsRequestDTO;
 import hanium.apigateway_service.mapper.UserGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
@@ -73,6 +74,26 @@ public class UserGrpcClient {
         ReissueTokenRequest request = ReissueTokenRequest.newBuilder().setRefreshToken(refreshToken).build();
         try {
             return stub.reissueToken(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(extractErrorCode(e));
+        }
+    }
+
+    // SMS 인증번호 전송
+    public SendSmsResponse sendSms(String phoneNumber) {
+        SendSmsRequest request = SendSmsRequest.newBuilder().setPhoneNumber(phoneNumber).build();
+        try {
+            return stub.sendSms(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(extractErrorCode(e));
+        }
+    }
+
+    // SMS 인증번호 검증
+    public VerifySmsResponse verifySms(VerifySmsRequestDTO dto) {
+        VerifySmsRequest request = UserGrpcMapperForGateway.toVerifySmsGrpc(dto);
+        try {
+            return stub.verifySmsCode(request);
         } catch (StatusRuntimeException e) {
             throw new CustomException(extractErrorCode(e));
         }

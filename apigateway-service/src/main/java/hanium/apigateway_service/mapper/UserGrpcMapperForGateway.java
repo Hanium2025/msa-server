@@ -2,8 +2,10 @@ package hanium.apigateway_service.mapper;
 
 import hanium.apigateway_service.dto.user.request.LoginRequestDTO;
 import hanium.apigateway_service.dto.user.request.SignUpRequestDTO;
+import hanium.apigateway_service.dto.user.request.VerifySmsRequestDTO;
 import hanium.common.proto.user.LoginRequest;
 import hanium.common.proto.user.SignUpRequest;
+import hanium.common.proto.user.VerifySmsRequest;
 
 public class UserGrpcMapperForGateway {
 
@@ -25,6 +27,14 @@ public class UserGrpcMapperForGateway {
         return LoginRequest.newBuilder()
                 .setEmail(dto.getEmail())
                 .setPassword(dto.getPassword())
+                .build();
+    }
+
+    // VerifySmsRequest dto -> grpc
+    public static VerifySmsRequest toVerifySmsGrpc(VerifySmsRequestDTO dto) {
+        return VerifySmsRequest.newBuilder()
+                .setPhoneNumber(dto.getPhoneNumber())
+                .setSmsCode(dto.getSmsCode())
                 .build();
     }
 }

@@ -96,6 +96,7 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
 
     implementation project(':common')
+
     // Grpc-Test-Support
 //    testImplementation("io.grpc:grpc-testing")
 //    // Spring-Test-Support (Optional)
