@@ -10,3 +10,9 @@ message CommonResponse {
   string message = 2;
   int32 error_code = 3;
 }
+
+// gRPC 예외 처리를 위한 메시지
+message CustomError {
+  string errorName = 1;
+  string message = 2;
+}
