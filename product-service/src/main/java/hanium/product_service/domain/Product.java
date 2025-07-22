@@ -1,9 +1,12 @@
 package hanium.product_service.domain;
 
-import hanium.product_service.enums.Category;
-import hanium.product_service.enums.Status;
+import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -37,5 +40,17 @@ public class Product {
     private LocalDateTime updatedAt;
 
     private LocalDateTime deletedAt;
+
+    public static Product from(RegisterProductRequestDTO dto) {
+        return Product.builder()
+                .title(dto.getTitle())
+                .content(dto.getContent())
+                .price(dto.getPrice())
+                .sellerId(dto.getSellerId())
+                .category(dto.getCategory())
+                .status(Status.SELLING)
+                .createdAt(LocalDateTime.now())
+                .build();
+    }
 
 }

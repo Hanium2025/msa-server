@@ -1,4 +1,4 @@
-package hanium.product_service.enums;
+package hanium.product_service.domain;
 
 public enum Status {
     SELLING,

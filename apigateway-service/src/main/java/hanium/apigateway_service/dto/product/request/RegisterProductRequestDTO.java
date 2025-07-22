@@ -1,10 +1,14 @@
-package hanium.apigateway_service.dto.product;
+package hanium.apigateway_service.dto.product.request;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class RegisterProductRequestDTO {
     private String title;
     private String content;
