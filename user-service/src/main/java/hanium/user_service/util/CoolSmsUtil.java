@@ -1,4 +1,4 @@
-package hanium.user_service.service;
+package hanium.user_service.util;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
