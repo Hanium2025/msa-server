@@ -10,7 +10,7 @@ package product;
 message RegisterProductRequest {
   string title = 1;
   string content = 2;
-  string price = 3;
+  int64 price = 3;
   int64 sellerId = 4;
   string category = 5; // Category enum 문자열
 }
@@ -20,7 +20,7 @@ message ProductResponse {
   int64 id = 1;
   string title = 2;
   string content = 3;
-  string price = 4;
+  int64 price = 4;
   int64 sellerId = 5;
   string status = 6;    // Status enum 문자열
   string category = 7;

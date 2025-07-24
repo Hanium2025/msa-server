@@ -16,7 +16,7 @@ public class ProductInfoResponseDTO {
     private Long id;
     private String title;
     private String content;
-    private String price;
+    private Long price;
     private Long sellerId;
     private Status status;
     private Category category;

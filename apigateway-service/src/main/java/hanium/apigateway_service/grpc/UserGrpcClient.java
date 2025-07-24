@@ -5,12 +5,9 @@ import hanium.apigateway_service.dto.user.request.SignUpRequestDTO;
 import hanium.apigateway_service.dto.user.request.VerifySmsRequestDTO;
 import hanium.apigateway_service.mapper.UserGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
-import hanium.common.exception.ErrorCode;
+import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.user.*;
-import io.grpc.Metadata;
-import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.protobuf.ProtoUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +29,7 @@ public class UserGrpcClient {
         try {
             return stub.signUp(request); // UserGrpcService > signUp
         } catch (StatusRuntimeException e) {
-            throw new CustomException(extractErrorCode(e));
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 
@@ -45,7 +42,7 @@ public class UserGrpcClient {
             response.setHeader("Authorization", tokenResponse.getAccessToken());
             return tokenResponse;
         } catch (StatusRuntimeException e) {
-            throw new CustomException(extractErrorCode(e));
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 
@@ -55,7 +52,7 @@ public class UserGrpcClient {
         try {
             return stub.getMember(request);
         } catch (StatusRuntimeException e) {
-            throw new CustomException(extractErrorCode(e));
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 
@@ -65,7 +62,7 @@ public class UserGrpcClient {
         try {
             return stub.getAuthority(request);
         } catch (StatusRuntimeException e) {
-            throw new CustomException(extractErrorCode(e));
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 
@@ -75,7 +72,7 @@ public class UserGrpcClient {
         try {
             return stub.reissueToken(request);
         } catch (StatusRuntimeException e) {
-            throw new CustomException(extractErrorCode(e));
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 
@@ -85,7 +82,7 @@ public class UserGrpcClient {
         try {
             return stub.sendSms(request);
         } catch (StatusRuntimeException e) {
-            throw new CustomException(extractErrorCode(e));
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 
@@ -95,27 +92,8 @@ public class UserGrpcClient {
         try {
             return stub.verifySmsCode(request);
         } catch (StatusRuntimeException e) {
-            throw new CustomException(extractErrorCode(e));
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
-    }
-
-    /**
-     * 전달된 StatusRuntimeException서 CustomError proto 메시지를 가져오고
-     * 해당 메시지에서 errorName을 가져와 알맞은 ErrorCode를 반환합니다.
-     *
-     * @param e gRPC 서버에서 전달된 StatusRuntimeException
-     * @return http 클라이언트로 전송할 ErrorCode
-     */
-    private ErrorCode extractErrorCode(StatusRuntimeException e) {
-        Metadata metadata = Status.trailersFromThrowable(e);
-        Metadata.Key<CustomError> customErrorKey = ProtoUtils.keyForProto(CustomError.getDefaultInstance());
-
-        assert metadata != null;
-        CustomError customError = metadata.get(customErrorKey);
-
-        assert customError != null;
-        String errorName = customError.getErrorName();
-        return ErrorCode.valueOf(errorName);
     }
 
     /**

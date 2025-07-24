@@ -6,27 +6,32 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
-public class Product {
+@SQLDelete(sql = "UPDATE PRODUCT SET PRODUCT.DELETED_AT = CURRENT_TIMESTAMP WHERE PRODUCT.ID = ?")
+public class Product extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column
     private String title;
 
     @Column(length = 1000)
     private String content;
 
-    private String price;
+    @Column
+    private Long price;
 
+    @Column
     private Long sellerId;
 
     @Enumerated(EnumType.STRING)
@@ -35,11 +40,8 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private Category category;
 
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
-    private LocalDateTime deletedAt;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "Product")
+    private List<ProductImage> images = new ArrayList<>();
 
     public static Product from(RegisterProductRequestDTO dto) {
         return Product.builder()
@@ -49,8 +51,6 @@ public class Product {
                 .sellerId(dto.getSellerId())
                 .category(dto.getCategory())
                 .status(Status.SELLING)
-                .createdAt(LocalDateTime.now())
                 .build();
     }
-
 }

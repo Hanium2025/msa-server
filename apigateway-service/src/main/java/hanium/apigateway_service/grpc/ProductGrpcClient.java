@@ -2,9 +2,12 @@ package hanium.apigateway_service.grpc;
 
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.mapper.ProductGrpcMapperForGateway;
+import hanium.common.exception.CustomException;
+import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.ProductResponse;
 import hanium.common.proto.product.ProductServiceGrpc;
 import hanium.common.proto.product.RegisterProductRequest;
+import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,10 @@ public class ProductGrpcClient {
     // 상품 등록
     public ProductResponse registerProduct(RegisterProductRequestDTO dto) {
         RegisterProductRequest grpcRequest = ProductGrpcMapperForGateway.toRegisterProductGrpc(dto);
-        return stub.registerProduct(grpcRequest);
+        try {
+            return stub.registerProduct(grpcRequest);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
     }
 }

@@ -1,5 +1,8 @@
 package hanium.product_service.grpc;
 
+import hanium.common.exception.CustomException;
+import hanium.common.exception.ErrorCode;
+import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.ProductResponse;
 import hanium.common.proto.product.ProductServiceGrpc;
 import hanium.common.proto.product.RegisterProductRequest;
@@ -25,14 +28,15 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     @Override
     public void registerProduct(RegisterProductRequest request,
                                 StreamObserver<ProductResponse> responseObserver) {
-        // gRPC → DTO
-        RegisterProductRequestDTO dto = RegisterProductRequestDTO.from(request);
-        // 비즈니스 로직 처리
-        ProductInfoResponseDTO responseDTO = productService.registerProduct(dto);
-        // DTO → gRPC
-        ProductResponse response = productGrpcMapper.toProductResponseGrpc(responseDTO);
-        // 응답 반환
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+        try {
+            ProductInfoResponseDTO responseDTO = productService
+                    .registerProduct(RegisterProductRequestDTO.from(request));
+            ProductResponse response = productGrpcMapper.toProductResponseGrpc(responseDTO);
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            CustomException ce = new CustomException(ErrorCode.ERROR_ADD_PRODUCT);
+            responseObserver.onError(GrpcUtil.generateException(ce.getErrorCode()));
+        }
     }
 }

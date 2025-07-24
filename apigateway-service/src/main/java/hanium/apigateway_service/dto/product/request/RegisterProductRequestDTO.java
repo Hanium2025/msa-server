@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class RegisterProductRequestDTO {
     private String title;
     private String content;
-    private String price;
+    private Long price;
     private String sellerId;
     private String category; // ENUM 값 (ex: ELECTRONICS)
 }
