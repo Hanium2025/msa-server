@@ -28,10 +28,8 @@ public class CommunityGrpcClient {
         return "[응답 메시지]: " + response.getMessage();
     }
 
-    public CommonResponse createPost(CreatePostRequestDTO dto) {
-        CreatePostRequest grpcRequest = PostGrpcMapperForGateway.toGrpc(dto);
-
+    public CommonResponse createPost(CreatePostRequestDTO dto, Long memberId) {
+        CreatePostRequest grpcRequest = PostGrpcMapperForGateway.toGrpc(dto, memberId);
         return stub.createPost(grpcRequest);
     }
-
 }

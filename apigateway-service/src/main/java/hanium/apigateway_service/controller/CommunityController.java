@@ -8,6 +8,7 @@ import hanium.common.proto.common.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,8 +27,10 @@ public class CommunityController {
 //    }
 
     @PostMapping("/post")
-    public ResponseEntity<ResponseDTO<CommonResponseDTO>> createPost(@RequestBody CreatePostRequestDTO dto) {
-        CommonResponse protoResponse = grpcClient.createPost(dto);
+    public ResponseEntity<ResponseDTO<CommonResponseDTO>> createPost(@RequestBody CreatePostRequestDTO dto, Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal(); // 요청 사용자 id 확인
+
+        CommonResponse protoResponse = grpcClient.createPost(dto, memberId);
         CommonResponseDTO responseDTO = CommonResponseDTO.fromProto(protoResponse);
 
         ResponseDTO<CommonResponseDTO> response = new ResponseDTO<>(
