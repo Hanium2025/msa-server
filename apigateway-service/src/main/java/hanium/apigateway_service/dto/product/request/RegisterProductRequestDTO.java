@@ -13,6 +13,5 @@ public class RegisterProductRequestDTO {
     private String title;
     private String content;
     private Long price;
-    private String sellerId;
     private String category; // ENUM 값 (ex: ELECTRONICS)
 }

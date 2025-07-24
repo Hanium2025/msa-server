@@ -1,6 +1,6 @@
 package hanium.common.exception;
 
-import hanium.common.proto.user.CustomError;
+import hanium.common.proto.common.CustomError;
 import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;

@@ -143,7 +143,7 @@ public class JwtUtil {
         authorities.add(new SimpleGrantedAuthority(authority));
 
         return new UsernamePasswordAuthenticationToken(
-                email, accessToken, authorities
+                protoResponse.getMemberId(), accessToken, authorities
         );
     }
 }

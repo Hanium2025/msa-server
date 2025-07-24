@@ -20,8 +20,8 @@ public class ProductGrpcClient {
     private ProductServiceGrpc.ProductServiceBlockingStub stub;
 
     // 상품 등록
-    public ProductResponse registerProduct(RegisterProductRequestDTO dto) {
-        RegisterProductRequest grpcRequest = ProductGrpcMapperForGateway.toRegisterProductGrpc(dto);
+    public ProductResponse registerProduct(RegisterProductRequestDTO dto, Long memberId) {
+        RegisterProductRequest grpcRequest = ProductGrpcMapperForGateway.toRegisterProductGrpc(dto, memberId);
         try {
             return stub.registerProduct(grpcRequest);
         } catch (StatusRuntimeException e) {

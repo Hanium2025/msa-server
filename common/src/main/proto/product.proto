@@ -1,12 +1,18 @@
 syntax = "proto3";
 
-option java_multiple_files = true;
+package hanium.common.proto.user;
+
 option java_package = "hanium.common.proto.product";
-option java_outer_classname = "ProductProto";
+option java_multiple_files = true;
 
-package product;
+import "common.proto";
 
-// 상품 등록 요청
+service ProductService {
+  // 1. 상품 등록
+  rpc RegisterProduct(RegisterProductRequest) returns (ProductResponse);
+}
+
+// 1. 상품 등록
 message RegisterProductRequest {
   string title = 1;
   string content = 2;
@@ -14,8 +20,6 @@ message RegisterProductRequest {
   int64 sellerId = 4;
   string category = 5; // Category enum 문자열
 }
-
-// 상품 응답 메시지
 message ProductResponse {
   int64 id = 1;
   string title = 2;
@@ -24,9 +28,4 @@ message ProductResponse {
   int64 sellerId = 5;
   string status = 6;    // Status enum 문자열
   string category = 7;
-}
-
-// 상품 관련 서비스 정의
-service ProductService {
-  rpc RegisterProduct (RegisterProductRequest) returns (ProductResponse);
 }

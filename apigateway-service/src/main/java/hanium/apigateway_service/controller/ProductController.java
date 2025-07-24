@@ -7,6 +7,7 @@ import hanium.apigateway_service.response.ResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,8 +21,12 @@ public class ProductController {
     private final ProductGrpcClient productGrpcClient;
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseDTO<ProductInfoResponseDTO>> registerProduct(@RequestBody RegisterProductRequestDTO requestDTO) {
-        ProductInfoResponseDTO responseDTO = ProductInfoResponseDTO.from(productGrpcClient.registerProduct(requestDTO));
+    public ResponseEntity<ResponseDTO<ProductInfoResponseDTO>> registerProduct(
+            @RequestBody RegisterProductRequestDTO requestDTO,
+            Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal(); // 요청 사용자 id 확인
+        ProductInfoResponseDTO responseDTO = ProductInfoResponseDTO.from(
+                productGrpcClient.registerProduct(requestDTO, memberId));
         ResponseDTO<ProductInfoResponseDTO> response = new ResponseDTO<>(
                 responseDTO, HttpStatus.OK, "정상적으로 상품이 등록되었습니다."
         );

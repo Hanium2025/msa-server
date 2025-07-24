@@ -82,9 +82,11 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
             Collection<? extends GrantedAuthority> authorities = member.getAuthorities();
             GrantedAuthority grantedAuthority = authorities.stream().findAny()
                     .orElseThrow(() -> new CustomException(ErrorCode.AUTHORITY_NOT_FOUND));
-            String result = grantedAuthority.getAuthority();
 
-            responseObserver.onNext(MemberGrpcMapper.toAuthorityResponse(result));
+            String authority = grantedAuthority.getAuthority();
+            Long memberId = member.getId();
+
+            responseObserver.onNext(MemberGrpcMapper.toAuthorityResponse(authority, memberId));
             responseObserver.onCompleted();
 
         } catch (CustomException e) {

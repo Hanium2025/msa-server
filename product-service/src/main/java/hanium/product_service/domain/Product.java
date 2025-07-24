@@ -8,9 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Getter
 @Builder
@@ -39,9 +36,6 @@ public class Product extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private Category category;
-
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "Product")
-    private List<ProductImage> images = new ArrayList<>();
 
     public static Product from(RegisterProductRequestDTO dto) {
         return Product.builder()

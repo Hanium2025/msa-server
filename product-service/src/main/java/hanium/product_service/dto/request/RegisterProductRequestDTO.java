@@ -21,10 +21,10 @@ public class RegisterProductRequestDTO {
 
     public static RegisterProductRequestDTO from(RegisterProductRequest request) {
         return RegisterProductRequestDTO.builder()
+                .sellerId(request.getSellerId())
                 .title(request.getTitle())
                 .content(request.getContent())
                 .price(request.getPrice())
-                .sellerId(request.getSellerId())
                 .category(Category.valueOf(request.getCategory()))
                 .build();
     }
