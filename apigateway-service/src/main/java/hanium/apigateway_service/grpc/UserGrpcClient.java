@@ -4,11 +4,11 @@ import hanium.apigateway_service.dto.user.request.LoginRequestDTO;
 import hanium.apigateway_service.dto.user.request.SignUpRequestDTO;
 import hanium.apigateway_service.dto.user.request.VerifySmsRequestDTO;
 import hanium.apigateway_service.mapper.UserGrpcMapperForGateway;
+import hanium.apigateway_service.security.JwtUtil;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.user.*;
 import io.grpc.StatusRuntimeException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,10 +35,11 @@ public class UserGrpcClient {
 
     // 로그인
     public TokenResponse login(LoginRequestDTO dto, HttpServletResponse response) {
-        LoginRequest request = UserGrpcMapperForGateway.toLoginGrpc(dto);
+        LoginRequest grpcRequest = UserGrpcMapperForGateway.toLoginGrpc(dto);
         try {
-            TokenResponse tokenResponse = stub.login(request);
-            response.addCookie(createCookie(tokenResponse.getRefreshToken()));
+            TokenResponse tokenResponse = stub.login(grpcRequest);
+            response.addCookie(JwtUtil.removeCookie(response));
+            response.addCookie(JwtUtil.createCookie(tokenResponse.getRefreshToken()));
             response.setHeader("Authorization", tokenResponse.getAccessToken());
             return tokenResponse;
         } catch (StatusRuntimeException e) {
@@ -67,10 +68,14 @@ public class UserGrpcClient {
     }
 
     // 토큰 재발급
-    public TokenResponse reissueToken(String refreshToken) {
+    public TokenResponse reissueToken(String refreshToken, HttpServletResponse response) {
         ReissueTokenRequest request = ReissueTokenRequest.newBuilder().setRefreshToken(refreshToken).build();
         try {
-            return stub.reissueToken(request);
+            TokenResponse tokenResponse = stub.reissueToken(request);
+            response.addCookie(JwtUtil.removeCookie(response));
+            response.addCookie(JwtUtil.createCookie(tokenResponse.getRefreshToken()));
+            response.setHeader("Authorization", tokenResponse.getAccessToken());
+            return tokenResponse;
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
@@ -94,18 +99,5 @@ public class UserGrpcClient {
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
-    }
-
-    /**
-     * Refresh 토큰 문자열로 쿠키를 생성해 반환합니다.
-     *
-     * @param refreshToken 전달할 Refresh 토큰
-     * @return 헤더의 쿠키 객체
-     */
-    private Cookie createCookie(String refreshToken) {
-        Cookie cookie = new Cookie("RefreshToken", refreshToken);
-        cookie.setMaxAge(12 * 60 * 60); // 12h
-        cookie.setHttpOnly(true);   // JS로 접근 불가, 탈취 위험 감소
-        return cookie;
     }
 }

@@ -10,13 +10,11 @@ public class TokenResponseDTO {
 
     public String email;
     public String accessToken;
-    public String refreshToken;
 
     public static TokenResponseDTO from(TokenResponse tokenResponse) {
         return TokenResponseDTO.builder()
                 .email(tokenResponse.getEmail())
                 .accessToken(tokenResponse.getAccessToken())
-                .refreshToken(tokenResponse.getRefreshToken())
                 .build();
     }
 }

@@ -9,6 +9,9 @@ import hanium.apigateway_service.dto.user.response.SignUpResponseDTO;
 import hanium.apigateway_service.dto.user.response.TokenResponseDTO;
 import hanium.apigateway_service.grpc.UserGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
+import hanium.apigateway_service.security.JwtUtil;
+import hanium.common.proto.user.TokenResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -41,6 +44,18 @@ public class UserController {
                 responseDTO, HttpStatus.OK, "정상적으로 로그인되었습니다."
         );
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/auth/refresh")
+    public ResponseEntity<ResponseDTO<TokenResponseDTO>> refresh(HttpServletRequest request,
+                                                                 HttpServletResponse response) {
+        TokenResponse grpcResult = userGrpcClient.reissueToken(
+                JwtUtil.extractRefreshToken(request), response
+        );
+        ResponseDTO<TokenResponseDTO> responseDTO = new ResponseDTO<>(
+                TokenResponseDTO.from(grpcResult), HttpStatus.OK, "토큰 재발급에 성공했습니다."
+        );
+        return ResponseEntity.ok(responseDTO);
     }
 
     @GetMapping("/member/{memberId}")

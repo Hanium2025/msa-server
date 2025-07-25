@@ -8,6 +8,7 @@ import hanium.common.exception.ErrorCode;
 import hanium.common.proto.user.GetAuthorityResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -64,7 +65,7 @@ public class JwtUtil {
      * @param request http 요청
      * @return Refresh 토큰 또는 "NULL" 문자열
      */
-    public String extractRefreshToken(HttpServletRequest request) {
+    public static String extractRefreshToken(HttpServletRequest request) {
         if (request.getCookies() == null || request.getCookies().length == 0) {
             return "NULL";
         }
@@ -145,5 +146,33 @@ public class JwtUtil {
         return new UsernamePasswordAuthenticationToken(
                 protoResponse.getMemberId(), accessToken, authorities
         );
+    }
+
+    /**
+     * Refresh 토큰 문자열로 쿠키를 생성해 반환합니다.
+     *
+     * @param refreshToken 전달할 Refresh 토큰
+     * @return 헤더의 쿠키 객체
+     */
+    public static Cookie createCookie(String refreshToken) {
+        Cookie cookie = new Cookie("RefreshToken", refreshToken);
+        cookie.setPath("/");
+        cookie.setMaxAge(24 * 60 * 60); // 24h
+        cookie.setHttpOnly(true);   // JS로 접근 불가, 탈취 위험 감소
+        return cookie;
+    }
+
+    /**
+     * 기존 RefreshToken 쿠키를 null, 만료된 상태로 반환하여 삭제합니다.
+     *
+     * @param response 응답 객체
+     * @return 삭제될 쿠키
+     */
+    public static Cookie removeCookie(HttpServletResponse response) {
+        Cookie nullCookie = new Cookie("RefreshToken", null);
+        nullCookie.setPath("/");
+        nullCookie.setMaxAge(0);
+        nullCookie.setHttpOnly(true);
+        return nullCookie;
     }
 }

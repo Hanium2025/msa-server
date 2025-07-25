@@ -29,6 +29,7 @@ public class SecurityConfig {
                                 "/error",
                                 "/user/auth/signup",
                                 "/user/auth/login",
+                                "/user/auth/refresh",
                                 "/user/sms/send",
                                 "/user/sms/verify",
                                 "/health/**",       // 나머지 서비스 헬스 체크
