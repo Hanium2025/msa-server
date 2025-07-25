@@ -38,7 +38,7 @@ public class UserGrpcClient {
         LoginRequest grpcRequest = UserGrpcMapperForGateway.toLoginGrpc(dto);
         try {
             TokenResponse tokenResponse = stub.login(grpcRequest);
-            response.addCookie(JwtUtil.removeCookie(response));
+            response.addCookie(JwtUtil.removeCookie());
             response.addCookie(JwtUtil.createCookie(tokenResponse.getRefreshToken()));
             response.setHeader("Authorization", tokenResponse.getAccessToken());
             return tokenResponse;
@@ -72,7 +72,7 @@ public class UserGrpcClient {
         ReissueTokenRequest request = ReissueTokenRequest.newBuilder().setRefreshToken(refreshToken).build();
         try {
             TokenResponse tokenResponse = stub.reissueToken(request);
-            response.addCookie(JwtUtil.removeCookie(response));
+            response.addCookie(JwtUtil.removeCookie());
             response.addCookie(JwtUtil.createCookie(tokenResponse.getRefreshToken()));
             response.setHeader("Authorization", tokenResponse.getAccessToken());
             return tokenResponse;

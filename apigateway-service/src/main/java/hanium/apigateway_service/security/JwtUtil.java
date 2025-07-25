@@ -8,7 +8,6 @@ import hanium.common.exception.ErrorCode;
 import hanium.common.proto.user.GetAuthorityResponse;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -165,10 +164,9 @@ public class JwtUtil {
     /**
      * 기존 RefreshToken 쿠키를 null, 만료된 상태로 반환하여 삭제합니다.
      *
-     * @param response 응답 객체
      * @return 삭제될 쿠키
      */
-    public static Cookie removeCookie(HttpServletResponse response) {
+    public static Cookie removeCookie() {
         Cookie nullCookie = new Cookie("RefreshToken", null);
         nullCookie.setPath("/");
         nullCookie.setMaxAge(0);

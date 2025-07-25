@@ -1,7 +1,5 @@
 package hanium.apigateway_service.security.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import hanium.apigateway_service.grpc.UserGrpcClient;
 import hanium.apigateway_service.security.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -27,8 +25,6 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserGrpcClient userGrpcClient;
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final List<String> NO_CHECK_URLS = new ArrayList<>(Arrays.asList(
             "/user/auth/login",
             "/user/auth/signup",
