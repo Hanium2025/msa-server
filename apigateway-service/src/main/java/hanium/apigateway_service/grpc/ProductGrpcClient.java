@@ -1,14 +1,12 @@
 package hanium.apigateway_service.grpc;
 
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
+import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
 import hanium.apigateway_service.dto.product.response.ProductInfoResponseDTO;
 import hanium.apigateway_service.mapper.ProductGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.GrpcUtil;
-import hanium.common.proto.product.GetProductRequest;
-import hanium.common.proto.product.ProductResponse;
-import hanium.common.proto.product.ProductServiceGrpc;
-import hanium.common.proto.product.RegisterProductRequest;
+import hanium.common.proto.product.*;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.client.inject.GrpcClient;
@@ -36,6 +34,16 @@ public class ProductGrpcClient {
         GetProductRequest grpcRequest = GetProductRequest.newBuilder().setProductId(productId).build();
         try {
             return ProductInfoResponseDTO.from(stub.getProduct(grpcRequest));
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 상품 수정
+    public ProductInfoResponseDTO updateProduct(Long productId, Long memberId, UpdateProductRequestDTO dto) {
+        UpdateProductRequest grpcRequest = ProductGrpcMapperForGateway.toUpdateProductGrpc(productId, memberId, dto);
+        try {
+            return ProductInfoResponseDTO.from(stub.updateProduct(grpcRequest));
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }

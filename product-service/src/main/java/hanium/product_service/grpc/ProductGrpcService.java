@@ -3,11 +3,9 @@ package hanium.product_service.grpc;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import hanium.common.exception.GrpcUtil;
-import hanium.common.proto.product.GetProductRequest;
-import hanium.common.proto.product.ProductResponse;
-import hanium.common.proto.product.ProductServiceGrpc;
-import hanium.common.proto.product.RegisterProductRequest;
+import hanium.common.proto.product.*;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
+import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductInfoResponseDTO;
 import hanium.product_service.mapper.ProductGrpcMapper;
 import hanium.product_service.service.ProductService;
@@ -47,6 +45,19 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
                            StreamObserver<ProductResponse> responseObserver) {
         try {
             ProductInfoResponseDTO dto = productService.getProductById(request.getProductId());
+            responseObserver.onNext(ProductGrpcMapper.toProductResponseGrpc(dto));
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    @Override
+    public void updateProduct(UpdateProductRequest request, StreamObserver<ProductResponse> responseObserver) {
+        try {
+            ProductInfoResponseDTO dto = productService.updateProduct(
+                    request.getProductId(), request.getMemberId(), UpdateProductRequestDTO.from(request)
+            );
             responseObserver.onNext(ProductGrpcMapper.toProductResponseGrpc(dto));
             responseObserver.onCompleted();
         } catch (CustomException e) {

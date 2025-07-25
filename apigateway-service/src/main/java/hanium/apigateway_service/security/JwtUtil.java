@@ -155,7 +155,7 @@ public class JwtUtil {
      */
     public static Cookie createCookie(String refreshToken) {
         Cookie cookie = new Cookie("RefreshToken", refreshToken);
-        cookie.setPath("/");
+        cookie.setPath("/user/auth/refresh");
         cookie.setMaxAge(24 * 60 * 60); // 24h
         cookie.setHttpOnly(true);   // JS로 접근 불가, 탈취 위험 감소
         return cookie;
@@ -168,7 +168,7 @@ public class JwtUtil {
      */
     public static Cookie removeCookie() {
         Cookie nullCookie = new Cookie("RefreshToken", null);
-        nullCookie.setPath("/");
+        nullCookie.setPath("/user/auth/refresh");
         nullCookie.setMaxAge(0);
         nullCookie.setHttpOnly(true);
         return nullCookie;
