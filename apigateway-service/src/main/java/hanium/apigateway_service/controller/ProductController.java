@@ -49,4 +49,14 @@ public class ProductController {
         );
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<?> deleteProduct(@PathVariable Long productId, Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        productGrpcClient.deleteProduct(productId, memberId);
+        ResponseDTO<ProductInfoResponseDTO> response = new ResponseDTO<>(
+                null, HttpStatus.NO_CONTENT, "상품이 삭제되었습니다."
+        );
+        return ResponseEntity.ok(response);
+    }
 }

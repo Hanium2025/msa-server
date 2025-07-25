@@ -52,6 +52,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         }
     }
 
+    // 상품 수정
     @Override
     public void updateProduct(UpdateProductRequest request, StreamObserver<ProductResponse> responseObserver) {
         try {
@@ -59,6 +60,18 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
                     request.getProductId(), request.getMemberId(), UpdateProductRequestDTO.from(request)
             );
             responseObserver.onNext(ProductGrpcMapper.toProductResponseGrpc(dto));
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 상품 삭제
+    @Override
+    public void deleteProduct(DeleteProductRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            productService.deleteProductById(request.getProductId(), request.getMemberId());
+            responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));

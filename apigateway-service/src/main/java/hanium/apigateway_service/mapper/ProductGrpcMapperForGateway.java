@@ -3,6 +3,7 @@ package hanium.apigateway_service.mapper;
 
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
+import hanium.common.proto.product.DeleteProductRequest;
 import hanium.common.proto.product.RegisterProductRequest;
 import hanium.common.proto.product.UpdateProductRequest;
 
@@ -26,6 +27,13 @@ public class ProductGrpcMapperForGateway {
                 .setContent(dto.getContent())
                 .setPrice(dto.getPrice())
                 .setCategory(dto.getCategory())
+                .build();
+    }
+
+    public static DeleteProductRequest toDeleteProductGrpc(Long productId, Long memberId) {
+        return DeleteProductRequest.newBuilder()
+                .setProductId(productId)
+                .setMemberId(memberId)
                 .build();
     }
 }

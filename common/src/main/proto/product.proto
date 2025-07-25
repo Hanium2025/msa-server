@@ -16,7 +16,12 @@ service ProductService {
 
   // 3. 상품 수정
   rpc UpdateProduct(UpdateProductRequest) returns (ProductResponse);
+
+  // 4. 상품 삭제
+  rpc DeleteProduct(DeleteProductRequest) returns (Empty);
 }
+
+message Empty {}
 
 // 1. 상품 등록
 message RegisterProductRequest {
@@ -50,4 +55,13 @@ message UpdateProductRequest {
   string content = 5;
   int64 price = 6;
   string category = 7;
+}
+
+// 4. 상품 삭제
+message DeleteProductRequest {
+  int64 member_id = 1;
+  int64 product_id = 2;
+}
+message DeleteProductResponse {
+  bool success = 1;
 }

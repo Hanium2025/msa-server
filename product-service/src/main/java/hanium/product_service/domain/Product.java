@@ -3,7 +3,6 @@ package hanium.product_service.domain;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
 
 @Entity
 @Getter
@@ -11,7 +10,6 @@ import org.hibernate.annotations.SQLDelete;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE PRODUCT SET PRODUCT.DELETED_AT = CURRENT_TIMESTAMP WHERE PRODUCT.ID = ?")
 public class Product extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

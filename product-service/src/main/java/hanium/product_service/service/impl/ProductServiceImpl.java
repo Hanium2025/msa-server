@@ -12,6 +12,8 @@ import hanium.product_service.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
@@ -39,7 +41,7 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     public ProductInfoResponseDTO getProductById(Long id) {
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
         return ProductInfoResponseDTO.from(product);
     }
@@ -47,15 +49,15 @@ public class ProductServiceImpl implements ProductService {
     /**
      * 상품을 수정합니다.
      *
-     * @param postId   수정할 상품의 id
-     * @param memberId 수정 요청한 회원의 id
-     * @param dto      수정할 내용이 담긴 dto
+     * @param productId 수정할 상품의 id
+     * @param memberId  수정 요청한 회원의 id
+     * @param dto       수정할 내용이 담긴 dto
      * @return 수정된 상품 정보 dto
      */
     @Override
-    public ProductInfoResponseDTO updateProduct(Long postId, Long memberId, UpdateProductRequestDTO dto) {
+    public ProductInfoResponseDTO updateProduct(Long productId, Long memberId, UpdateProductRequestDTO dto) {
         // 존재하지 않는 상품이거나 권한 없는 회원일 경우 예외처리
-        Product product = productRepository.findById(postId)
+        Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
         if (!memberId.equals(product.getSellerId())) {
             throw new CustomException(ErrorCode.NO_PERMISSION);
@@ -67,5 +69,24 @@ public class ProductServiceImpl implements ProductService {
         product.setCategory(Category.valueOf(dto.getCategory()));
         productRepository.save(product);
         return ProductInfoResponseDTO.from(product);
+    }
+
+    /**
+     * 상품을 삭제합니다.
+     *
+     * @param productId 삭제할 상품의 id
+     * @param memberId  삭제 요청한 회원의 id
+     */
+    @Override
+    public void deleteProductById(Long productId, Long memberId) {
+        // 존재하지 않는 상품이거나 권한 없는 회원일 경우 예외처리
+        Product product = productRepository.findByIdAndDeletedAtIsNull(productId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        if (!memberId.equals(product.getSellerId())) {
+            throw new CustomException(ErrorCode.NO_PERMISSION);
+        }
+        // 삭제 처리
+        product.setDeletedAt(LocalDateTime.now());
+        productRepository.save(product);
     }
 }

@@ -48,4 +48,14 @@ public class ProductGrpcClient {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
+
+    // 상품 삭제
+    public void deleteProduct(Long productId, Long memberId) {
+        DeleteProductRequest grpcRequest = ProductGrpcMapperForGateway.toDeleteProductGrpc(productId, memberId);
+        try {
+            stub.deleteProduct(grpcRequest);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
 }
