@@ -30,6 +30,7 @@ public enum ErrorCode {
 
     // -- PRODUCT-SERVICE -- //
     ERROR_ADD_PRODUCT(500, "상품 등록 중 문제가 발생했습니다."),
+    PRODUCT_NOT_FOUND(404, "해당하는 상품을 찾을 수 없습니다."),
     ;
 
     private final int code;

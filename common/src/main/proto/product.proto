@@ -10,6 +10,9 @@ import "common.proto";
 service ProductService {
   // 1. 상품 등록
   rpc RegisterProduct(RegisterProductRequest) returns (ProductResponse);
+
+  // 2. 상품 조회
+  rpc GetProduct(GetProductRequest) returns (ProductResponse);
 }
 
 // 1. 상품 등록
@@ -28,4 +31,9 @@ message ProductResponse {
   int64 sellerId = 5;
   string status = 6;    // Status enum 문자열
   string category = 7;
+}
+
+// 2. 상품 조회
+message GetProductRequest {
+  int64 product_id = 1;
 }

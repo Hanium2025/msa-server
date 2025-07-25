@@ -1,5 +1,7 @@
 package hanium.product_service.service.impl;
 
+import hanium.common.exception.CustomException;
+import hanium.common.exception.ErrorCode;
 import hanium.product_service.domain.Product;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import hanium.product_service.dto.response.ProductInfoResponseDTO;
@@ -24,6 +26,19 @@ public class ProductServiceImpl implements ProductService {
     public ProductInfoResponseDTO registerProduct(RegisterProductRequestDTO dto) {
         Product product = Product.from(dto);
         productRepository.save(product);
+        return ProductInfoResponseDTO.from(product);
+    }
+
+    /**
+     * id로 상품을 조회합니다.
+     *
+     * @param id 조회할 상품의 id
+     * @return 상품 정보 dto
+     */
+    @Override
+    public ProductInfoResponseDTO getProductById(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
         return ProductInfoResponseDTO.from(product);
     }
 }

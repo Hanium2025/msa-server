@@ -6,4 +6,6 @@ import hanium.product_service.dto.response.ProductInfoResponseDTO;
 public interface ProductService {
 
     ProductInfoResponseDTO registerProduct(RegisterProductRequestDTO dto);
+
+    ProductInfoResponseDTO getProductById(Long id);
 }
