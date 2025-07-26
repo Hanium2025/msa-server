@@ -89,19 +89,20 @@ public class ProductGrpcClient {
         }
     }
 
-
+    // 요청의 images 리스트 파일들을 s3에 저장하고 해당 경로 리스트 반환
     public List<String> getImagePaths(List<MultipartFile> images) {
         if (images.size() > 5) {
             throw new CustomException(ErrorCode.IMAGE_EXCEEDED);
         }
         List<String> paths = new ArrayList<>();
         for (MultipartFile file : images) {
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            String fileName = UUID.randomUUID().toString();
             paths.add(s3Upload(file, fileName));
         }
         return paths;
     }
 
+    // 특정 파일을 s3에 업로드
     private String s3Upload(MultipartFile file, String fileName) {
         if (file.isEmpty()) {
             throw new CustomException(ErrorCode.BLANK_IMAGE);
@@ -114,6 +115,7 @@ public class ProductGrpcClient {
         }
     }
 
+    // 특정 파일을 s3에서 삭제
     private void s3Delete(String fileName) {
         try {
             s3Template.deleteObject(bucketName, fileName);

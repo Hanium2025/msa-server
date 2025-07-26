@@ -32,7 +32,7 @@ public enum ErrorCode {
     ERROR_ADD_PRODUCT(500, "상품 등록 중 문제가 발생했습니다."),
     PRODUCT_NOT_FOUND(404, "해당하는 상품을 찾을 수 없습니다."),
     NO_PERMISSION(403, "해당 상품 등록자가 아니므로 권한이 없습니다."),
-    BLANK_IMAGE(400, "업로드할 이미지가 없습니다."),
+    BLANK_IMAGE(400, "이미지가 요청되었으나, 서버에 빈 파일이 전송되었습니다."),
     IMAGE_EXCEEDED(404, "이미지는 최대 5개까지 업로드 가능합니다."),
     IMAGE_UPLOAD_ERROR(500, "이미지 업로드에 실패했습니다."),
     IMAGE_NOT_FOUND(404, "이미지를 찾을 수 없습니다."),

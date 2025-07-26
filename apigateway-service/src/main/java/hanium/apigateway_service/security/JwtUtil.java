@@ -130,12 +130,11 @@ public class JwtUtil {
 
         // 사용자 이메일 추출
         String email = extractEmail(accessToken);
-        log.info("✅ 토큰에서 추출한 사용자 이메일: {}", email);
+        log.info("✅ 요청 사용자 이메일: {}", email);
 
         // 이메일로 사용자 권한 정보 가져오기
         GetAuthorityResponse protoResponse = userGrpcClient.getAuthority(email);
         String authority = protoResponse.getAuthority();
-        log.info("✅ 가져온 String authority: {}", authority);
 
         // UsernamePasswordAuthenticationToken에 들어갈
         // Collection<? extends GrantedAuthority> authorities 생성

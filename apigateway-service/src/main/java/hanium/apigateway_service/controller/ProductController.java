@@ -38,12 +38,12 @@ public class ProductController {
     ) throws JsonProcessingException {
 
         Long memberId = (Long) authentication.getPrincipal(); // 요청 사용자 id 확인
-
+        
         ProductResponse grpcResponse = productGrpcClient.registerProduct(
                 objectMapper.readValue(json, RegisterProductRequestDTO.class), memberId); // 상품 저장
 
         List<String> paths = new ArrayList<>();
-        if (images.size() > 0) {
+        if (!images.getFirst().isEmpty()) {
             paths = productGrpcClient.getImagePaths(images); // 이미지 저장 (s3 및 DB)
             productGrpcClient.saveImage(grpcResponse.getId(), paths);
         }
