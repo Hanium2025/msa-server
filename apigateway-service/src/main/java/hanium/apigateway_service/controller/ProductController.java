@@ -4,10 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
-import hanium.apigateway_service.dto.product.response.ProductInfoResponseDTO;
+import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
 import hanium.apigateway_service.grpc.ProductGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
-import hanium.common.proto.product.ProductResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -30,49 +29,45 @@ public class ProductController {
     private final ObjectMapper objectMapper;
 
     // 상품 등록
-    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ResponseDTO<ProductInfoResponseDTO>> registerProduct(
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ResponseDTO<ProductResponseDTO>> registerProduct(
             @RequestParam(value = "json") String json,
             @RequestParam(value = "images") List<MultipartFile> images,
-            Authentication authentication
-    ) throws JsonProcessingException {
+            Authentication authentication) throws JsonProcessingException {
 
         Long memberId = (Long) authentication.getPrincipal(); // 요청 사용자 id 확인
-        
-        ProductResponse grpcResponse = productGrpcClient.registerProduct(
-                objectMapper.readValue(json, RegisterProductRequestDTO.class), memberId); // 상품 저장
 
-        List<String> paths = new ArrayList<>();
+        // s3 이미지 업로드 로직 호출
+        List<String> s3Paths = new ArrayList<>();
         if (!images.getFirst().isEmpty()) {
-            paths = productGrpcClient.getImagePaths(images); // 이미지 저장 (s3 및 DB)
-            productGrpcClient.saveImage(grpcResponse.getId(), paths);
+            s3Paths = productGrpcClient.getImagePaths(images);
         }
+        // 상품 저장 로직 호출
+        ProductResponseDTO result = productGrpcClient.registerProduct(
+                memberId, objectMapper.readValue(json, RegisterProductRequestDTO.class), s3Paths);
 
-        ResponseDTO<ProductInfoResponseDTO> response = new ResponseDTO<>(
-                ProductInfoResponseDTO.of(grpcResponse, paths), HttpStatus.OK, "정상적으로 상품이 등록되었습니다."
-        );
+        ResponseDTO<ProductResponseDTO> response = new ResponseDTO<>(
+                result, HttpStatus.OK, "정상적으로 상품이 등록되었습니다.");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // 상품 조회
     @GetMapping("/{productId}")
-    public ResponseEntity<ResponseDTO<ProductInfoResponseDTO>> getProduct(@PathVariable Long productId) {
-        ResponseDTO<ProductInfoResponseDTO> response = new ResponseDTO<>(
-                productGrpcClient.getProduct(productId), HttpStatus.OK, "해당하는 상품이 조회되었습니다."
-        );
+    public ResponseEntity<ResponseDTO<ProductResponseDTO>> getProduct(@PathVariable Long productId) {
+        ResponseDTO<ProductResponseDTO> response = new ResponseDTO<>(
+                productGrpcClient.getProduct(productId), HttpStatus.OK, "해당하는 상품이 조회되었습니다.");
         return ResponseEntity.ok(response);
     }
 
-    // 상품 수정
+    // 상품 수정 TODO: 이미지까지 처리
     @PutMapping("/{productId}")
-    public ResponseEntity<ResponseDTO<ProductInfoResponseDTO>> updateProduct(@PathVariable Long productId,
-                                                                             @RequestBody UpdateProductRequestDTO dto,
-                                                                             Authentication authentication) {
+    public ResponseEntity<ResponseDTO<ProductResponseDTO>> updateProduct(@PathVariable Long productId,
+                                                                         @RequestBody UpdateProductRequestDTO dto,
+                                                                         Authentication authentication) {
         Long memberId = (Long) authentication.getPrincipal();
-        ProductInfoResponseDTO responseDTO = productGrpcClient.updateProduct(productId, memberId, dto);
-        ResponseDTO<ProductInfoResponseDTO> response = new ResponseDTO<>(
-                responseDTO, HttpStatus.OK, "상품 수정이 완료되었습니다."
-        );
+        ProductResponseDTO result = productGrpcClient.updateProduct(productId, memberId, dto);
+        ResponseDTO<ProductResponseDTO> response = new ResponseDTO<>(
+                result, HttpStatus.OK, "상품 수정이 완료되었습니다.");
         return ResponseEntity.ok(response);
     }
 
@@ -81,9 +76,8 @@ public class ProductController {
     public ResponseEntity<?> deleteProduct(@PathVariable Long productId, Authentication authentication) {
         Long memberId = (Long) authentication.getPrincipal();
         productGrpcClient.deleteProduct(productId, memberId);
-        ResponseDTO<ProductInfoResponseDTO> response = new ResponseDTO<>(
-                null, HttpStatus.NO_CONTENT, "상품이 삭제되었습니다."
-        );
+        ResponseDTO<ProductResponseDTO> response = new ResponseDTO<>(
+                null, HttpStatus.OK, "상품이 삭제되었습니다.");
         return ResponseEntity.ok(response);
     }
 }

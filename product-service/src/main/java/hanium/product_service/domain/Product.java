@@ -35,10 +35,10 @@ public class Product extends BaseEntity {
 
     public static Product from(RegisterProductRequestDTO dto) {
         return Product.builder()
+                .sellerId(dto.getSellerId())
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .price(dto.getPrice())
-                .sellerId(dto.getSellerId())
                 .category(dto.getCategory())
                 .status(Status.SELLING)
                 .build();

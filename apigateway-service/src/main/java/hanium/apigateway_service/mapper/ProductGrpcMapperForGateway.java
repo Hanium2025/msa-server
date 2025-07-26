@@ -5,31 +5,28 @@ import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
 import hanium.common.proto.product.DeleteProductRequest;
 import hanium.common.proto.product.RegisterProductRequest;
-import hanium.common.proto.product.SaveImageRequest;
 import hanium.common.proto.product.UpdateProductRequest;
 
 import java.util.List;
 
 public class ProductGrpcMapperForGateway {
 
-    public static RegisterProductRequest toRegisterProductGrpc(RegisterProductRequestDTO dto, Long memberId) {
+    public static RegisterProductRequest toRegisterProductGrpc(Long memberId,
+                                                               RegisterProductRequestDTO dto,
+                                                               List<String> s3Paths) {
         return RegisterProductRequest.newBuilder()
                 .setSellerId(memberId)
                 .setTitle(dto.getTitle())
                 .setContent(dto.getContent())
                 .setPrice(dto.getPrice())
                 .setCategory(dto.getCategory())
+                .addAllImageUrls(s3Paths)
                 .build();
     }
 
-    public static SaveImageRequest toSaveImageGrpc(Long productId, List<String> images) {
-        return SaveImageRequest.newBuilder()
-                .setProductId(productId)
-                .addAllImagePath(images)
-                .build();
-    }
-
-    public static UpdateProductRequest toUpdateProductGrpc(Long productId, Long memberId, UpdateProductRequestDTO dto) {
+    public static UpdateProductRequest toUpdateProductGrpc(Long productId,
+                                                           Long memberId,
+                                                           UpdateProductRequestDTO dto) {
         return UpdateProductRequest.newBuilder()
                 .setMemberId(memberId)
                 .setProductId(productId)

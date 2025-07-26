@@ -2,7 +2,7 @@ package hanium.apigateway_service.grpc;
 
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
-import hanium.apigateway_service.dto.product.response.ProductInfoResponseDTO;
+import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
 import hanium.apigateway_service.mapper.ProductGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
@@ -38,42 +38,34 @@ public class ProductGrpcClient {
 
     private final S3Template s3Template;
 
-
     // 상품 등록
-    public ProductResponse registerProduct(RegisterProductRequestDTO dto, Long memberId) {
-        RegisterProductRequest grpcRequest = ProductGrpcMapperForGateway.toRegisterProductGrpc(dto, memberId);
+    public ProductResponseDTO registerProduct(Long memberId,
+                                              RegisterProductRequestDTO dto,
+                                              List<String> s3Paths) {
+        RegisterProductRequest grpcRequest =
+                ProductGrpcMapperForGateway.toRegisterProductGrpc(memberId, dto, s3Paths);
         try {
-            return stub.registerProduct(grpcRequest);
-        } catch (StatusRuntimeException e) {
-            throw new CustomException(GrpcUtil.extractErrorCode(e));
-        }
-    }
-
-    // 상품 이미지 등록
-    public void saveImage(Long productId, List<String> images) {
-        SaveImageRequest grpcRequest = ProductGrpcMapperForGateway.toSaveImageGrpc(productId, images);
-        try {
-            stub.saveImage(grpcRequest);
+            return ProductResponseDTO.from(stub.registerProduct(grpcRequest));
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 
     // 상품 조회
-    public ProductInfoResponseDTO getProduct(Long productId) {
+    public ProductResponseDTO getProduct(Long productId) {
         GetProductRequest grpcRequest = GetProductRequest.newBuilder().setProductId(productId).build();
         try {
-            return ProductInfoResponseDTO.from(stub.getProduct(grpcRequest));
+            return ProductResponseDTO.from(stub.getProduct(grpcRequest));
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 
     // 상품 수정
-    public ProductInfoResponseDTO updateProduct(Long productId, Long memberId, UpdateProductRequestDTO dto) {
+    public ProductResponseDTO updateProduct(Long productId, Long memberId, UpdateProductRequestDTO dto) {
         UpdateProductRequest grpcRequest = ProductGrpcMapperForGateway.toUpdateProductGrpc(productId, memberId, dto);
         try {
-            return ProductInfoResponseDTO.from(stub.updateProduct(grpcRequest));
+            return ProductResponseDTO.from(stub.updateProduct(grpcRequest));
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }

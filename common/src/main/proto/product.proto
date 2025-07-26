@@ -10,7 +10,6 @@ import "common.proto";
 service ProductService {
   // 1. 상품 등록
   rpc RegisterProduct(RegisterProductRequest) returns (ProductResponse);
-  rpc SaveImage(SaveImageRequest) returns (Empty);
 
   // 2. 상품 조회
   rpc GetProduct(GetProductRequest) returns (ProductResponse);
@@ -26,25 +25,27 @@ message Empty {}
 
 // 1. 상품 등록
 message RegisterProductRequest {
-  string title = 1;
-  string content = 2;
-  int64 price = 3;
-  int64 seller_id = 4;
+  int64 seller_id = 1;
+  string title = 2;
+  string content = 3;
+  int64 price = 4;
   string category = 5;
+  repeated string image_urls = 6;
 }
+
 message ProductResponse {
-  int64 id = 1;
+  int64 product_id = 1;
   int64 seller_id = 2;
   string title = 3;
   string content = 4;
   int64 price = 5;
   string category = 6;
   string status = 7;
-  repeated string images = 8;
+  repeated ProductImageResponse images = 8;
 }
-message SaveImageRequest {
-  int64 product_id = 1;
-  repeated string image_path = 2;
+message ProductImageResponse {
+  int64 product_image_id = 1;
+  string image_url = 2;
 }
 
 // 2. 상품 조회
@@ -56,11 +57,10 @@ message GetProductRequest {
 message UpdateProductRequest {
   int64 member_id = 1;
   int64 product_id = 2;
-  int64 seller_id = 3;
-  string title = 4;
-  string content = 5;
-  int64 price = 6;
-  string category = 7;
+  string title = 3;
+  string content = 4;
+  int64 price = 5;
+  string category = 6;
 }
 
 // 4. 상품 삭제

@@ -7,17 +7,20 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 
 public class RegisterProductRequestDTO {
+    private Long sellerId;
     private String title;
     private String content;
     private Long price;
-    private Long sellerId;
     private Category category;
+    private List<String> imageUrls;
 
     public static RegisterProductRequestDTO from(RegisterProductRequest request) {
         return RegisterProductRequestDTO.builder()
@@ -26,6 +29,7 @@ public class RegisterProductRequestDTO {
                 .content(request.getContent())
                 .price(request.getPrice())
                 .category(Category.valueOf(request.getCategory()))
+                .imageUrls(request.getImageUrlsList())
                 .build();
     }
 }

@@ -5,9 +5,8 @@ import hanium.common.exception.ErrorCode;
 import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.*;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
-import hanium.product_service.dto.request.SaveImageRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
-import hanium.product_service.dto.response.ProductInfoResponseDTO;
+import hanium.product_service.dto.response.ProductResponseDTO;
 import hanium.product_service.mapper.ProductGrpcMapper;
 import hanium.product_service.service.ProductService;
 import io.grpc.stub.StreamObserver;
@@ -26,13 +25,10 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
 
     // 상품 등록
     @Override
-    public void registerProduct(RegisterProductRequest request,
-                                StreamObserver<ProductResponse> responseObserver) {
+    public void registerProduct(RegisterProductRequest request, StreamObserver<ProductResponse> responseObserver) {
         try {
-            ProductInfoResponseDTO responseDTO = productService
-                    .registerProduct(RegisterProductRequestDTO.from(request));
-            ProductResponse response = ProductGrpcMapper.toProductResponseGrpc(responseDTO);
-            responseObserver.onNext(response);
+            ProductResponseDTO dto = productService.registerProduct(RegisterProductRequestDTO.from(request));
+            responseObserver.onNext(ProductGrpcMapper.toProductResponseGrpc(dto));
             responseObserver.onCompleted();
         } catch (Exception e) {
             CustomException ce = new CustomException(ErrorCode.ERROR_ADD_PRODUCT);
@@ -40,24 +36,11 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         }
     }
 
-    @Override
-    public void saveImage(SaveImageRequest request, StreamObserver<Empty> responseObserver) {
-        try {
-            SaveImageRequestDTO dto = SaveImageRequestDTO.from(request);
-            productService.saveImage(dto);
-            responseObserver.onNext(Empty.getDefaultInstance());
-            responseObserver.onCompleted();
-        } catch (CustomException e) {
-            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
-        }
-    }
-
     // 상품 조회
     @Override
-    public void getProduct(GetProductRequest request,
-                           StreamObserver<ProductResponse> responseObserver) {
+    public void getProduct(GetProductRequest request, StreamObserver<ProductResponse> responseObserver) {
         try {
-            ProductInfoResponseDTO dto = productService.getProductById(request.getProductId());
+            ProductResponseDTO dto = productService.getProductById(request.getProductId());
             responseObserver.onNext(ProductGrpcMapper.toProductResponseGrpc(dto));
             responseObserver.onCompleted();
         } catch (CustomException e) {
@@ -69,9 +52,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     @Override
     public void updateProduct(UpdateProductRequest request, StreamObserver<ProductResponse> responseObserver) {
         try {
-            ProductInfoResponseDTO dto = productService.updateProduct(
-                    request.getProductId(), request.getMemberId(), UpdateProductRequestDTO.from(request)
-            );
+            ProductResponseDTO dto = productService.updateProduct(UpdateProductRequestDTO.from(request));
             responseObserver.onNext(ProductGrpcMapper.toProductResponseGrpc(dto));
             responseObserver.onCompleted();
         } catch (CustomException e) {

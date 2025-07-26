@@ -8,11 +8,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductInfoResponseDTO {
+public class ProductResponseDTO {
+
     private Long id;
     private String title;
     private String content;
@@ -20,9 +23,10 @@ public class ProductInfoResponseDTO {
     private Long sellerId;
     private Status status;
     private Category category;
+    private List<ProductImageDTO> images;
 
-    public static ProductInfoResponseDTO from(Product product) {
-        return ProductInfoResponseDTO.builder()
+    public static ProductResponseDTO of(Product product, List<ProductImageDTO> images) {
+        return ProductResponseDTO.builder()
                 .id(product.getId())
                 .title(product.getTitle())
                 .content(product.getContent())
@@ -30,6 +34,7 @@ public class ProductInfoResponseDTO {
                 .sellerId(product.getSellerId())
                 .category(product.getCategory())
                 .status(product.getStatus())
+                .images(images)
                 .build();
     }
 }
