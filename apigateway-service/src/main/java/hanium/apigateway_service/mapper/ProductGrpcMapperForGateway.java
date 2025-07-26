@@ -5,7 +5,10 @@ import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
 import hanium.common.proto.product.DeleteProductRequest;
 import hanium.common.proto.product.RegisterProductRequest;
+import hanium.common.proto.product.SaveImageRequest;
 import hanium.common.proto.product.UpdateProductRequest;
+
+import java.util.List;
 
 public class ProductGrpcMapperForGateway {
 
@@ -16,6 +19,13 @@ public class ProductGrpcMapperForGateway {
                 .setContent(dto.getContent())
                 .setPrice(dto.getPrice())
                 .setCategory(dto.getCategory())
+                .build();
+    }
+
+    public static SaveImageRequest toSaveImageGrpc(Long productId, List<String> images) {
+        return SaveImageRequest.newBuilder()
+                .setProductId(productId)
+                .addAllImagePath(images)
                 .build();
     }
 

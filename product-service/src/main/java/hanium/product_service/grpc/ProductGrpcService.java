@@ -5,6 +5,7 @@ import hanium.common.exception.ErrorCode;
 import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.*;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
+import hanium.product_service.dto.request.SaveImageRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductInfoResponseDTO;
 import hanium.product_service.mapper.ProductGrpcMapper;
@@ -36,6 +37,18 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         } catch (Exception e) {
             CustomException ce = new CustomException(ErrorCode.ERROR_ADD_PRODUCT);
             responseObserver.onError(GrpcUtil.generateException(ce.getErrorCode()));
+        }
+    }
+
+    @Override
+    public void saveImage(SaveImageRequest request, StreamObserver<SaveImageResponse> responseObserver) {
+        try {
+            SaveImageRequestDTO dto = SaveImageRequestDTO.from(request);
+            productService.saveImage(dto);
+            responseObserver.onNext(SaveImageResponse.newBuilder().setSuccess(true).build());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
         }
     }
 

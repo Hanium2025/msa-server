@@ -4,21 +4,27 @@ import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import hanium.product_service.domain.Category;
 import hanium.product_service.domain.Product;
+import hanium.product_service.domain.ProductImage;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
+import hanium.product_service.dto.request.SaveImageRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductInfoResponseDTO;
+import hanium.product_service.repository.ProductImageRepository;
 import hanium.product_service.repository.ProductRepository;
 import hanium.product_service.service.ProductService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductImageRepository productImageRepository;
 
     /**
      * 새 상품을 등록합니다.
@@ -31,6 +37,15 @@ public class ProductServiceImpl implements ProductService {
         Product product = Product.from(dto);
         productRepository.save(product);
         return ProductInfoResponseDTO.from(product);
+    }
+
+    @Override
+    public void saveImage(SaveImageRequestDTO dto) {
+        Product product = productRepository.findByIdAndDeletedAtIsNull(dto.getProductId())
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        for (String path : dto.getImages()) {
+            productImageRepository.save(ProductImage.builder().product(product).imageUrl(path).build());
+        }
     }
 
     /**
