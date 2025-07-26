@@ -2,6 +2,7 @@ package hanium.apigateway_service.grpc;
 
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
+import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO2;
 import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
 import hanium.apigateway_service.mapper.ProductGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
@@ -63,7 +64,8 @@ public class ProductGrpcClient {
 
     // 상품 수정
     public ProductResponseDTO updateProduct(Long productId, Long memberId, UpdateProductRequestDTO dto) {
-        UpdateProductRequest grpcRequest = ProductGrpcMapperForGateway.toUpdateProductGrpc(productId, memberId, dto);
+        UpdateProductRequest grpcRequest =
+                ProductGrpcMapperForGateway.toUpdateProductGrpc(productId, memberId, dto);
         try {
             return ProductResponseDTO.from(stub.updateProduct(grpcRequest));
         } catch (StatusRuntimeException e) {
@@ -88,7 +90,7 @@ public class ProductGrpcClient {
         }
         List<String> paths = new ArrayList<>();
         for (MultipartFile file : images) {
-            String fileName = UUID.randomUUID().toString();
+            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
             paths.add(s3Upload(file, fileName));
         }
         return paths;
@@ -113,6 +115,32 @@ public class ProductGrpcClient {
             s3Template.deleteObject(bucketName, fileName);
         } catch (S3Exception e) {
             throw new CustomException(ErrorCode.IMAGE_NOT_FOUND);
+        }
+    }
+
+    public ProductResponseDTO updateProductV2(Long memberId, Long productId,
+                                              UpdateProductRequestDTO2 dto, List<MultipartFile> images) {
+        // 삭제된 이미지가 있는지 확인, 비교하고 삭제 처리
+        DeleteImageRequest deleteRequest =
+                ProductGrpcMapperForGateway.toDeleteImageGrpc(memberId, productId, dto.getLeftImageIds());
+        try {
+            int leftImageCount = stub.deleteImage(deleteRequest).getLeftImgCount();
+            // 새로 추가된 이미지 있는가?
+            List<String> s3Paths = new ArrayList<>();
+            if (!images.getFirst().isEmpty()) {
+                // 기존 이미지와 새로 추가된 이미지 포함 5장 초과면 예외 발생
+                if (images.size() + leftImageCount > 5) {
+                    throw new CustomException(ErrorCode.IMAGE_EXCEEDED);
+                }
+                s3Paths = getImagePaths(images);
+            }
+            // 새로 추가된 이미지와 수정할 상품 dto로 상품 수정
+            UpdateProductRequest2 updateRequest =
+                    ProductGrpcMapperForGateway.toUpdateProduct2Grpc(memberId, productId, dto, s3Paths);
+            return ProductResponseDTO.from(stub.updateProduct2(updateRequest));
+
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 }

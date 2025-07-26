@@ -5,7 +5,9 @@ import hanium.common.exception.ErrorCode;
 import hanium.product_service.domain.Category;
 import hanium.product_service.domain.Product;
 import hanium.product_service.domain.ProductImage;
+import hanium.product_service.dto.request.DeleteImageRequestDTO;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
+import hanium.product_service.dto.request.UpdateProductRequest2DTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductImageDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
@@ -102,7 +104,7 @@ public class ProductServiceImpl implements ProductService {
         // 삭제 처리
         product.setDeletedAt(LocalDateTime.now());
         productRepository.save(product);
-        for (ProductImage image : productImageRepository.findByProduct(product)) {
+        for (ProductImage image : productImageRepository.findByProductAndDeletedAtIsNull(product)) {
             image.setDeletedAt(LocalDateTime.now());
             productImageRepository.save(image);
         }
@@ -110,6 +112,41 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductImageDTO> getProductImages(Product product) {
-        return productImageRepository.findByProduct(product).stream().map(ProductImageDTO::from).toList();
+        return productImageRepository.findByProductAndDeletedAtIsNull(product)
+                .stream().map(ProductImageDTO::from).toList();
+    }
+
+    @Override
+    public int deleteProductImage(DeleteImageRequestDTO dto) {
+        // 이미지 not found, 권한 없는 회원 예외
+        Product product = productRepository.findByIdAndDeletedAtIsNull(dto.getProductId())
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        if (!dto.getMemberId().equals(product.getSellerId())) {
+            throw new CustomException(ErrorCode.NO_PERMISSION);
+        }
+        // 삭제 처리
+        for (ProductImage image : productImageRepository.findByProductAndDeletedAtIsNull(product)) {
+            if (!dto.getLeftImageIds().contains(image.getId())) {
+                image.setDeletedAt(LocalDateTime.now());
+                productImageRepository.save(image);
+            }
+        }
+        return dto.getLeftImageIds().size();
+    }
+
+    @Override
+    public ProductResponseDTO updateProduct2(UpdateProductRequest2DTO dto) {
+        Product product = productRepository.findByIdAndDeletedAtIsNull(dto.getProductId())
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        product.setTitle(dto.getTitle());
+        product.setContent(dto.getContent());
+        product.setPrice(dto.getPrice());
+        product.setCategory(dto.getCategory());
+        productRepository.save(product);
+        for (String imageUrl : dto.getImageUrls()) {
+            ProductImage productImage = ProductImage.of(product, imageUrl);
+            productImageRepository.save(productImage);
+        }
+        return ProductResponseDTO.of(product, getProductImages(product));
     }
 }

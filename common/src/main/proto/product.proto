@@ -16,6 +16,8 @@ service ProductService {
 
   // 3. 상품 수정
   rpc UpdateProduct(UpdateProductRequest) returns (ProductResponse);
+  rpc UpdateProduct2(UpdateProductRequest2) returns (ProductResponse);
+  rpc DeleteImage(DeleteImageRequest) returns (DeleteImageResponse);
 
   // 4. 상품 삭제
   rpc DeleteProduct(DeleteProductRequest) returns (Empty);
@@ -61,6 +63,24 @@ message UpdateProductRequest {
   string content = 4;
   int64 price = 5;
   string category = 6;
+}
+
+message UpdateProductRequest2 {
+  int64 member_id = 1;
+  int64 product_id = 2;
+  string title = 3;
+  string content = 4;
+  int64 price = 5;
+  string category = 6;
+  repeated string image_urls = 7;
+}
+message DeleteImageRequest {
+  int64 member_id = 1;
+  int64 product_id = 2;
+  repeated int64 left_image_ids = 3;
+}
+message DeleteImageResponse {
+  int32 left_img_count = 1;
 }
 
 // 4. 상품 삭제

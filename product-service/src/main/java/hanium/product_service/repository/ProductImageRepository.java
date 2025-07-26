@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface ProductImageRepository extends JpaRepository<ProductImage, Long> {
 
-    List<ProductImage> findByProduct(Product product);
+    List<ProductImage> findByProductAndDeletedAtIsNull(Product product);
 }
