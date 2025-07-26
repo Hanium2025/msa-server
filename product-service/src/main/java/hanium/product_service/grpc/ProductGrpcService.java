@@ -6,7 +6,6 @@ import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.*;
 import hanium.product_service.dto.request.DeleteImageRequestDTO;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
-import hanium.product_service.dto.request.UpdateProductRequest2DTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
 import hanium.product_service.mapper.ProductGrpcMapper;
@@ -50,22 +49,10 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         }
     }
 
-    // 상품 수정
     @Override
     public void updateProduct(UpdateProductRequest request, StreamObserver<ProductResponse> responseObserver) {
         try {
             ProductResponseDTO dto = productService.updateProduct(UpdateProductRequestDTO.from(request));
-            responseObserver.onNext(ProductGrpcMapper.toProductResponseGrpc(dto));
-            responseObserver.onCompleted();
-        } catch (CustomException e) {
-            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
-        }
-    }
-
-    @Override
-    public void updateProduct2(UpdateProductRequest2 request, StreamObserver<ProductResponse> responseObserver) {
-        try {
-            ProductResponseDTO dto = productService.updateProduct2(UpdateProductRequest2DTO.from(request));
             responseObserver.onNext(ProductGrpcMapper.toProductResponseGrpc(dto));
             responseObserver.onCompleted();
         } catch (CustomException e) {

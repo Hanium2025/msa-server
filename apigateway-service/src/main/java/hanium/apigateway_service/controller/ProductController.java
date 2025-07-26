@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
-import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO2;
 import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
 import hanium.apigateway_service.grpc.ProductGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
@@ -60,20 +59,8 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-    // 상품 수정 TODO: 이미지까지 처리
-    @PutMapping("/{productId}")
-    public ResponseEntity<ResponseDTO<ProductResponseDTO>> updateProduct(@PathVariable Long productId,
-                                                                         @RequestBody UpdateProductRequestDTO dto,
-                                                                         Authentication authentication) {
-        Long memberId = (Long) authentication.getPrincipal();
-        ProductResponseDTO result = productGrpcClient.updateProduct(productId, memberId, dto);
-        ResponseDTO<ProductResponseDTO> response = new ResponseDTO<>(
-                result, HttpStatus.OK, "상품 수정이 완료되었습니다.");
-        return ResponseEntity.ok(response);
-    }
-
-    // 상품 수정 (이미지까지 처리 버전)
-    @PutMapping(value = "/{productId}/v2", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    // 상품 수정
+    @PutMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseDTO<ProductResponseDTO>> updateProductV2(
             @PathVariable Long productId,
             @RequestParam(value = "json") String json,
@@ -81,8 +68,8 @@ public class ProductController {
             Authentication authentication) throws JsonProcessingException {
 
         Long memberId = (Long) authentication.getPrincipal();
-        UpdateProductRequestDTO2 dto = objectMapper.readValue(json, UpdateProductRequestDTO2.class);
-        ProductResponseDTO result = productGrpcClient.updateProductV2(memberId, productId, dto, images);
+        UpdateProductRequestDTO dto = objectMapper.readValue(json, UpdateProductRequestDTO.class);
+        ProductResponseDTO result = productGrpcClient.updateProduct(memberId, productId, dto, images);
         ResponseDTO<ProductResponseDTO> response = new ResponseDTO<>(
                 result, HttpStatus.OK, "상품 수정이 완료되었습니다.");
         return ResponseEntity.ok(response);
