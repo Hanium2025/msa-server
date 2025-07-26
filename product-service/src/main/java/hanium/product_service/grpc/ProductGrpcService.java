@@ -41,11 +41,11 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     }
 
     @Override
-    public void saveImage(SaveImageRequest request, StreamObserver<SaveImageResponse> responseObserver) {
+    public void saveImage(SaveImageRequest request, StreamObserver<Empty> responseObserver) {
         try {
             SaveImageRequestDTO dto = SaveImageRequestDTO.from(request);
             productService.saveImage(dto);
-            responseObserver.onNext(SaveImageResponse.newBuilder().setSuccess(true).build());
+            responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));

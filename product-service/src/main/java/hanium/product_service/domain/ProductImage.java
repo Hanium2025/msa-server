@@ -21,5 +21,6 @@ public class ProductImage {
     private Product product;
 
     // 실제 이미지 URL (S3 등 외부 저장소 경로를 저장하는 용도)
+    @Column(length = 1000)
     private String imageUrl;
 }

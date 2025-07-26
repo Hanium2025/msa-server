@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Getter
 @Builder
 @NoArgsConstructor
@@ -18,6 +20,7 @@ public class ProductInfoResponseDTO {
     private Long sellerId;
     private String status;
     private String category;
+    private List<String> images;
 
     public static ProductInfoResponseDTO from(ProductResponse productResponse) {
         return ProductInfoResponseDTO.builder()
@@ -28,6 +31,19 @@ public class ProductInfoResponseDTO {
                 .sellerId(productResponse.getSellerId())
                 .category(productResponse.getCategory())
                 .status(productResponse.getStatus())
+                .build();
+    }
+
+    public static ProductInfoResponseDTO of(ProductResponse productResponse, List<String> images) {
+        return ProductInfoResponseDTO.builder()
+                .id(productResponse.getId())
+                .title(productResponse.getTitle())
+                .content(productResponse.getContent())
+                .price(productResponse.getPrice())
+                .sellerId(productResponse.getSellerId())
+                .category(productResponse.getCategory())
+                .status(productResponse.getStatus())
+                .images(images)
                 .build();
     }
 }

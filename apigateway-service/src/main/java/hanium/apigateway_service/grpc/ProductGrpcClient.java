@@ -107,7 +107,6 @@ public class ProductGrpcClient {
             throw new CustomException(ErrorCode.BLANK_IMAGE);
         }
         try (InputStream is = file.getInputStream()) {
-            log.info("✅ s3Service... 저장 요청함");
             S3Resource upload = s3Template.upload(bucketName, fileName, is);
             return upload.getURL().toString();
         } catch (IOException | S3Exception e) {
