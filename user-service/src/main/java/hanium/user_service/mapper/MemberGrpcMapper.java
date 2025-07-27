@@ -43,9 +43,10 @@ public class MemberGrpcMapper {
     }
 
     // 회원 권한 조회 응답 String -> gRPC
-    public static GetAuthorityResponse toAuthorityResponse(String authority) {
+    public static GetAuthorityResponse toAuthorityResponse(String authority, Long memberId) {
         return GetAuthorityResponse.newBuilder()
                 .setAuthority(authority)
+                .setMemberId(memberId)
                 .build();
     }
 }

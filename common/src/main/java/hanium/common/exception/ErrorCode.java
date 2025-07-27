@@ -17,6 +17,7 @@ public enum ErrorCode {
 
     // -- USER-SERVICE -- //
     HAS_EMAIL(400, "이미 존재하는 이메일입니다."),
+    HAS_PHONE(400, "이미 존재하는 전화번호입니다."),
     PASSWORD_NOT_MATCH(400, "재확인 비밀번호가 일치하지 않습니다."),
     INVALID_CONTENT_TYPE(400, "요청은 application/json 타입이어야 합니다."),
     NULL_ACCESS_TOKEN(400, "Access 토큰이 존재하지 않습니다."),
@@ -26,6 +27,15 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(404, "해당하는 Member를 찾을 수 없습니다."),
     AUTHORITY_NOT_FOUND(404, "사용자의 권한을 조회할 수 없습니다."),
     REFRESH_NOT_FOUND(404, "데이터베이스에서 Refresh 토큰을 찾을 수 없습니다."),
+
+    // -- PRODUCT-SERVICE -- //
+    ERROR_ADD_PRODUCT(500, "상품 등록 중 문제가 발생했습니다."),
+    PRODUCT_NOT_FOUND(404, "해당하는 상품을 찾을 수 없습니다."),
+    NO_PERMISSION(403, "해당 상품 등록자가 아니므로 권한이 없습니다."),
+    BLANK_IMAGE(400, "이미지가 요청되었으나, 서버에 빈 파일이 전송되었습니다."),
+    IMAGE_EXCEEDED(404, "이미지는 최대 5개까지 업로드 가능합니다."),
+    IMAGE_UPLOAD_ERROR(500, "이미지 업로드에 실패했습니다."),
+    IMAGE_NOT_FOUND(404, "이미지를 찾을 수 없습니다."),
     ;
 
     private final int code;

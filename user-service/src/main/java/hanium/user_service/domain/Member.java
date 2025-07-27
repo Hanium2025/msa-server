@@ -2,14 +2,12 @@ package hanium.user_service.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLDelete;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 
 @Entity
@@ -17,8 +15,6 @@ import java.util.List;
 @Setter
 @Builder
 @Table(name = "MEMBER")
-// 삭제 시, 삭제 일시를 업데이트하는 쿼리 날림
-@SQLDelete(sql = "UPDATE MEMBER SET MEMBER.DELETED_AT = CURRENT_TIMESTAMP WHERE MEMBER.ID = ?")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Member extends BaseEntity implements UserDetails {

@@ -3,12 +3,11 @@ package hanium.apigateway_service.grpc;
 
 import hanium.apigateway_service.dto.community.CreatePostRequestDTO;
 import hanium.apigateway_service.mapper.PostGrpcMapperForGateway;
-import hanium.common.proto.CommonResponse;
+import hanium.common.proto.common.CommonResponse;
 import hanium.common.proto.community.CommunityServiceGrpc;
 import hanium.common.proto.community.CreatePostRequest;
 import hanium.common.proto.community.Empty;
 import hanium.common.proto.community.PingResponse;
-
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
@@ -29,10 +28,8 @@ public class CommunityGrpcClient {
         return "[응답 메시지]: " + response.getMessage();
     }
 
-    public CommonResponse createPost(CreatePostRequestDTO dto) {
-        CreatePostRequest grpcRequest = PostGrpcMapperForGateway.toGrpc(dto);
-
+    public CommonResponse createPost(CreatePostRequestDTO dto, Long memberId) {
+        CreatePostRequest grpcRequest = PostGrpcMapperForGateway.toGrpc(dto, memberId);
         return stub.createPost(grpcRequest);
     }
-
 }

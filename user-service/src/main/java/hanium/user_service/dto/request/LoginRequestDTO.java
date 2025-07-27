@@ -17,4 +17,11 @@ public class LoginRequestDTO {
                 .password(request.getPassword())
                 .build();
     }
+
+    public static LoginRequestDTO of(String email, String password) {
+        return LoginRequestDTO.builder()
+                .email(email)
+                .password(password)
+                .build();
+    }
 }

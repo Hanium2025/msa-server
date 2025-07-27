@@ -1,4 +1,4 @@
-package hanium.user_service.security;
+package hanium.user_service.util;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;

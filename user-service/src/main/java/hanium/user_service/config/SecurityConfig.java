@@ -1,4 +1,4 @@
-package hanium.user_service.security;
+package hanium.user_service.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

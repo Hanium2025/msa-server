@@ -1,14 +1,15 @@
 package hanium.apigateway_service.dto;
 
-import hanium.common.proto.CommonResponse;
+import hanium.common.proto.common.CommonResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 /**
  * CommonResponseDTO는 gRPC 통신에서 전달되는 CommonResponse 프로토콜 버퍼 메시지를
  * 애플리케이션 내에서 사용하기 위한 데이터 전송 객체(DTO)입니다.
- *
+ * <p>
  * 이 클래스는 Lombok 어노테이션을 활용하여 생성자, 빌더, Getter 메서드를 자동 생성합니다.
  */
 @Getter

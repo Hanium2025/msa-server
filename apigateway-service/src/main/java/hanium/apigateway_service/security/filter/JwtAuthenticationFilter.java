@@ -1,18 +1,12 @@
 package hanium.apigateway_service.security.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import hanium.apigateway_service.dto.user.response.TokenResponseDTO;
-import hanium.apigateway_service.grpc.UserGrpcClient;
-import hanium.apigateway_service.response.ResponseDTO;
 import hanium.apigateway_service.security.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -31,11 +25,20 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserGrpcClient userGrpcClient;
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private final List<String> NO_CHECK_URLS = new ArrayList<>(Arrays.asList(
             "/user/auth/login", "/user/auth/signup", "/health/user-service",
             "/health/community-service", "/health/notification-service", "/health/product-service", "/health/discovery-service","/health-check","/actuator/health"
+            "/user/auth/login",
+            "/user/auth/signup",
+            "/user/auth/refresh",
+            "/user/sms/send",
+            "/user/sms/verify",
+            "/health/user-service",
+            "/health/community-service",
+            "/health/notification-service",
+            "/health/product-service",
+            "/health/discovery-service",
+            "/health-check"
     ));
 
     @Override
@@ -43,68 +46,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        // 로그인, 회원가입은 Authorization 헤더 검사 pass
+        // 필터 검사 제외할 uri
         if (NO_CHECK_URLS.contains(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             log.info("✅ 필터 pass됨");
             return;
         }
 
-        // 요청에서 Refresh 토큰 추출
-        String refreshToken;
-        try {
-            refreshToken = jwtUtil.extractRefreshToken(request);
-        } catch (Exception e) {
-            // Refresh 토큰 전달됐으나, 유효하지 않거나 데이터베이스에서 확인 불가한 경우
-            refreshToken = "NULL";
-        }
-
-        // Refresh 토큰이 제대로 존재하는 경우 -> Refresh, Access 재발급, 필터 진행 X
-        if (!refreshToken.equals("NULL")) {
-            checkRefreshTokenAndReissue(response, refreshToken);
-            return;
-        }
-
-        // Refresh 없고 Access 존재하는 경우 -> Access 토큰 인증해 Authentication 객체 생성
+        // Access 존재하는 경우 -> Access 토큰 인증해 Authentication 객체 생성
         String accessToken = jwtUtil.extractAccessToken(request.getHeader("Authorization"));
         SecurityContextHolder.getContext()
                 .setAuthentication(jwtUtil.authenticateToken(accessToken));
 
         filterChain.doFilter(request, response);
-    }
-
-    /**
-     * gRPC 통신으로 토큰 재발급 메서드를 호출한 후, 성공적으로 결과 반환되었다면
-     * 응답 바디에는 해당 이메일과 토큰들,
-     * 응답 헤더와 쿠키에는 Access 토큰과 Refresh 토큰을 담아 전달합니다.
-     *
-     * @param refreshToken 재발급 검사할 Refresh 토큰
-     */
-    private void checkRefreshTokenAndReissue(HttpServletResponse response,
-                                             String refreshToken) throws IOException {
-
-        TokenResponseDTO dto = TokenResponseDTO.from(userGrpcClient.reissueToken(refreshToken));
-        ResponseDTO<TokenResponseDTO> result = new ResponseDTO<>(
-                dto, HttpStatus.OK, "요청에 Refresh 토큰이 확인되어, 토큰 재발급에 성공했습니다."
-        );
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.addCookie(createCookie(refreshToken));
-        response.setHeader("Authorization", dto.getAccessToken());
-        response.getWriter().write(objectMapper.writeValueAsString(result));
-    }
-
-    /**
-     * Refresh 토큰 문자열로 쿠키를 생성해 반환합니다.
-     *
-     * @param refreshToken 전달할 Refresh 토큰
-     * @return 헤더의 쿠키 객체
-     */
-    private Cookie createCookie(String refreshToken) {
-        Cookie cookie = new Cookie("RefreshToken", refreshToken);
-        cookie.setMaxAge(12 * 60 * 60); // 12h
-        cookie.setHttpOnly(true);   // JS로 접근 불가, 탈취 위험 감소
-        return cookie;
     }
 }
