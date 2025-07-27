@@ -5,7 +5,9 @@ import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.ProtoUtils;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class GrpcUtil {
 
     /**
@@ -16,15 +18,22 @@ public class GrpcUtil {
      * @return http 클라이언트로 전송할 ErrorCode
      */
     public static ErrorCode extractErrorCode(StatusRuntimeException e) {
+        log.info("✅ 서비스에서 grpc 예외 감지됨");
         Metadata metadata = Status.trailersFromThrowable(e);
         Metadata.Key<CustomError> customErrorKey = ProtoUtils.keyForProto(CustomError.getDefaultInstance());
 
-        assert metadata != null;
-        CustomError customError = metadata.get(customErrorKey);
-
-        assert customError != null;
-        String errorName = customError.getErrorName();
-        return ErrorCode.valueOf(errorName);
+        if (metadata != null) {
+            CustomError customError = metadata.get(customErrorKey);
+            log.info("✅ 던져진 예외가 CustomException인 것이 확인됨, 커스텀 ErrorCode 추출 시도");
+            if (customError != null) {
+                String errorName = customError.getErrorName();
+                log.info("✅ 커스텀 ErrorCode 추출됨: {}", errorName);
+                return ErrorCode.valueOf(errorName);
+            }
+        }
+        log.info("✅ ErrorCode 추출 실패, 커스텀으로 처리될 수 있는 예외가 아닌 gRPC 오류로 추정");
+        log.error("⚠️ 실제 gPRC 오류 메시지: {}", e.getMessage());
+        return ErrorCode.INTERNAL_ERROR;
     }
 
     /**
