@@ -31,7 +31,7 @@ public class SecurityConfig {
                                 "/user/auth/login",
                                 "/health/**",  //나머지 서비스 헬스 체크
                                 "/health-check", //apigateway 헬스체크
-                                "/actuator/health"   // ALB 헬스체크 경로 추가
+                                "/actuator/health",   // ALB 헬스체크 경로 추가
                                 "/user/auth/refresh",
                                 "/user/sms/send",
                                 "/user/sms/verify",

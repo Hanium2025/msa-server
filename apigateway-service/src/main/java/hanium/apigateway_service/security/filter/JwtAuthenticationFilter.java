@@ -27,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final List<String> NO_CHECK_URLS = new ArrayList<>(Arrays.asList(
             "/user/auth/login", "/user/auth/signup", "/health/user-service",
-            "/health/community-service", "/health/notification-service", "/health/product-service", "/health/discovery-service","/health-check","/actuator/health"
+            "/health/community-service", "/health/notification-service", "/health/product-service", "/health/discovery-service", "/health-check", "/actuator/health",
             "/user/auth/login",
             "/user/auth/signup",
             "/user/auth/refresh",
