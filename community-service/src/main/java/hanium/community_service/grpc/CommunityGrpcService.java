@@ -1,6 +1,6 @@
 package hanium.community_service.grpc;
 
-import hanium.common.proto.CommonResponse;
+import hanium.common.proto.common.CommonResponse;
 import hanium.common.proto.community.CommunityServiceGrpc;
 import hanium.common.proto.community.CreatePostRequest;
 import hanium.common.proto.community.Empty;
@@ -13,14 +13,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 
 /**
  * CommunityGrpcService는 gRPC 서버 측 서비스 구현체로,
  * CommunityServiceGrpc.CommunityServiceImplBase를 상속하여
  * CommunityService의 gRPC 메서드를 오버라이드합니다.
- *
+ * <p>
  * 주요 역할은 클라이언트로부터 받은 gRPC 요청을 처리하고,
  * 내부 서비스 계층을 호출하여 비즈니스 로직을 수행한 뒤,
  * 적절한 gRPC 응답을 반환하는 것입니다.
@@ -34,6 +33,7 @@ public class CommunityGrpcService extends CommunityServiceGrpc.CommunityServiceI
     private String hostname;
 
     private final PostService postService;  // final로 선언하고 생성자 주입 받기
+
     @Override
     public void ping(Empty request, StreamObserver<PingResponse> responseObserver) {
         String hostNameToUse = hostname;  // @Value로 주입된 값 사용
@@ -50,7 +50,7 @@ public class CommunityGrpcService extends CommunityServiceGrpc.CommunityServiceI
      * DTO로 변환 후 PostService를 호출해 게시글 생성 비즈니스 로직 수행.
      * 처리 결과에 따라 성공 또는 실패 응답을 CommonResponse 메시지로 반환함.
      *
-     * @param request 클라이언트가 보낸 게시글 생성 요청 메시지
+     * @param request          클라이언트가 보낸 게시글 생성 요청 메시지
      * @param responseObserver 클라이언트에 응답을 보내는 스트림 옵저버
      */
 
@@ -67,7 +67,7 @@ public class CommunityGrpcService extends CommunityServiceGrpc.CommunityServiceI
             //3. 성공 응답 생성
             CommonResponse response = CommonResponse.newBuilder()
                     .setSuccess(true)
-                    .setMessage("게시글 생성 성공 from"+ hostNameToUse)
+                    .setMessage("게시글 생성 성공 from" + hostNameToUse)
                     .setErrorCode(0)
                     .build();
             //4. 응답 전송
@@ -79,7 +79,7 @@ public class CommunityGrpcService extends CommunityServiceGrpc.CommunityServiceI
 
             CommonResponse response = CommonResponse.newBuilder()
                     .setSuccess(false)
-                    .setMessage("게시글 생성 실패 from"+ hostNameToUse +" ErrorMessage: "+ e.getMessage())
+                    .setMessage("게시글 생성 실패 from" + hostNameToUse + " ErrorMessage: " + e.getMessage())
                     .setErrorCode(-1)
                     .build();
             responseObserver.onNext(response);

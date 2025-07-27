@@ -4,14 +4,11 @@ import hanium.apigateway_service.dto.user.request.LoginRequestDTO;
 import hanium.apigateway_service.dto.user.request.SignUpRequestDTO;
 import hanium.apigateway_service.dto.user.request.VerifySmsRequestDTO;
 import hanium.apigateway_service.mapper.UserGrpcMapperForGateway;
+import hanium.apigateway_service.security.JwtUtil;
 import hanium.common.exception.CustomException;
-import hanium.common.exception.ErrorCode;
+import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.user.*;
-import io.grpc.Metadata;
-import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.protobuf.ProtoUtils;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,20 +29,21 @@ public class UserGrpcClient {
         try {
             return stub.signUp(request); // UserGrpcService > signUp
         } catch (StatusRuntimeException e) {
-            throw new CustomException(extractErrorCode(e));
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 
     // 로그인
     public TokenResponse login(LoginRequestDTO dto, HttpServletResponse response) {
-        LoginRequest request = UserGrpcMapperForGateway.toLoginGrpc(dto);
+        LoginRequest grpcRequest = UserGrpcMapperForGateway.toLoginGrpc(dto);
         try {
-            TokenResponse tokenResponse = stub.login(request);
-            response.addCookie(createCookie(tokenResponse.getRefreshToken()));
+            TokenResponse tokenResponse = stub.login(grpcRequest);
+            response.addCookie(JwtUtil.removeCookie());
+            response.addCookie(JwtUtil.createCookie(tokenResponse.getRefreshToken()));
             response.setHeader("Authorization", tokenResponse.getAccessToken());
             return tokenResponse;
         } catch (StatusRuntimeException e) {
-            throw new CustomException(extractErrorCode(e));
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 
@@ -55,7 +53,7 @@ public class UserGrpcClient {
         try {
             return stub.getMember(request);
         } catch (StatusRuntimeException e) {
-            throw new CustomException(extractErrorCode(e));
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 
@@ -65,17 +63,21 @@ public class UserGrpcClient {
         try {
             return stub.getAuthority(request);
         } catch (StatusRuntimeException e) {
-            throw new CustomException(extractErrorCode(e));
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 
     // 토큰 재발급
-    public TokenResponse reissueToken(String refreshToken) {
+    public TokenResponse reissueToken(String refreshToken, HttpServletResponse response) {
         ReissueTokenRequest request = ReissueTokenRequest.newBuilder().setRefreshToken(refreshToken).build();
         try {
-            return stub.reissueToken(request);
+            TokenResponse tokenResponse = stub.reissueToken(request);
+            response.addCookie(JwtUtil.removeCookie());
+            response.addCookie(JwtUtil.createCookie(tokenResponse.getRefreshToken()));
+            response.setHeader("Authorization", tokenResponse.getAccessToken());
+            return tokenResponse;
         } catch (StatusRuntimeException e) {
-            throw new CustomException(extractErrorCode(e));
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 
@@ -85,7 +87,7 @@ public class UserGrpcClient {
         try {
             return stub.sendSms(request);
         } catch (StatusRuntimeException e) {
-            throw new CustomException(extractErrorCode(e));
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 
@@ -95,39 +97,7 @@ public class UserGrpcClient {
         try {
             return stub.verifySmsCode(request);
         } catch (StatusRuntimeException e) {
-            throw new CustomException(extractErrorCode(e));
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
-    }
-
-    /**
-     * 전달된 StatusRuntimeException서 CustomError proto 메시지를 가져오고
-     * 해당 메시지에서 errorName을 가져와 알맞은 ErrorCode를 반환합니다.
-     *
-     * @param e gRPC 서버에서 전달된 StatusRuntimeException
-     * @return http 클라이언트로 전송할 ErrorCode
-     */
-    private ErrorCode extractErrorCode(StatusRuntimeException e) {
-        Metadata metadata = Status.trailersFromThrowable(e);
-        Metadata.Key<CustomError> customErrorKey = ProtoUtils.keyForProto(CustomError.getDefaultInstance());
-
-        assert metadata != null;
-        CustomError customError = metadata.get(customErrorKey);
-
-        assert customError != null;
-        String errorName = customError.getErrorName();
-        return ErrorCode.valueOf(errorName);
-    }
-
-    /**
-     * Refresh 토큰 문자열로 쿠키를 생성해 반환합니다.
-     *
-     * @param refreshToken 전달할 Refresh 토큰
-     * @return 헤더의 쿠키 객체
-     */
-    private Cookie createCookie(String refreshToken) {
-        Cookie cookie = new Cookie("RefreshToken", refreshToken);
-        cookie.setMaxAge(12 * 60 * 60); // 12h
-        cookie.setHttpOnly(true);   // JS로 접근 불가, 탈취 위험 감소
-        return cookie;
     }
 }

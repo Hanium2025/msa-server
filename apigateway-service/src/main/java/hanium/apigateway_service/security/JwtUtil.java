@@ -64,7 +64,7 @@ public class JwtUtil {
      * @param request http 요청
      * @return Refresh 토큰 또는 "NULL" 문자열
      */
-    public String extractRefreshToken(HttpServletRequest request) {
+    public static String extractRefreshToken(HttpServletRequest request) {
         if (request.getCookies() == null || request.getCookies().length == 0) {
             return "NULL";
         }
@@ -130,12 +130,11 @@ public class JwtUtil {
 
         // 사용자 이메일 추출
         String email = extractEmail(accessToken);
-        log.info("✅ 토큰에서 추출한 사용자 이메일: {}", email);
+        log.info("✅ 요청 사용자 이메일: {}", email);
 
         // 이메일로 사용자 권한 정보 가져오기
         GetAuthorityResponse protoResponse = userGrpcClient.getAuthority(email);
         String authority = protoResponse.getAuthority();
-        log.info("✅ 가져온 String authority: {}", authority);
 
         // UsernamePasswordAuthenticationToken에 들어갈
         // Collection<? extends GrantedAuthority> authorities 생성
@@ -143,7 +142,34 @@ public class JwtUtil {
         authorities.add(new SimpleGrantedAuthority(authority));
 
         return new UsernamePasswordAuthenticationToken(
-                email, accessToken, authorities
+                protoResponse.getMemberId(), accessToken, authorities
         );
+    }
+
+    /**
+     * Refresh 토큰 문자열로 쿠키를 생성해 반환합니다.
+     *
+     * @param refreshToken 전달할 Refresh 토큰
+     * @return 헤더의 쿠키 객체
+     */
+    public static Cookie createCookie(String refreshToken) {
+        Cookie cookie = new Cookie("RefreshToken", refreshToken);
+        cookie.setPath("/user/auth/refresh");
+        cookie.setMaxAge(24 * 60 * 60); // 24h
+        cookie.setHttpOnly(true);   // JS로 접근 불가, 탈취 위험 감소
+        return cookie;
+    }
+
+    /**
+     * 기존 RefreshToken 쿠키를 null, 만료된 상태로 반환하여 삭제합니다.
+     *
+     * @return 삭제될 쿠키
+     */
+    public static Cookie removeCookie() {
+        Cookie nullCookie = new Cookie("RefreshToken", null);
+        nullCookie.setPath("/user/auth/refresh");
+        nullCookie.setMaxAge(0);
+        nullCookie.setHttpOnly(true);
+        return nullCookie;
     }
 }
