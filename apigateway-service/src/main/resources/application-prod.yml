@@ -1,0 +1,4 @@
+spring:
+  config:
+    import: configserver:http://config-service.hanium.local:8888
+
