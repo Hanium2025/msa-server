@@ -107,6 +107,9 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
     implementation 'commons-codec:commons-codec:1.13'
     implementation 'com.auth0:java-jwt:3.13.0'
+
+    //health-check
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 
 

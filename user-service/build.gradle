@@ -126,6 +126,8 @@ dependencies {
 
     //
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
+    //health-check
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 
 springBoot {

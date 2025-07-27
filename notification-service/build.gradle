@@ -98,6 +98,10 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	implementation project(':common')
 
+
+	//health-check
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
 	// Grpc-Test-Support
 //    testImplementation("io.grpc:grpc-testing")
 //    // Spring-Test-Support (Optional)
