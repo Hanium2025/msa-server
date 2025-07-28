@@ -71,6 +71,10 @@ jobs:
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
 
+      - name: Debug task-definition output
+        run: | 
+          echo "Task Definition ARN: ${{ steps.task-def.outputs.task-definition-arn }}"
+
       - name: Deploy ECS service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
