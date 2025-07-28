@@ -10,7 +10,7 @@ env:
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: config-service
   ECS_CLUSTER: msa-cluster
-  ECS_SERVICE: config-service
+  ECS_SERVICE: config-service-task-service-z15sy7mg
   CONTAINER_NAME: config-service
   CONTAINER_PORT: 8888
 
