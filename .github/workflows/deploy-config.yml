@@ -68,16 +68,21 @@ jobs:
         run: cat ecs/taskdef-config.json
 
 
-      - name: Register task definition (SAFE)
+      - name: Register task definition manually
         id: register-task
-        uses: aws-actions/amazon-ecs-register-task-definition@v1
-        with:
-          family: config-service-task
-          cli-input-json: file://ecs/taskdef-config.json
+        run: |
+          arn=$(aws ecs register-task-definition \
+            --cli-input-json file://ecs/taskdef-config.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+          echo "task-definition-arn=$arn" >> $GITHUB_OUTPUT
 
-      - name: Deploy ECS service
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          cluster: ${{ env.ECS_CLUSTER }}
-          service: ${{ env.ECS_SERVICE }}
-          task-definition: ${{ steps.register-task.outputs.task-definition-arn }}
+      - name: Set task definition ARN as env var
+        run: echo "TASK_DEF_ARN=${{ steps.register-task.outputs.task-definition-arn }}" >> $GITHUB_ENV
+
+      - name: Deploy ECS service manually
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $ECS_SERVICE \
+            --task-definition $TASK_DEF_ARN
