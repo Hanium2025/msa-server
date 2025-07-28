@@ -11,6 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class DiscoveryController {
     @GetMapping("/health-check")
     public String status() {
-        return "디스커버리 서비스 정상 작동";
+        return "디스커버리 서비스 정상 작동!";
     }
 }
