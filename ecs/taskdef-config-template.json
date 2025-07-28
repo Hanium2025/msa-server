@@ -9,7 +9,7 @@
   "containerDefinitions": [
     {
       "name": "config-service",
-      "image": "<IMAGE_URI>",
+      "image": "${IMAGE_URI}",
       "essential": true,
       "portMappings": [
         {
