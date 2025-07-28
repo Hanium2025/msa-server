@@ -46,3 +46,4 @@ out/
 .vscode/
 **/application-dev.yml
 **/application-test.yml
+ecs/taskdef-config.json
