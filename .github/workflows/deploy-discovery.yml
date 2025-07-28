@@ -1,0 +1,88 @@
+name: Deploy Discovery Service to ECS!
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "discovery-service/**"
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: discovery-service
+  ECS_CLUSTER: msa-cluster
+  ECS_SERVICE: discovery-service-task-service-1ivk766y
+  CONTAINER_NAME: discovery-service
+  CONTAINER_PORT: 8761
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password | docker login --username AWS --password-stdin \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for Gradle
+        run: chmod +x gradlew
+
+      - name: Build only discovery-service
+        run: ./gradlew :discovery-service:clean :discovery-service:build
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.ECR_REPOSITORY }} ./discovery-service
+          docker tag ${{ env.ECR_REPOSITORY }}:latest \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: Replace environment variables in task definition
+        run: |
+          sudo apt-get update && sudo apt-get install -y gettext
+          export GIT_USERNAME=${{ secrets.GIT_USERNAME }}
+          export GIT_TOKEN=${{ secrets.GIT_TOKEN }}
+          export IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+          envsubst < ecs/taskdef-discovery-template.json > ecs/taskdef-discovery.json
+
+      - name: Check taskdef-discovery.json
+        run: cat ecs/taskdef-discovery.json
+
+
+      - name: Register task definition manually
+        id: register-task
+        run: |
+          arn=$(aws ecs register-task-definition \
+            --cli-input-json file://ecs/taskdef-discovery.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+          echo "task-definition-arn=$arn" >> $GITHUB_OUTPUT
+
+      - name: Set task definition ARN as env var
+        run: echo "TASK_DEF_ARN=${{ steps.register-task.outputs.task-definition-arn }}" >> $GITHUB_ENV
+
+      - name: Deploy ECS service manually
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $ECS_SERVICE \
+            --task-definition $TASK_DEF_ARN
