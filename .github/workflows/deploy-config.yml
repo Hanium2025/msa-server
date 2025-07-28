@@ -43,8 +43,8 @@ jobs:
       - name: Grant execute permission for Gradle
         run: chmod +x gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew clean build
+      - name: Build only config-service
+        run: ./gradlew :config-service:clean :config-service:build
 
       - name: Build Docker image
         run: |
