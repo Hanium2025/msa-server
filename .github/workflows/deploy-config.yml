@@ -67,9 +67,6 @@ jobs:
       - name: Check taskdef-config.json
         run: cat ecs/taskdef-config.json
 
-      - name: Debug task-definition output
-        run: |
-          echo "TASK DEF ARN: ${{ steps.register-task.outputs.task_definition_arn }}"
 
       - name: Register task definition manually
         id: register-task
@@ -80,6 +77,13 @@ jobs:
             --output text)
           echo "✅ TaskDefinitionArn: $arn"
           echo "task_definition_arn=$arn" >> "$GITHUB_OUTPUT"
+
+      - name: Dump output file content
+        run: cat "$GITHUB_OUTPUT"
+
+      - name: Debug task-definition output
+        run: |
+          echo "TASK DEF ARN: ${{ steps.register-task.outputs.task_definition_arn }}"
 
       - name: Deploy ECS service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
