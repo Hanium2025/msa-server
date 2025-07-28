@@ -1,4 +1,4 @@
-name: Deploy Config Service to ECS (No CodeDeploy)
+name: Deploy Config Service to ECS
 
 on:
   push:
