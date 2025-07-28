@@ -84,11 +84,11 @@ jobs:
 
       - name: Debug task-definition output
         run: |
-          echo "TASK DEF ARN: ${{ steps.register-task.outputs.task_definition_arn }}"
+          echo "TASK DEF ARN: ${{ steps.register-task.outputs.task-definition_arn }}"
 
       - name: Deploy ECS service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           cluster: ${{ env.ECS_CLUSTER }}
           service: ${{ env.ECS_SERVICE }}
-          task-definition: ${{ steps.register-task.outputs.task_definition_arn }}
+          task-definition: ${{ steps.register-task.outputs.task-definition_arn }}
