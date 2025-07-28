@@ -28,11 +28,11 @@
         },
         {
           "name": "SPRING_CLOUD_CONFIG_SERVER_GIT_USERNAME",
-          "value": "$GIT_USERNAME"
+          "value": "${GIT_USERNAME}"
         },
         {
           "name": "SPRING_CLOUD_CONFIG_SERVER_GIT_PASSWORD",
-          "value": "$GIT_TOKEN"
+          "value": "${GIT_TOKEN}"
         },
         {
           "name": "EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE",
