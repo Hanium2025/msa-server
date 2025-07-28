@@ -76,10 +76,11 @@ jobs:
             --query 'taskDefinition.taskDefinitionArn' \
             --output text)
           echo "✅ TaskDefinitionArn: $arn"
-          echo "task_definition_arn=$arn" >> "$GITHUB_OUTPUT"
+          echo "task-definition-arn=$arn" >> $GITHUB_OUTPUT
 
-      - name: Dump output file content
-        run: cat "$GITHUB_OUTPUT"
+      - name: Debug task-definition output
+        run:
+          echo "Task Def ARN: ${{ steps.register-task.outputs.task-definition-arn }}"
 
       - name: Debug task-definition output
         run: |
