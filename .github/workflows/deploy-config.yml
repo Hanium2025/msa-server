@@ -1,0 +1,67 @@
+name: Deploy Config Service to ECS (No CodeDeploy)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "config-service/**"
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: config-service
+  ECS_CLUSTER: msa-cluster
+  ECS_SERVICE: config-service
+  CONTAINER_NAME: config-service
+  CONTAINER_PORT: 8888
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password | docker login --username AWS --password-stdin \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.ECR_REPOSITORY }} ./config-service
+          docker tag ${{ env.ECR_REPOSITORY }}:latest \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: Replace environment variables in task definition
+        run: |
+          sudo apt-get update && sudo apt-get install -y gettext
+          export GIT_USERNAME=${{ secrets.GIT_USERNAME }}
+          export GIT_TOKEN=${{ secrets.GIT_TOKEN }}
+          envsubst < ecs/taskdef-config-template.json > ecs/taskdef-config.json
+
+      - name: Register new task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition:  ecs/taskdef-config.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: Deploy ECS service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          cluster: ${{ env.ECS_CLUSTER }}
+          service: ${{ env.ECS_SERVICE }}
+          task-definition: ${{ steps.task-def.outputs.task-definition-arn }}
