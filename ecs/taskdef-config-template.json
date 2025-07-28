@@ -1,0 +1,65 @@
+{
+  "family": "config-service-task",
+  "executionRoleArn": "arn:aws:iam::826331271523:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::826331271523:role/ecsServiceDiscoveryRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "3072",
+  "containerDefinitions": [
+    {
+      "name": "config-service",
+      "image": "<IMAGE_URI>",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8888,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "EUREKA_CLIENT_ENABLED",
+          "value": "true"
+        },
+        {
+          "name": "SPRING_APPLICATION_NAME",
+          "value": "config-service"
+        },
+        {
+          "name": "SPRING_CLOUD_CONFIG_SERVER_GIT_USERNAME",
+          "value": "$GIT_USERNAME"
+        },
+        {
+          "name": "SPRING_CLOUD_CONFIG_SERVER_GIT_PASSWORD",
+          "value": "$GIT_TOKEN"
+        },
+        {
+          "name": "EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE",
+          "value": "http://discovery-service.hanium.local:8761/eureka"
+        },
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/config-service-task",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8888/actuator/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3
+      }
+    }
+  ]
+}

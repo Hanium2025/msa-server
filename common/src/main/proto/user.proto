@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package hanium.common.proto.user;
+
+option java_package = "hanium.common.proto.user";
+option java_multiple_files = true;
+
+import "common.proto";  // common.proto 파일 import
+
+service UserService {
+  // 1. 사용자 회원가입
+  rpc SignUp(SignUpRequest) returns (SignUpResponse);
+
+  // 2. 사용자 로그인
+  rpc Login(LoginRequest) returns (TokenResponse);
+
+  // 3. 사용자 정보 조회 by id
+  rpc GetMember(GetMemberRequest) returns (GetMemberResponse);
+
+  // 4. 사용자 권한 조회
+  rpc GetAuthority(GetAuthorityRequest) returns (GetAuthorityResponse);
+
+  // 5. 토큰 검증과 새 토큰 발급
+  rpc ReissueToken(ReissueTokenRequest) returns (TokenResponse);
+
+  // 6. SMS 인증번호 전송
+  rpc SendSms(SendSmsRequest) returns (SendSmsResponse);
+
+  // 7. SMS 인증번호 검증
+  rpc VerifySmsCode(VerifySmsRequest) returns (VerifySmsResponse);
+}
+
+// 1. 회원가입
+message SignUpRequest {
+  string email = 1;
+  string password = 2;
+  string confirm_password = 3;
+  string phone_number = 4;
+  string nickname = 5;
+  bool agree_marketing = 6;
+  bool agree_third_party = 7;
+}
+message SignUpResponse {
+  int64 member_id = 1;
+  string email = 2;
+  string phone_number = 3;
+  string provider = 4;
+  string role = 5;
+  bool agree_marketing = 6;
+  bool agree_third_party = 7;
+}
+
+// 2. 로그인
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+// 2. 토큰 응답
+message TokenResponse {
+  string email = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+}
+
+// 3. 사용자 정보 조회
+message GetMemberRequest {
+  int64 member_id = 1;
+}
+message GetMemberResponse {
+  string email = 1;
+  string phone_number = 2;
+  string provider = 3;
+  string role = 4;
+}
+
+// 4. 사용자 권한 조회
+message GetAuthorityRequest {
+  string email = 1;
+}
+message GetAuthorityResponse {
+  int64 member_id = 1;
+  string authority = 2;
+}
+
+// 5. 토큰 조회/검증 요청
+message ReissueTokenRequest {
+  string refresh_token = 1;
+}
+
+// 6. SMS 인증번호 전송
+message SendSmsRequest {
+  string phone_number = 1;
+}
+message SendSmsResponse {
+  string message = 1;
+}
+
+// 7. SMS 인증번호 검증
+message VerifySmsRequest {
+  string phone_number = 1;
+  string sms_code = 2;
+}
+message VerifySmsResponse {
+  bool verified = 1;
+}

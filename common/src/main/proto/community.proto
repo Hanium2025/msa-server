@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package hanium.common.proto.community;
+
+option java_multiple_files = true;
+option java_package = "hanium.common.proto.community";
+
+import "common.proto";  // common.proto 파일 import
+
+service CommunityService {
+  rpc Ping(Empty) returns (PingResponse);
+
+  // 커뮤니티 글
+  rpc CreatePost(CreatePostRequest) returns (CommonResponse);
+
+}
+// ===== Post 관련 =====
+
+//게시글 생성 요청 메시지
+message CreatePostRequest {
+  string title = 1;
+  string content = 2;
+  int64 writer_id = 3;
+}
+
+message Empty {}
+
+message PingResponse {
+  string message = 1;
+}
