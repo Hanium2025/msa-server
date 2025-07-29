@@ -131,6 +131,13 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    /**
+     * 상품 객체의 해당하는 이미지들을 가져와
+     * ProductImageDTO 리스트 형태로 반환합니다.
+     *
+     * @param product 상품 객체
+     * @return ProductImageDTO 리스트 (id, path)
+     */
     @Override
     public List<ProductImageDTO> getProductImages(Product product) {
         return productImageRepository.findByProductAndDeletedAtIsNull(product)
