@@ -36,7 +36,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/health/notification-service",
             "/health/product-service",
             "/health/discovery-service",
-            "/health-check"
+            "/health-check",
+            "/actuator/prometheus",
+            "/actuator/health",
+            "/actuator/info"
     ));
 
     @Override
