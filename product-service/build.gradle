@@ -99,6 +99,10 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
     implementation project(':common')
 
+    //prometheus
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
     // Grpc-Test-Support
 //    testImplementation("io.grpc:grpc-testing")
 //    // Spring-Test-Support (Optional)
