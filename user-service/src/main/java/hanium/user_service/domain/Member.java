@@ -41,10 +41,6 @@ public class Member extends BaseEntity implements UserDetails {
     @Column
     private boolean isAgreeThirdParty;
 
-    @OneToOne
-    @JoinColumn(name = "PROFILE_ID")
-    private Profile profile;
-
     // UserDetails 메서드 구현
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

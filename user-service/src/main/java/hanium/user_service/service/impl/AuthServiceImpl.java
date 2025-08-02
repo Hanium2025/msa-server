@@ -40,26 +40,23 @@ public class AuthServiceImpl implements AuthService {
         } else {
             // 비밀번호 암호화
             String encodedPassword = encoder.encode(dto.getPassword());
-
-            // Profile 엔티티 생성
-            Profile profile = Profile.builder()
-                    .nickname(dto.getNickname()).build();
-            // Member 엔티티 생성
+            // Member, Profile 엔티티 생성
             Member member = Member.builder()
-                    .email(dto.getEmail())
-                    .password(encodedPassword)
+                    .email(dto.getEmail()).password(encodedPassword)
                     .phoneNumber(dto.getPhoneNumber())
-                    .provider(Provider.ORIGINAL)
-                    .role(Role.USER)
+                    .provider(Provider.ORIGINAL).role(Role.USER)
                     .isAgreeMarketing(dto.getAgreeMarketing())
                     .isAgreeThirdParty(dto.getAgreeThirdParty())
-                    .profile(profile).build();
+                    .build();
+            Profile profile = Profile.builder()
+                    .nickname(dto.getNickname())
+                    .member(member).build();
             memberRepository.save(member);
             profileRepository.save(profile);
 
-            log.info("✅ Member 회원가입: {}", member.getEmail());
-            log.info("✅ Profile 등록됨: {} == ID: {}", member.getProfile().getId(), profile.getId());
-            log.info("✅ 권한 확인: {}", member.getAuthorities());
+            log.info("✅ Member added: {}", member.getEmail());
+            log.info("✅ Profile added, id: {} for Member id: {}", profile.getId(), member.getId());
+            log.info("✅ Member authorities: {}", member.getAuthorities());
 
             return member;
         }
@@ -78,7 +75,7 @@ public class AuthServiceImpl implements AuthService {
         if (!refreshToken.isEmpty()) {
             refreshRepository.deleteAll(refreshToken);
         }
-        log.info("✅ 로그인 성공: {}", member.getId());
+        log.info("✅ Login succeed: {}", member.getId());
         return jwtUtil.respondTokens(member);
     }
 }
