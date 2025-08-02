@@ -23,8 +23,6 @@ message CreatePostRequest {
   int64 writer_id = 3;
 }
 
-message Empty {}
-
 message PingResponse {
   string message = 1;
 }

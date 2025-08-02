@@ -5,6 +5,8 @@ package hanium.common.proto;
 option java_multiple_files = true;
 option java_package = "hanium.common.proto.common";
 
+message Empty {}
+
 message CommonResponse {
   bool success = 1;
   string message = 2;

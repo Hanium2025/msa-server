@@ -28,6 +28,12 @@ service UserService {
 
   // 7. SMS 인증번호 검증
   rpc VerifySmsCode(VerifySmsRequest) returns (VerifySmsResponse);
+
+  // 8. 카카오 로그인 키 전송
+  rpc GetKakaoConfig(Empty) returns (KakaoConfigResponse);
+
+  // 9. 카카오 로그인으로 회원가입 or 로그인
+  rpc KakaoLogin(KakaoLoginRequest) returns (TokenResponse);
 }
 
 // 1. 회원가입
@@ -67,8 +73,8 @@ message GetMemberRequest {
   int64 member_id = 1;
 }
 message GetMemberResponse {
-  string email = 1;
-  string phone_number = 2;
+  int64 id = 1;
+  string email = 2;
   string provider = 3;
   string role = 4;
 }
@@ -102,4 +108,15 @@ message VerifySmsRequest {
 }
 message VerifySmsResponse {
   bool verified = 1;
+}
+
+// 8. 카카오 로그인 키 전송
+message KakaoConfigResponse {
+  string client_id = 1;
+  string redirect_uri = 2;
+}
+
+// 9. 카카오 로그인으로 회원가입
+message KakaoLoginRequest {
+  string code = 1;
 }

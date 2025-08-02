@@ -1,9 +1,9 @@
 package hanium.community_service.grpc;
 
 import hanium.common.proto.common.CommonResponse;
+import hanium.common.proto.common.Empty;
 import hanium.common.proto.community.CommunityServiceGrpc;
 import hanium.common.proto.community.CreatePostRequest;
-import hanium.common.proto.community.Empty;
 import hanium.common.proto.community.PingResponse;
 import hanium.community_service.Service.PostService;
 import hanium.community_service.dto.CreatePostRequestDTO;

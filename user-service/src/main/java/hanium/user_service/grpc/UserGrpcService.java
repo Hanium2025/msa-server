@@ -3,6 +3,7 @@ package hanium.user_service.grpc;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import hanium.common.exception.GrpcUtil;
+import hanium.common.proto.common.Empty;
 import hanium.common.proto.user.*;
 import hanium.user_service.domain.Member;
 import hanium.user_service.dto.request.LoginRequestDTO;
@@ -14,6 +15,7 @@ import hanium.user_service.dto.response.TokenResponseDTO;
 import hanium.user_service.mapper.MemberGrpcMapper;
 import hanium.user_service.service.AuthService;
 import hanium.user_service.service.MemberService;
+import hanium.user_service.service.OAuthService;
 import hanium.user_service.service.SmsService;
 import hanium.user_service.util.JwtUtil;
 import io.grpc.stub.StreamObserver;
@@ -24,6 +26,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.Map;
 
 @GrpcService
 @Slf4j
@@ -35,6 +38,7 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
     private final AuthService authService;
     private final JwtUtil jwtUtil;
     private final SmsService smsService;
+    private final OAuthService oAuthService;
 
     // 회원가입
     @Override
@@ -124,6 +128,30 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
         try {
             boolean isVerified = smsService.verifyCode(VerifySmsDTO.from(request));
             responseObserver.onNext(VerifySmsResponse.newBuilder().setVerified(isVerified).build());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 카카오 로그인 키 전송
+    @Override
+    public void getKakaoConfig(Empty request, StreamObserver<KakaoConfigResponse> responseObserver) {
+        try {
+            Map<String, String> map = oAuthService.getKakaoConfig();
+            responseObserver.onNext(MemberGrpcMapper.toKakaoConfigResponse(map));
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 카카오 로그인 code로 회원가입 or 로그인
+    @Override
+    public void kakaoLogin(KakaoLoginRequest request, StreamObserver<TokenResponse> responseObserver) {
+        try {
+            TokenResponseDTO dto = oAuthService.kakaoLogin(request.getCode());
+            responseObserver.onNext(MemberGrpcMapper.toTokenResponse(dto));
             responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));

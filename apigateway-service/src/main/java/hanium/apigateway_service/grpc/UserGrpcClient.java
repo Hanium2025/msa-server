@@ -7,6 +7,7 @@ import hanium.apigateway_service.mapper.UserGrpcMapperForGateway;
 import hanium.apigateway_service.security.JwtUtil;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.GrpcUtil;
+import hanium.common.proto.common.Empty;
 import hanium.common.proto.user.*;
 import io.grpc.StatusRuntimeException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -96,6 +97,25 @@ public class UserGrpcClient {
         VerifySmsRequest request = UserGrpcMapperForGateway.toVerifySmsGrpc(dto);
         try {
             return stub.verifySmsCode(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 카카오 로그인 키 Get
+    public KakaoConfigResponse getKakaoConfig() {
+        try {
+            return stub.getKakaoConfig(Empty.newBuilder().build());
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 카카오 소셜 로그인 code 받아서 회원가입 or 로그인
+    public TokenResponse kakaoLogin(String code) {
+        KakaoLoginRequest request = KakaoLoginRequest.newBuilder().setCode(code).build();
+        try {
+            return stub.kakaoLogin(request);
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }

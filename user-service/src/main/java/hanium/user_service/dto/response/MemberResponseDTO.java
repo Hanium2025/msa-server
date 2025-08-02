@@ -11,16 +11,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 public class MemberResponseDTO {
-
+    private Long id;
     private String email;
-    private String phoneNumber;
     private String provider;
     private String role;
 
     public static MemberResponseDTO from(Member member) {
         return MemberResponseDTO.builder()
+                .id(member.getId())
                 .email(member.getEmail())
-                .phoneNumber(member.getPhoneNumber())
                 .provider(String.valueOf(member.getProvider()))
                 .role(String.valueOf(member.getRole()))
                 .build();
