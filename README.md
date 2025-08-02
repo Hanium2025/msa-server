@@ -46,6 +46,35 @@ MSA(Microservice Architecture)를 기반으로 설계된 중고거래 플랫폼�
 ### 5. 🗣️ **Daily Scrum**
 [바로가기 🔗](https://maize-splash-6f6.notion.site/Daily-Scrum-223afe091f238008a47ade5675465b18?source=copy_link) 
 
+
+### 6. 🏗️ Architecture
+<img width="1229" height="718" alt="image" src="https://github.com/user-attachments/assets/dbf2b96e-d6cc-4010-916a-7a40c5e4e4bd" />
+
+#### 📁 정적 리소스 처리
+모든 정적 리소스(이미지 등)는 Amazon S3에 저장됩니다.
+
+S3에 저장된 파일은 CloudFront를 통해 전 세계 엣지 서버에서 빠르게 제공됩니다.
+
+#### 🔁 백엔드 요청 흐름
+사용자 요청은 API Gateway를 통해 각 백엔드 서비스로 전달됩니다.
+
+모든 백엔드 서비스는 AWS ECS 클러스터의 Private Subnet 환경에서 실행됩니다.
+
+ECS는 ECR에 저장된 Docker 이미지를 자동으로 가져와 컨테이너로 구동합니다.
+
+서비스 간 통신은 gRPC 프로토콜을 기반으로 이루어집니다.
+
+#### 🔍 모니터링 및 트레이싱 시스템
+Zipkin을 통해 서비스 간 호출 및 요청 흐름을 분산 추적(Distributed Tracing)합니다.
+
+Prometheus가 메트릭 데이터를 수집하며, 이를 Grafana로 시각화하여 실시간으로 시스템 상태를 모니터링합니다.
+
+#### 🛠️ 트러블 슈팅
+
+- Config-Service와 Discovery-Service 간 순환 참조 문제
+- gRPC 호출 시 Metadata 누락으로 인한 NullPointerException
+https://www.notion.so/23660b1c7f7780118f0fd3f7180324aa
+
 ## ⚙️ 기술 스택
 
 ### Backend
