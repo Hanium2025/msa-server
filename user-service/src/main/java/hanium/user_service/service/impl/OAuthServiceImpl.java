@@ -32,8 +32,13 @@ public class OAuthServiceImpl implements OAuthService {
     private String kakaoClientId;
     @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
     private String kakaoClientSecret;
+
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String kakaoRedirectUri;
+    @Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
+    private String kakaoTokenUrl;
+    @Value("${spring.security.oauth2.client.provider.kakao.user-info-uri}")
+    private String kakaoUserInfoUri;
 
     private final MemberRepository memberRepository;
     private final ProfileRepository profileRepository;
@@ -61,7 +66,6 @@ public class OAuthServiceImpl implements OAuthService {
      */
     @Override
     public String getKakaoAccessToken(String code) {
-        String kakaoTokenUrl = "https://kauth.kakao.com/oauth/token";
         KakaoResponseDTO kakaoResponse = WebClient.create(kakaoTokenUrl).post()
                 .uri(uriBuilder -> uriBuilder
                         .queryParam("grant_type", "authorization_code")
@@ -83,8 +87,7 @@ public class OAuthServiceImpl implements OAuthService {
      */
     @Override
     public KakaoUserResponseDTO getKakaoUser(String accessToken) {
-        String kakaoUserUrl = "https://kapi.kakao.com/v2/user/me";
-        return WebClient.create(kakaoUserUrl).post()
+        return WebClient.create(kakaoUserInfoUri).post()
                 .uri(uriBuilder -> uriBuilder.build(true))
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .header(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString())
@@ -102,44 +105,57 @@ public class OAuthServiceImpl implements OAuthService {
     @Override
     @Transactional
     public TokenResponseDTO kakaoLogin(String code) {
-        log.info("✅ Kakao Code sent to OAuthService: {}", code);
-
         KakaoUserResponseDTO.KakaoAccount kakaoUser = getKakaoUser(getKakaoAccessToken(code)).getKakaoAccount();
         KakaoUserResponseDTO.KakaoAccount.Profile kakaoProfile = kakaoUser.getProfile();
-
         Optional<Member> optionalMember = memberRepository.findByEmail(kakaoUser.getEmail());
         if (optionalMember.isPresent()) {
             Member member = optionalMember.get();
-            log.info("✅ Kakao Account exists: {}", member.getEmail());
-            List<RefreshToken> refreshToken = refreshRepository.findByMember(member);
-            if (!refreshToken.isEmpty()) {
-                refreshRepository.deleteAll(refreshToken);
-            }
-            log.info("✅ Login succeed: {}", member.getEmail());
-            return jwtUtil.respondTokens(member);
-
+            return proceedKakaoLogin(member);
         } else {
-            log.info("✅ Kakao Account doesn't exist, SignUp processing");
-
-            // Member, Profile 엔티티 생성
-            Member member = Member.builder()
-                    .email(kakaoUser.getEmail()).phoneNumber(kakaoUser.getPhoneNumber())
-                    .provider(Provider.KAKAO).role(Role.USER)
-                    .isAgreeMarketing(false).isAgreeThirdParty(false)
-                    .build();
-            Profile profile = Profile.builder()
-                    .nickname(kakaoProfile.getNickName())
-                    .imageUrl(kakaoProfile.getProfileImageUrl())
-                    .member(member).build();
-            memberRepository.save(member);
-            profileRepository.save(profile);
-
-            log.info("✅ Member added: {}", member.getEmail());
-            log.info("✅ Profile added, id: {} for Member id: {}", profile.getId(), member.getId());
-            log.info("✅ Member authorities: {}", member.getAuthorities());
-            log.info("✅ Member provider: {}", member.getProvider());
-
-            return jwtUtil.respondTokens(member);
+            return kakaoSignupAndLogin(kakaoUser, kakaoProfile);
         }
+    }
+
+    // 이미 카카오게정으로 존재하는 회원인 경우 로그인 진행
+    private TokenResponseDTO proceedKakaoLogin(Member member) {
+        log.info("✅ Kakao Account exists: {}", member.getEmail());
+        List<RefreshToken> refreshToken = refreshRepository.findByMember(member);
+        if (!refreshToken.isEmpty()) {
+            refreshRepository.deleteAll(refreshToken);
+        }
+        return jwtUtil.respondTokens(member);
+    }
+
+    // 신규 카카오계정 로그인인 경우 서비스 회원가입 및 로그인 진행
+    private TokenResponseDTO kakaoSignupAndLogin(KakaoUserResponseDTO.KakaoAccount kakaoUser,
+                                                 KakaoUserResponseDTO.KakaoAccount.Profile kakaoProfile) {
+        log.info("✅ Kakao Account doesn't exist, SignUp processing");
+
+        // Member, Profile 엔티티 생성
+        Member member = Member.builder()
+                .email(kakaoUser.getEmail()).provider(Provider.KAKAO).role(Role.USER)
+                .isAgreeMarketing(false).isAgreeThirdParty(false)
+                .build();
+        Profile profile = Profile.builder()
+                .nickname(extractEmailPart(kakaoUser.getEmail()))
+                .imageUrl(kakaoProfile.getProfileImageUrl())
+                .member(member).build();
+        memberRepository.save(member);
+        profileRepository.save(profile);
+
+        log.info("✅ Member id: {}, Profile id: {}", member.getId(), profile.getId());
+        log.info("✅ Member provider: {}", member.getProvider());
+
+        return jwtUtil.respondTokens(member);
+    }
+
+    // 이메일에서 @ 사인 앞 부분을 반환해 닉네임에 사용
+    private String extractEmailPart(String email) {
+        int atIndex = email.indexOf('@');
+        // '@'가 없으면 원본 그대로 반환
+        if (atIndex == -1) {
+            return email;
+        }
+        return email.substring(0, atIndex);
     }
 }
