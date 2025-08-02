@@ -71,9 +71,12 @@ Prometheus가 메트릭 데이터를 수집하며, 이를 Grafana로 시각화�
 
 #### 🛠️ 트러블 슈팅
 
-- Config-Service와 Discovery-Service 간 순환 참조 문제
-- gRPC 호출 시 Metadata 누락으로 인한 NullPointerException
-https://www.notion.so/23660b1c7f7780118f0fd3f7180324aa
+| 문제                                        | 설명                                                                     | 해결 방법                                         |
+| ----------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------- |
+| Config-Service와 Discovery-Service 간 순환 참조 | Config-Service가 설정 정보를 가져오기 전에 Eureka에 접근하려고 시도                        | `EUREKA_ENABLED=false` 조건 분기로 해결              |
+| gRPC 호출 시 Metadata 누락                     | API Gateway → User-Service 호출 시 JWT가 전달되지 않아 `NullPointerException` 발생 | 보안 그룹에 gRPC 포트(50051) 열고, `Metadata` 전달 코드 보완 |
+
+기록 링크 : https://www.notion.so/23660b1c7f7780118f0fd3f7180324aa
 
 ## ⚙️ 기술 스택
 
