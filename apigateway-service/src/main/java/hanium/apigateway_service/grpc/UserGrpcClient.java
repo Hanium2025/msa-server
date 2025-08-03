@@ -102,7 +102,7 @@ public class UserGrpcClient {
         }
     }
 
-    // 카카오 로그인 키 Get
+    // 카카오 로그인 설정 값
     public KakaoConfigResponse getKakaoConfig() {
         try {
             return stub.getKakaoConfig(Empty.newBuilder().build());
@@ -111,11 +111,21 @@ public class UserGrpcClient {
         }
     }
 
-    // 카카오 소셜 로그인 code 받아서 회원가입 or 로그인
-    public TokenResponse kakaoLogin(String code) {
-        KakaoLoginRequest request = KakaoLoginRequest.newBuilder().setCode(code).build();
+    // 네이버 로그인 설정 값
+    public NaverConfigResponse getNaverConfig() {
         try {
-            return stub.kakaoLogin(request);
+            return stub.getNaverConfig(Empty.newBuilder().build());
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 소셜 로그인 code 받아서 회원가입 or 로그인
+    public TokenResponse socialLogin(String code, String provider) {
+        SocialLoginRequest request = SocialLoginRequest.newBuilder()
+                .setCode(code).setProvider(provider).build();
+        try {
+            return stub.socialLogin(request);
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }

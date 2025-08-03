@@ -1,9 +1,7 @@
 package hanium.user_service.service.impl;
 
 import hanium.user_service.domain.*;
-import hanium.user_service.dto.response.KakaoResponseDTO;
-import hanium.user_service.dto.response.KakaoUserResponseDTO;
-import hanium.user_service.dto.response.TokenResponseDTO;
+import hanium.user_service.dto.response.*;
 import hanium.user_service.repository.MemberRepository;
 import hanium.user_service.repository.ProfileRepository;
 import hanium.user_service.repository.RefreshTokenRepository;
@@ -18,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,12 +33,25 @@ public class OAuthServiceImpl implements OAuthService {
     @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
     private String kakaoClientSecret;
 
+    @Value("${spring.security.oauth2.client.registration.naver.client-id}")
+    private String naverClientId;
+    @Value("${spring.security.oauth2.client.registration.naver.client-secret}")
+    private String naverClientSecret;
+
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String kakaoRedirectUri;
     @Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
     private String kakaoTokenUrl;
     @Value("${spring.security.oauth2.client.provider.kakao.user-info-uri}")
     private String kakaoUserInfoUri;
+
+    @Value("${spring.security.oauth2.client.registration.naver.redirect-uri}")
+    private String naverRedirectUri;
+    @Value("${spring.security.oauth2.client.provider.naver.token-uri}")
+    private String naverTokenUri;
+    @Value("${spring.security.oauth2.client.provider.naver.user-info-uri}")
+    private String naverUserInfoUri;
+
 
     private final MemberRepository memberRepository;
     private final ProfileRepository profileRepository;
@@ -59,39 +72,14 @@ public class OAuthServiceImpl implements OAuthService {
     }
 
     /**
-     * 카카오 인가코드를 이용해 카카오 Access 토큰을 얻어 반환합니다.
+     * application.yml에 설정된 네이버 로그인 client id와 redirect uri, state를 반환합니다.
      *
-     * @param code 카카오 로그인 시 생성되는 인가 코드
-     * @return 인가 코드로 얻은 카카오 Access 토큰
+     * @return NaverConfigResponseDTO
      */
     @Override
-    public String getKakaoAccessToken(String code) {
-        KakaoResponseDTO kakaoResponse = WebClient.create(kakaoTokenUrl).post()
-                .uri(uriBuilder -> uriBuilder
-                        .queryParam("grant_type", "authorization_code")
-                        .queryParam("client_id", kakaoClientId)
-                        .queryParam("redirect_uri", kakaoRedirectUri)
-                        .queryParam("code", code)
-                        .queryParam("client_secret", kakaoClientSecret)
-                        .build(true))
-                .header(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString())
-                .retrieve().bodyToMono(KakaoResponseDTO.class).block();
-        return Objects.requireNonNull(kakaoResponse).getAccessToken();
-    }
-
-    /**
-     * 카카오 Access 토큰을 이용해 카카오 계정 사용자 정보를 반환합니다.
-     *
-     * @param accessToken 카카오 Access 토큰
-     * @return 카카오 계정 사용자 정보 (KakaoAccount와 KakaoAccount.Profile 등)
-     */
-    @Override
-    public KakaoUserResponseDTO getKakaoUser(String accessToken) {
-        return WebClient.create(kakaoUserInfoUri).post()
-                .uri(uriBuilder -> uriBuilder.build(true))
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-                .header(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString())
-                .retrieve().bodyToMono(KakaoUserResponseDTO.class).block();
+    public NaverConfigResponseDTO getNaverConfig() {
+        String state = generateState();
+        return new NaverConfigResponseDTO(naverClientId, naverRedirectUri, state);
     }
 
     /**
@@ -110,15 +98,106 @@ public class OAuthServiceImpl implements OAuthService {
         Optional<Member> optionalMember = memberRepository.findByEmail(kakaoUser.getEmail());
         if (optionalMember.isPresent()) {
             Member member = optionalMember.get();
-            return proceedKakaoLogin(member);
+            return proceedSocialLogin(member);
         } else {
             return kakaoSignupAndLogin(kakaoUser, kakaoProfile);
         }
     }
 
-    // 이미 카카오게정으로 존재하는 회원인 경우 로그인 진행
-    private TokenResponseDTO proceedKakaoLogin(Member member) {
-        log.info("✅ Kakao Account exists: {}", member.getEmail());
+    /**
+     * 클라이언트에서 네이버 로그인 후 redirect로 전달되는 네이버 인가 코드를 이용해
+     * 사용자를 네이버 Provider로 회원가입 후 로그인, 이미 가입되었다면 로그인시키고
+     * 토큰을 반환합니다.
+     *
+     * @param code 네이버 인가 코드
+     * @return 로그인 성공한 회원 이메일, Access 및 Refresh 토큰
+     */
+    @Override
+    @Transactional
+    public TokenResponseDTO naverLogin(String code) {
+        NaverUserResponseDTO.Response naverUser = getNaverUser(getNaverAccessToken(code)).getNaverAccount();
+        Optional<Member> optionalMember = memberRepository.findByEmail(naverUser.getEmail());
+        if (optionalMember.isPresent()) {
+            Member member = optionalMember.get();
+            return proceedSocialLogin(member);
+        } else {
+            return naverSignupAndLogin(naverUser);
+        }
+    }
+
+    /**
+     * 카카오 인가코드를 이용해 카카오 Access 토큰을 얻어 반환합니다.
+     *
+     * @param code 카카오 로그인 시 생성되는 인가 코드
+     * @return 인가 코드로 얻은 카카오 Access 토큰
+     */
+    private String getKakaoAccessToken(String code) {
+        KakaoResponseDTO kakaoResponse = WebClient.create(kakaoTokenUrl).post()
+                .uri(uriBuilder -> uriBuilder
+                        .queryParam("grant_type", "authorization_code")
+                        .queryParam("client_id", kakaoClientId)
+                        .queryParam("redirect_uri", kakaoRedirectUri)
+                        .queryParam("code", code)
+                        .queryParam("client_secret", kakaoClientSecret)
+                        .build(true))
+                .header(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString())
+                .retrieve().bodyToMono(KakaoResponseDTO.class).block();
+        return Objects.requireNonNull(kakaoResponse).getAccessToken();
+    }
+
+    /**
+     * 네이버 인가코드를 이용해 네이버 Access 토큰을 얻어 반환합니다.
+     *
+     * @param code 네이버 로그인 시 생성되는 인가 코드
+     * @return 인가 코드로 얻은 네이버 Access 토큰
+     */
+    private String getNaverAccessToken(String code) {
+        NaverResponseDTO naverResponse = WebClient.create(naverTokenUri).get()
+                .uri(uriBuilder -> uriBuilder
+                        .queryParam("grant_type", "authorization_code")
+                        .queryParam("client_id", naverClientId)
+                        .queryParam("code", code)
+                        .queryParam("client_secret", naverClientSecret)
+                        .build(true))
+                .retrieve().bodyToMono(NaverResponseDTO.class).block();
+        return Objects.requireNonNull(naverResponse).getAccessToken();
+    }
+
+    /**
+     * 카카오 Access 토큰을 이용해 카카오 계정 사용자 정보를 반환합니다.
+     *
+     * @param accessToken 카카오 Access 토큰
+     * @return 카카오 계정 사용자 정보 (KakaoAccount와 KakaoAccount.Profile 등)
+     */
+    private KakaoUserResponseDTO getKakaoUser(String accessToken) {
+        return WebClient.create(kakaoUserInfoUri).post()
+                .uri(uriBuilder -> uriBuilder.build(true))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .header(HttpHeaders.CONTENT_TYPE, HttpHeaderValues.APPLICATION_X_WWW_FORM_URLENCODED.toString())
+                .retrieve().bodyToMono(KakaoUserResponseDTO.class).block();
+    }
+
+    /**
+     * 네이버 Access 토큰을 이용해 네이버 계정 사용자 정보를 반환합니다.
+     *
+     * @param accessToken 네이버 Access 토큰
+     * @return 네이버 계정 사용자 정보
+     */
+    private NaverUserResponseDTO getNaverUser(String accessToken) {
+        return WebClient.create(naverUserInfoUri).get()
+                .uri(uriBuilder -> uriBuilder.build(true))
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .retrieve().bodyToMono(NaverUserResponseDTO.class).block();
+    }
+
+    /**
+     * 이미 소셜 로그인으로 회원가입된 사용자의 경우, 로그인만 계속 진행합니다.
+     *
+     * @param member 회원
+     * @return 로그인 결과 토큰
+     */
+    private TokenResponseDTO proceedSocialLogin(Member member) {
+        log.info("✅ Social Account [{}] exists: {}", member.getProvider(), member.getEmail());
         List<RefreshToken> refreshToken = refreshRepository.findByMember(member);
         if (!refreshToken.isEmpty()) {
             refreshRepository.deleteAll(refreshToken);
@@ -126,36 +205,57 @@ public class OAuthServiceImpl implements OAuthService {
         return jwtUtil.respondTokens(member);
     }
 
-    // 신규 카카오계정 로그인인 경우 서비스 회원가입 및 로그인 진행
+    /**
+     * 카카오 계정으로 처음 회원가입하는 사용자의 경우, 서비스 회원가입 및 로그인을 진행합니다.
+     *
+     * @param kakaoUser    카카오 계정 정보
+     * @param kakaoProfile 카카오 프로필 정보
+     * @return 로그인 결과 토큰
+     */
     private TokenResponseDTO kakaoSignupAndLogin(KakaoUserResponseDTO.KakaoAccount kakaoUser,
                                                  KakaoUserResponseDTO.KakaoAccount.Profile kakaoProfile) {
-        log.info("✅ Kakao Account doesn't exist, SignUp processing");
-
-        // Member, Profile 엔티티 생성
         Member member = Member.builder()
                 .email(kakaoUser.getEmail()).provider(Provider.KAKAO).role(Role.USER)
                 .isAgreeMarketing(false).isAgreeThirdParty(false)
                 .build();
         Profile profile = Profile.builder()
-                .nickname(extractEmailPart(kakaoUser.getEmail()))
+                .nickname(kakaoProfile.getNickName())
                 .imageUrl(kakaoProfile.getProfileImageUrl())
                 .member(member).build();
         memberRepository.save(member);
         profileRepository.save(profile);
-
-        log.info("✅ Member id: {}, Profile id: {}", member.getId(), profile.getId());
-        log.info("✅ Member provider: {}", member.getProvider());
-
         return jwtUtil.respondTokens(member);
     }
 
-    // 이메일에서 @ 사인 앞 부분을 반환해 닉네임에 사용
-    private String extractEmailPart(String email) {
-        int atIndex = email.indexOf('@');
-        // '@'가 없으면 원본 그대로 반환
-        if (atIndex == -1) {
-            return email;
-        }
-        return email.substring(0, atIndex);
+    /**
+     * 네이버 계정으로 처음 회원가입하는 사용자의 경우, 서비스 회원가입 및 로그인을 진행합니다.
+     *
+     * @param naverUser 네이버 계정 정보
+     * @return 로그인 결과 토큰
+     */
+    private TokenResponseDTO naverSignupAndLogin(NaverUserResponseDTO.Response naverUser) {
+        Member member = Member.builder()
+                .email(naverUser.getEmail())
+                .phoneNumber(naverUser.getMobile().replaceAll("\\D+", ""))
+                .provider(Provider.NAVER).role(Role.USER)
+                .isAgreeMarketing(false).isAgreeThirdParty(false)
+                .build();
+        Profile profile = Profile.builder()
+                .nickname(naverUser.getNickname())
+                .imageUrl(naverUser.getProfileImage())
+                .member(member).build();
+        memberRepository.save(member);
+        profileRepository.save(profile);
+        return jwtUtil.respondTokens(member);
+    }
+
+    /**
+     * 네이버 로그인에서 사용할 state 값을 생성합니다.
+     *
+     * @return 생성된 state 문자열
+     */
+    private String generateState() {
+        SecureRandom random = new SecureRandom();
+        return new BigInteger(130, random).toString(32);
     }
 }

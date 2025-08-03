@@ -10,6 +10,7 @@ import hanium.user_service.dto.request.LoginRequestDTO;
 import hanium.user_service.dto.request.SignUpRequestDTO;
 import hanium.user_service.dto.request.VerifySmsDTO;
 import hanium.user_service.dto.response.MemberResponseDTO;
+import hanium.user_service.dto.response.NaverConfigResponseDTO;
 import hanium.user_service.dto.response.SignUpResponseDTO;
 import hanium.user_service.dto.response.TokenResponseDTO;
 import hanium.user_service.mapper.MemberGrpcMapper;
@@ -146,11 +147,26 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
         }
     }
 
-    // 카카오 로그인 code로 회원가입 or 로그인
+    // 네이버 로그인 키 전송
     @Override
-    public void kakaoLogin(KakaoLoginRequest request, StreamObserver<TokenResponse> responseObserver) {
+    public void getNaverConfig(Empty request, StreamObserver<NaverConfigResponse> responseObserver) {
         try {
-            TokenResponseDTO dto = oAuthService.kakaoLogin(request.getCode());
+            NaverConfigResponseDTO responseDTO = oAuthService.getNaverConfig();
+            responseObserver.onNext(MemberGrpcMapper.toNaverConfigResponse(responseDTO));
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+        super.getNaverConfig(request, responseObserver);
+    }
+
+    // 소셜 로그인 code로 회원가입 or 로그인
+    @Override
+    public void socialLogin(SocialLoginRequest request, StreamObserver<TokenResponse> responseObserver) {
+        try {
+            TokenResponseDTO dto = request.getProvider().equals("kakao") ?
+                    oAuthService.kakaoLogin(request.getCode()) :
+                    oAuthService.naverLogin(request.getCode());
             responseObserver.onNext(MemberGrpcMapper.toTokenResponse(dto));
             responseObserver.onCompleted();
         } catch (CustomException e) {

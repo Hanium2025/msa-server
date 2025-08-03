@@ -2,6 +2,7 @@ package hanium.user_service.mapper;
 
 import hanium.common.proto.user.*;
 import hanium.user_service.dto.response.MemberResponseDTO;
+import hanium.user_service.dto.response.NaverConfigResponseDTO;
 import hanium.user_service.dto.response.SignUpResponseDTO;
 import hanium.user_service.dto.response.TokenResponseDTO;
 
@@ -54,6 +55,15 @@ public class MemberGrpcMapper {
         return KakaoConfigResponse.newBuilder()
                 .setClientId(configMap.get("kakaoClientId"))
                 .setRedirectUri(configMap.get("kakaoRedirectUri"))
+                .build();
+    }
+
+    // 네이버 로그인 키 전송 응답 dto -> gRPC
+    public static NaverConfigResponse toNaverConfigResponse(NaverConfigResponseDTO dto) {
+        return NaverConfigResponse.newBuilder()
+                .setClientId(dto.getClientId())
+                .setRedirectUri(dto.getRedirectUri())
+                .setState(dto.getState())
                 .build();
     }
 }
