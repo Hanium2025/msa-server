@@ -1,4 +1,4 @@
-package hanium.apigateway_service.security;
+package hanium.apigateway_service.config;
 
 import hanium.apigateway_service.security.filter.ExceptionHandlerFilter;
 import hanium.apigateway_service.security.filter.JwtAuthenticationFilter;
@@ -30,7 +30,7 @@ public class SecurityConfig {
                                 "/user/auth/**",
                                 "/user/sms/**",
                                 "/health/**",       // 나머지 서비스 헬스 체크
-                                "/health-check",     // apigateway 헬스체크
+                                "/health-check",    // apigateway 헬스체크
                                 "/actuator/**"
                         ).permitAll() // 인증 없이 허용
                         .anyRequest().authenticated())
