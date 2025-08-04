@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package chatroom;
+
+service ChatroomService {
+  rpc CreateChatroom(CreateChatroomRequest) returns (CreateChatroomResponse);
+}
+
+message CreateChatroomRequest {
+  int64 productId = 1;
+  int64 senderId = 2;
+  int64 receiverId = 3;
+}
+
+message CreateChatroomResponse {
+  int64 chatroomId = 1;
+}

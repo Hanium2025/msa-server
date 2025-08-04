@@ -28,6 +28,9 @@ service UserService {
 
   // 7. SMS 인증번호 검증
   rpc VerifySmsCode(VerifySmsRequest) returns (VerifySmsResponse);
+
+  // 8. 닉네임 조회
+  rpc GetNicknameByMemberId(GetNicknameRequest) returns(GetNicknameResponse);
 }
 
 // 1. 회원가입
@@ -102,4 +105,11 @@ message VerifySmsRequest {
 }
 message VerifySmsResponse {
   bool verified = 1;
+}
+
+message GetNicknameRequest{
+  int64 member_id = 1;
+}
+message GetNicknameResponse{
+  string nickname = 1;
 }
