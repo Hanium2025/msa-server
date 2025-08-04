@@ -28,6 +28,13 @@ service UserService {
 
   // 7. SMS 인증번호 검증
   rpc VerifySmsCode(VerifySmsRequest) returns (VerifySmsResponse);
+
+  // 8. 소셜 로그인 키 전송
+  rpc GetKakaoConfig(Empty) returns (KakaoConfigResponse);
+  rpc GetNaverConfig(Empty) returns (NaverConfigResponse);
+
+  // 9. 소셜 로그인으로 회원가입 or 로그인
+  rpc SocialLogin(SocialLoginRequest) returns (TokenResponse);
 }
 
 // 1. 회원가입
@@ -67,8 +74,8 @@ message GetMemberRequest {
   int64 member_id = 1;
 }
 message GetMemberResponse {
-  string email = 1;
-  string phone_number = 2;
+  int64 id = 1;
+  string email = 2;
   string provider = 3;
   string role = 4;
 }
@@ -102,4 +109,21 @@ message VerifySmsRequest {
 }
 message VerifySmsResponse {
   bool verified = 1;
+}
+
+// 8. 소셜 로그인 키 전송
+message KakaoConfigResponse {
+  string client_id = 1;
+  string redirect_uri = 2;
+}
+message NaverConfigResponse {
+  string client_id = 1;
+  string redirect_uri = 2;
+  string state = 3;
+}
+
+// 9. 소셜 로그인으로 회원가입
+message SocialLoginRequest {
+  string code = 1;
+  string provider = 2;
 }

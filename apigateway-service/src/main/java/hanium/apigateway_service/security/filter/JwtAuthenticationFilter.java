@@ -26,32 +26,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final List<String> NO_CHECK_URLS = new ArrayList<>(Arrays.asList(
-            "/user/auth/login",
-            "/user/auth/signup",
-            "/user/auth/refresh",
-            "/user/sms/send",
-            "/user/sms/verify",
-            "/health/user-service",
-            "/health/community-service",
-            "/health/notification-service",
-            "/health/product-service",
-            "/health/discovery-service",
+            "/user/auth",
+            "/user/sms",
+            "/health",
             "/health-check",
-            "/actuator/prometheus",
-            "/actuator/health",
-            "/actuator/info"
+            "/actuator"
     ));
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-
-        // 필터 검사 제외할 uri
-        if (NO_CHECK_URLS.contains(request.getRequestURI())) {
-            filterChain.doFilter(request, response);
-            log.info("✅ 필터 pass됨");
-            return;
+        // 필터 검사 pass
+        for (String prefix : NO_CHECK_URLS) {
+            if (request.getRequestURI().startsWith(prefix)) {
+                filterChain.doFilter(request, response);
+                log.info("✅ 필터 pass됨");
+                return;
+            }
         }
 
         // Access 존재하는 경우 -> Access 토큰 인증해 Authentication 객체 생성
