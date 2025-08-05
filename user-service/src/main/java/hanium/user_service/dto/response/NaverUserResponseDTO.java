@@ -23,6 +23,8 @@ public class NaverUserResponseDTO {
     public Response naverAccount;
 
     @Getter
+    @Builder
+    @AllArgsConstructor
     @NoArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Response {

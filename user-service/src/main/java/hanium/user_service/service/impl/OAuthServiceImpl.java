@@ -212,8 +212,8 @@ public class OAuthServiceImpl implements OAuthService {
      * @param kakaoProfile 카카오 프로필 정보
      * @return 로그인 결과 토큰
      */
-    private TokenResponseDTO kakaoSignupAndLogin(KakaoUserResponseDTO.KakaoAccount kakaoUser,
-                                                 KakaoUserResponseDTO.KakaoAccount.Profile kakaoProfile) {
+    public TokenResponseDTO kakaoSignupAndLogin(KakaoUserResponseDTO.KakaoAccount kakaoUser,
+                                                KakaoUserResponseDTO.KakaoAccount.Profile kakaoProfile) {
         Member member = Member.builder()
                 .email(kakaoUser.getEmail()).provider(Provider.KAKAO).role(Role.USER)
                 .isAgreeMarketing(false).isAgreeThirdParty(false)
@@ -233,7 +233,7 @@ public class OAuthServiceImpl implements OAuthService {
      * @param naverUser 네이버 계정 정보
      * @return 로그인 결과 토큰
      */
-    private TokenResponseDTO naverSignupAndLogin(NaverUserResponseDTO.Response naverUser) {
+    public TokenResponseDTO naverSignupAndLogin(NaverUserResponseDTO.Response naverUser) {
         Member member = Member.builder()
                 .email(naverUser.getEmail())
                 .phoneNumber(naverUser.getMobile().replaceAll("\\D+", ""))
