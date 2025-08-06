@@ -44,13 +44,7 @@ public class ChatServiceImpl implements ChatService {
         // 4. 채팅방 이름 생성
         String roomName = receiverNickname + "/" + productName;
         // 5. 채팅방 저장
-        Chatroom chatroom = Chatroom.builder()
-                .productId(productId)
-                .senderId(senderId)
-                .receiverId(receiverId)
-                .roomName(roomName)
-                .build();
-
+        Chatroom chatroom = Chatroom.from(requestDTO, roomName);
         // 중복 채팅방 검사
 
         Chatroom saved = chatroomRepository.save(chatroom);
