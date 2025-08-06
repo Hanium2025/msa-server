@@ -1,6 +1,7 @@
 package hanium.apigateway_service.controller;
 
 import hanium.apigateway_service.dto.chat.request.CreateChatroomRequestDTO;
+import hanium.apigateway_service.dto.chat.response.ChatMessageResponseDTO;
 import hanium.apigateway_service.dto.chat.response.CreateChatroomResponseDTO;
 import hanium.apigateway_service.grpc.ChatroomGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;

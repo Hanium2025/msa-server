@@ -1,0 +1,22 @@
+package hanium.apigateway_service.dto.chat.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class ChatMessageResponseDTO {
+
+    private Long messageId;      // DB에 저장된 메시지 ID
+    private Long chatroomId;
+    private Long senderId;
+    private Long receiverId;
+    private String content;
+    private Long timestamp;     // 서버 기준 createdAt
+    private boolean isMine;     // 프론트에서 보낸 사용자 입장 기준
+
+}
