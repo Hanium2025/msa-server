@@ -1,5 +1,6 @@
 package hanium.product_service.domain;
 
+import hanium.product_service.dto.request.CreateChatroomRequestDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,4 +22,12 @@ public class Chatroom extends BaseEntity{
     @Column
     private Long receiverId;
 
+    public static Chatroom from(CreateChatroomRequestDTO dto, String roomName) {
+        return Chatroom.builder()
+                .productId(dto.getProductId())
+                .senderId(dto.getSenderId())
+                .receiverId(dto.getReceiverId())
+                .roomName(roomName)
+                .build();
+    }
 }
