@@ -131,6 +131,9 @@ dependencies {
     // CoolSMS
     implementation 'net.nurigo:sdk:4.2.7'
 
+    // WebClient (Spring WebFlux)
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
     //prometheus
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-registry-prometheus'

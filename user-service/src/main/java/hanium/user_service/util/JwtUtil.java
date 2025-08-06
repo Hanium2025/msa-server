@@ -37,6 +37,7 @@ public class JwtUtil {
     private static final String ACCESS_TOKEN = "AccessToken"; // 토큰 제목 (sub)
     private static final String REFRESH_TOKEN = "RefreshToken";
     private static final String EMAIL_CLAIM = "email"; // username 클레임
+    private static final String ID_CLAIM = "id";
 
     private final RefreshTokenRepository refreshRepository;
 
@@ -47,10 +48,11 @@ public class JwtUtil {
      * @param email 사용자 이메일
      * @return 생성한 토큰 String
      */
-    public String createAccessToken(String email) {
+    public String createAccessToken(Long id, String email) {
         return JWT.create()
                 .withSubject(ACCESS_TOKEN) // 토큰 제목을 "AccessToken"으로 지정
                 .withExpiresAt(new Date(System.currentTimeMillis() + accessExpiration * 1000))
+                .withClaim(ID_CLAIM, id)
                 .withClaim(EMAIL_CLAIM, email) // 클레임 키 "email"에 받아온 email 값 추가
                 .sign(Algorithm.HMAC512(secret)); // 지정한 secret 값으로 암호화
     }
@@ -76,7 +78,7 @@ public class JwtUtil {
      */
     public TokenResponseDTO respondTokens(Member member) {
         // 새 토큰 생성
-        String accessToken = createAccessToken(member.getEmail());
+        String accessToken = createAccessToken(member.getId(), member.getEmail());
         String refreshToken = createRefreshToken();
 
         // Refresh 토큰 저장

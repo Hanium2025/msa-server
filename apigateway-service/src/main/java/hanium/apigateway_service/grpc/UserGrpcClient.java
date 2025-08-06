@@ -7,6 +7,7 @@ import hanium.apigateway_service.mapper.UserGrpcMapperForGateway;
 import hanium.apigateway_service.security.JwtUtil;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.GrpcUtil;
+import hanium.common.proto.common.Empty;
 import hanium.common.proto.user.*;
 import io.grpc.StatusRuntimeException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -96,6 +97,35 @@ public class UserGrpcClient {
         VerifySmsRequest request = UserGrpcMapperForGateway.toVerifySmsGrpc(dto);
         try {
             return stub.verifySmsCode(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 카카오 로그인 설정 값
+    public KakaoConfigResponse getKakaoConfig() {
+        try {
+            return stub.getKakaoConfig(Empty.newBuilder().build());
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 네이버 로그인 설정 값
+    public NaverConfigResponse getNaverConfig() {
+        try {
+            return stub.getNaverConfig(Empty.newBuilder().build());
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 소셜 로그인 code 받아서 회원가입 or 로그인
+    public TokenResponse socialLogin(String code, String provider) {
+        SocialLoginRequest request = SocialLoginRequest.newBuilder()
+                .setCode(code).setProvider(provider).build();
+        try {
+            return stub.socialLogin(request);
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
