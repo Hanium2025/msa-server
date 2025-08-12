@@ -12,4 +12,9 @@ public class ChatGrpcMapperForGateway {
                 .setReceiverId(dto.getReceiverId())
                 .build();
     }
+
+    public static Chatroom.ListMyChatroomsRequest toGrpc(Long memberId){
+        return Chatroom.ListMyChatroomsRequest.newBuilder()
+                .setMemberId(memberId).build();
+    }
 }
