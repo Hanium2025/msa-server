@@ -2,7 +2,10 @@ package hanium.apigateway_service.grpc;
 
 import chat.Chat;
 import chat.ChatServiceGrpc;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import hanium.apigateway_service.dto.chat.request.ChatMessageRequestDTO;
+import hanium.apigateway_service.dto.chat.response.ChatMessageResponseDTO;
 import hanium.apigateway_service.mapper.ChatMessageMapperForGateway;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +25,7 @@ public class GrpcChatStreamClient {
     private StreamObserver<Chat.ChatMessage> requestObserver;
 
     private final ConcurrentHashMap<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();
-
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     // 사용자 세션 등록
     public void registerSession(String userId, WebSocketSession session){
         sessionMap.put(userId, session);
@@ -35,35 +38,61 @@ public class GrpcChatStreamClient {
 
     // 클라이언트로부터 받은 메시지를 gRPC로 전송
     public void sendMessage(ChatMessageRequestDTO dto) {
+        log.info("gRPC Stream 전송 시도: {}: ", dto);
         Chat.ChatMessage grpcMessage = ChatMessageMapperForGateway.toGrpc(dto);
         requestObserver.onNext(grpcMessage);
+        log.info("✅ gRPC onNext 호출 완료");
+
     }
 
     private void startStream() {
-        requestObserver = stub.chat(new StreamObserver<Chat.ChatMessage>() {
+        requestObserver = stub.chat(new StreamObserver<Chat.ChatResponseMessage>() {
             @Override
-            public void onNext(Chat.ChatMessage msg) {
-                String receiverId = String.valueOf(msg.getReceiverId());
-                WebSocketSession session = sessionMap.get(receiverId);
+            public void onNext(Chat.ChatResponseMessage msg) {
+                // 1) 공통 DTO 생성
+                ChatMessageResponseDTO base = ChatMessageResponseDTO.builder()
+                        .messageId(msg.getMessageId())
+                        .chatroomId(msg.getChatroomId())
+                        .senderId(msg.getSenderId())
+                        .receiverId(msg.getReceiverId())
+                        .content(msg.getContent())
+                        .timestamp(msg.getTimestamp())
+                        .build();
 
-                if(session != null && session.isOpen()){
-                    try{
-                        session.sendMessage(new TextMessage(msg.getContent()));
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
+                // 2) 발신자(mine = true), 수신자(mine = false) 각각 전송
+                sendToWs(String.valueOf(msg.getSenderId()), base.toBuilder().mine(true).build());
+                sendToWs(String.valueOf(msg.getReceiverId()), base.toBuilder().mine(false).build());
+
+            }
+            // DTO를 JSON으로 바꿔서 WebSocket으로 보내는 헬퍼
+            private void sendToWs(String userId, ChatMessageResponseDTO dto) {
+                WebSocketSession session = sessionMap.get(userId);
+                if (session == null || !session.isOpen()) {
+                    log.debug("웹소켓 세션 없음/닫힘: {}", userId);
+                    return;
+                }
+                try {
+                    String json = objectMapper.writeValueAsString(dto); // ✅ DTO를 JSON으로
+                    session.sendMessage(new TextMessage(json));
+                } catch (Exception e) {
+                    log.warn("메시지 전송 실패 → 세션 제거: {}", userId, e);
+                    sessionMap.remove(userId);
                 }
             }
 
             @Override
             public void onError(Throwable t) {
-                log.error("gRPC error: " + t.getMessage());
+                log.error("gRPC 오류 발생", t);
+                requestObserver = null;
+                startStream(); // 재연결 시도
 
             }
 
             @Override
             public void onCompleted() {
                 log.error("gRPC stream completed");
+                requestObserver = null;
+                startStream(); // 재연결 시도
             }
         });
     }
