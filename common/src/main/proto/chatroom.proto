@@ -4,6 +4,7 @@ package chatroom;
 
 service ChatroomService {
   rpc CreateChatroom(CreateChatroomRequest) returns (CreateChatroomResponse);
+  rpc GetMyChatrooms(ListMyChatroomsRequest)returns (ListMyChatroomsResponse);
 }
 
 message CreateChatroomRequest {
@@ -14,4 +15,21 @@ message CreateChatroomRequest {
 
 message CreateChatroomResponse {
   int64 chatroomId = 1;
+}
+
+message ListMyChatroomsRequest {
+  int64 memberId = 1;
+}
+
+message ChatroomSummary{
+  int64 chatroomId = 1;
+  string roomName = 2;
+  string latestMessage = 3;
+  int64 productId = 4;
+  int64 opponentId = 5; //상대방 아이디
+  int64 latestTime = 6;
+
+}
+message ListMyChatroomsResponse {
+  repeated ChatroomSummary items = 1;
 }
