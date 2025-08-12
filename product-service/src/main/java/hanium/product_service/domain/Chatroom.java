@@ -4,6 +4,8 @@ import hanium.product_service.dto.request.CreateChatroomRequestDTO;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Builder
@@ -22,6 +24,11 @@ public class Chatroom extends BaseEntity{
     @Column
     private Long receiverId;
 
+    @Column(length = 50)
+    private String latestContent;
+
+    private LocalDateTime latestContentTime;
+
     public static Chatroom from(CreateChatroomRequestDTO dto, String roomName) {
         return Chatroom.builder()
                 .productId(dto.getProductId())
@@ -29,5 +36,10 @@ public class Chatroom extends BaseEntity{
                 .receiverId(dto.getReceiverId())
                 .roomName(roomName)
                 .build();
+    }
+
+    public void updateLatest(String content, LocalDateTime time) {
+        this.latestContent = content;
+        this.latestContentTime = time;
     }
 }

@@ -1,5 +1,7 @@
 package hanium.product_service.domain;
 
+import hanium.product_service.dto.request.ChatMessageRequestDTO;
+import hanium.product_service.dto.request.CreateChatroomRequestDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,4 +31,13 @@ public class Message extends BaseEntity{
     @Column
     private Long receiverId;
 
+    public static Message from(ChatMessageRequestDTO dto){
+        return Message.builder()
+                .chatroomId(dto.getChatroomId())
+                .content(dto.getContent())
+                .senderId(dto.getSenderId())
+                .receiverId(dto.getReceiverId())
+                .build();
+
+}
 }
