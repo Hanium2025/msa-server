@@ -7,9 +7,18 @@ message ChatMessage {
   int64 senderId = 2;
   int64 receiverId = 3;
   string content = 4;
-  int64 timestamp = 5; // milliseconds
+  int64 timestamp = 5;
+}
+
+message ChatResponseMessage {
+  int64 chatroomId = 1;
+  int64 senderId = 2;
+  int64 receiverId = 3;
+  string content = 4;
+  int64 timestamp = 5;
+  int64 messageId = 6;
 }
 
 service ChatService {
-  rpc Chat(stream ChatMessage) returns (stream ChatMessage);
+  rpc Chat(stream ChatMessage) returns (stream ChatResponseMessage);
 }
