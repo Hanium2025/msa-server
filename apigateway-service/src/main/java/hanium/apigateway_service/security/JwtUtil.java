@@ -38,7 +38,7 @@ public class JwtUtil {
     private final UserGrpcClient userGrpcClient;
 
     // 사용할 상수 정의
-    private static final String ID_ClAIM = "id";
+    private static final String ID_CLAIM = "id";
     private static final String EMAIL_CLAIM = "email";
     private static final String BEARER = "Bearer ";
 
@@ -85,7 +85,7 @@ public class JwtUtil {
         if (isTokenValid(accessToken)) {
             return JWT.require(Algorithm.HMAC512(secret)).build()
                     .verify(accessToken)
-                    .getClaim(ID_ClAIM)
+                    .getClaim(ID_CLAIM)
                     .asLong();
         } else {
             throw new CustomException(ErrorCode.INVALID_TOKEN);

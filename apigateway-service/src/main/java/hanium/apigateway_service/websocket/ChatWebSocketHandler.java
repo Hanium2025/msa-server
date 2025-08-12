@@ -1,5 +1,6 @@
 package hanium.apigateway_service.websocket;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hanium.apigateway_service.dto.chat.request.ChatMessageRequestDTO;
 import hanium.apigateway_service.grpc.GrpcChatStreamClient;
@@ -7,6 +8,7 @@ import hanium.apigateway_service.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
@@ -65,6 +67,7 @@ public class ChatWebSocketHandler implements WebSocketHandler {
         //gRPC를 통해 product-service로 전송
         grpcChatStreamClient.sendMessage(dto);
     }
+
 
     /**
      * 메시지 처리 중 오류가 발생했을 때 호출됩니다.
