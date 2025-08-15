@@ -8,6 +8,8 @@ message ChatMessage {
   int64 receiverId = 3;
   string content = 4;
   int64 timestamp = 5;
+  MessageType type = 6;
+  repeated string imageUrls = 7;
 }
 
 message ChatResponseMessage {
@@ -17,8 +19,31 @@ message ChatResponseMessage {
   string content = 4;
   int64 timestamp = 5;
   int64 messageId = 6;
+  MessageType type = 7;
+  repeated string imageUrls = 8;
 }
 
+enum MessageType{
+  TEXT = 0;
+  IMAGE = 1;
+  NOTICE = 3;
+}
+message PresignedUrl {
+  string putUrl = 1;
+  string getUrl = 2;
+  string key = 3;
+}
+
+message CreatePresignedUrlsRequest {
+  int64 chatroomId  = 1;
+  int32 count       = 2;   // 1~3
+  string contentType = 3;  // "image/jpeg" 등
+}
+
+message CreatePresignedUrlsResponse{
+  repeated PresignedUrl urls = 1;
+}
 service ChatService {
   rpc Chat(stream ChatMessage) returns (stream ChatResponseMessage);
+  rpc CreatePresignedUrls(CreatePresignedUrlsRequest) returns (CreatePresignedUrlsResponse);
 }
