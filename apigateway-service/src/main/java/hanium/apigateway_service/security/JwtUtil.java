@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
-
+// ★ 추가
+import org.springframework.http.ResponseCookie;
+import java.time.Duration;
 @Component
 @Transactional
 @RequiredArgsConstructor
@@ -40,7 +42,8 @@ public class JwtUtil {
     // 사용할 상수 정의
     private static final String EMAIL_CLAIM = "email"; // username 클레임
     private static final String BEARER = "Bearer ";
-
+    // ★ 추가: 쿠키 이름 상수
+    private static final String REFRESH_COOKIE_NAME = "RefreshToken";
 
     /**
      * http 요청 헤더에서 Access 토큰을 추출합니다.
@@ -171,5 +174,32 @@ public class JwtUtil {
         nullCookie.setMaxAge(0);
         nullCookie.setHttpOnly(true);
         return nullCookie;
+    }
+
+    /* ====== 여기부터 새로 추가: ResponseCookie 기반 Set-Cookie 유틸 ====== */
+
+    /**
+     * RefreshToken 발급용 Set-Cookie 생성 (SameSite=None; Secure; HttpOnly; Path=/)
+     */
+    public static ResponseCookie refreshSetCookie(String token) {
+        return ResponseCookie.from(REFRESH_COOKIE_NAME, token)
+                .httpOnly(true)
+                .secure(true)          // HTTPS 필수
+                .sameSite("None")      // 크로스 사이트 허용
+                .path("/")
+                .maxAge(Duration.ofDays(7))
+                .build();
+    }
+    /**
+     * RefreshToken 삭제용 Set-Cookie 생성 (Max-Age=0)
+     */
+    public static ResponseCookie refreshDeleteCookie() {
+        return ResponseCookie.from(REFRESH_COOKIE_NAME, "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(0)
+                .build();
     }
 }

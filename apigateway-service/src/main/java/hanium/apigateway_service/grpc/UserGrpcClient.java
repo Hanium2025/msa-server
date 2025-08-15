@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -38,8 +39,10 @@ public class UserGrpcClient {
         LoginRequest grpcRequest = UserGrpcMapperForGateway.toLoginGrpc(dto);
         try {
             TokenResponse tokenResponse = stub.login(grpcRequest);
-            response.addCookie(JwtUtil.removeCookie());
-            response.addCookie(JwtUtil.createCookie(tokenResponse.getRefreshToken()));
+//            response.addCookie(JwtUtil.removeCookie());
+//            response.addCookie(JwtUtil.createCookie(tokenResponse.getRefreshToken()));
+            response.addHeader(HttpHeaders.SET_COOKIE, JwtUtil.refreshDeleteCookie().toString());
+            response.addHeader(HttpHeaders.SET_COOKIE, JwtUtil.refreshSetCookie(tokenResponse.getRefreshToken()).toString());
             response.setHeader("Authorization", tokenResponse.getAccessToken());
             return tokenResponse;
         } catch (StatusRuntimeException e) {
@@ -72,8 +75,11 @@ public class UserGrpcClient {
         ReissueTokenRequest request = ReissueTokenRequest.newBuilder().setRefreshToken(refreshToken).build();
         try {
             TokenResponse tokenResponse = stub.reissueToken(request);
-            response.addCookie(JwtUtil.removeCookie());
-            response.addCookie(JwtUtil.createCookie(tokenResponse.getRefreshToken()));
+//            response.addCookie(JwtUtil.removeCookie());
+//            response.addCookie(JwtUtil.createCookie(tokenResponse.getRefreshToken()));
+            // 기존 addCookie() 제거하고 Set-Cookie로
+            response.addHeader(HttpHeaders.SET_COOKIE, JwtUtil.refreshDeleteCookie().toString());
+            response.addHeader(HttpHeaders.SET_COOKIE, JwtUtil.refreshSetCookie(tokenResponse.getRefreshToken()).toString());
             response.setHeader("Authorization", tokenResponse.getAccessToken());
             return tokenResponse;
         } catch (StatusRuntimeException e) {
