@@ -8,12 +8,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Message extends BaseEntity{
+public class Message extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,13 +34,21 @@ public class Message extends BaseEntity{
     @Column
     private Long receiverId;
 
-    public static Message from(ChatMessageRequestDTO dto){
-        return Message.builder()
+    @Enumerated(EnumType.STRING)
+    @Column
+    private MessageType messageType;
+
+
+    public static Message from(ChatMessageRequestDTO dto) {
+       return Message.builder()
                 .chatroomId(dto.getChatroomId())
                 .content(dto.getContent())
                 .senderId(dto.getSenderId())
                 .receiverId(dto.getReceiverId())
+                .messageType(dto.getMessageType() == null ? MessageType.TEXT : dto.getMessageType())
                 .build();
 
-}
+    }
+
+
 }

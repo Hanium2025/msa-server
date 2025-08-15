@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -73,44 +74,44 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public StreamObserver<Chat.ChatMessage> chat(StreamObserver<Chat.ChatResponseMessage> responseObserver) {
         return new StreamObserver<>() {
-            private Long currentUserId;
 
             @Override
             public void onNext(Chat.ChatMessage msg) {
                 log.info("📥 product-service gRPC 수신: {}", msg);
-                currentUserId = msg.getSenderId();
-                userStreamMap.put(currentUserId, responseObserver);
                 // grpc -> dto
                 ChatMessageRequestDTO dto = ChatMessageRequestDTO.from(msg);
 
                 Message saved = chatMessageTxService.handleMessage(dto);
 
+                long tsMillis = (saved.getCreatedAt() != null)
+                        ? saved.getCreatedAt()
+                        .atZone(ZoneId.of("Asia/Seoul"))   // 원하는 타임존
+                        .toInstant()
+                        .toEpochMilli()
+                        : System.currentTimeMillis();
                 // 공통 응답 생성
                 Chat.ChatResponseMessage response = Chat.ChatResponseMessage.newBuilder()
                         .setChatroomId(msg.getChatroomId())
                         .setSenderId(msg.getSenderId())
                         .setReceiverId(msg.getReceiverId())
                         .setContent(msg.getContent())
-                        .setTimestamp(System.currentTimeMillis())
+                        .setTimestamp(tsMillis)
                         .setMessageId(saved.getId()) // DB 생성된 메시지 ID
+                        .setType(msg.getType())
+                        .addAllImageUrls(msg.getImageUrlsList())
                         .build();
-                // 발신자 본인 세션에도 메시지 전달
-                responseObserver.onNext(response);
 
-                StreamObserver<Chat.ChatResponseMessage> receiverObserver = userStreamMap.get(msg.getReceiverId());
-                if (receiverObserver != null) {
-                    receiverObserver.onNext(response); // ← Gateway로 메시지 전달
-                }
+                responseObserver.onNext(response);
             }
 
             @Override
             public void onError(Throwable t) {
-                userStreamMap.remove(currentUserId);
+                log.warn("gRPC stream onError", t);
             }
 
             @Override
             public void onCompleted() {
-                userStreamMap.remove(currentUserId);
+                log.info("gRPC stream completed");
                 responseObserver.onCompleted();
             }
         };
@@ -136,16 +137,5 @@ public class ChatServiceImpl implements ChatService {
                     .build();
         }).toList();
     }
-
-//    @Transactional
-//    @Override
-//    public void updateLatest(Long chatroomId, String content, LocalDateTime time) {
-//        Chatroom room = chatroomRepository.findById(chatroomId)
-//                .orElseThrow(()->new CustomException(ErrorCode.CHATROOM_NOT_FOUND));
-//        room.updateLatest(content,time);
-//
-//
-//    }
-
 
 }
