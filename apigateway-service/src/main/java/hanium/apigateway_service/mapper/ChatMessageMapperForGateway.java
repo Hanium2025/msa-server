@@ -5,13 +5,18 @@ import hanium.apigateway_service.dto.chat.request.ChatMessageRequestDTO;
 public class ChatMessageMapperForGateway {
 //dto->grpc
     public static Chat.ChatMessage toGrpc(ChatMessageRequestDTO dto) {
-        return Chat.ChatMessage.newBuilder()
+        Chat.ChatMessage.Builder b = Chat.ChatMessage.newBuilder()
                 .setChatroomId(dto.getChatroomId())
                 .setSenderId(dto.getSenderId())
                 .setReceiverId(dto.getReceiverId())
                 .setContent(dto.getContent())
                 .setTimestamp(System.currentTimeMillis())
-                .build();
+                .setType(Chat.MessageType.valueOf(dto.getType().toUpperCase())); // "TEXT"/"IMAGE"/"NOTICE"
+
+        if(dto.getImageUrl() != null && !dto.getImageUrl().isEmpty()){
+            b.addAllImageUrls(dto.getImageUrl());
+        }
+        return b.build();
     }
 
 }

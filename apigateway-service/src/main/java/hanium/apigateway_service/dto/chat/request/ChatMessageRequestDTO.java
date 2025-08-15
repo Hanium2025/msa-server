@@ -18,8 +18,7 @@ public class ChatMessageRequestDTO {
     private Long receiverId;
     private String content;
     private Long timestamp;
-    private String category; //채팅인지, 공지인지
-    private String type;  //TEXT인지 IMAGE인지
+    private String type;
     private List<String> imageUrl; //0~3개의 이미지 URL
 
 }

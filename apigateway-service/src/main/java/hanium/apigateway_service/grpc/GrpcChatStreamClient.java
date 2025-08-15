@@ -38,6 +38,14 @@ public class GrpcChatStreamClient {
 
     // 클라이언트로부터 받은 메시지를 gRPC로 전송
     public void sendMessage(ChatMessageRequestDTO dto) {
+
+        if(requestObserver == null){
+            startStream();
+            if(requestObserver == null){
+                log.warn("gRPC stream not ready");
+                return;
+            }
+        }
         log.info("gRPC Stream 전송 시도: {}: ", dto);
         Chat.ChatMessage grpcMessage = ChatMessageMapperForGateway.toGrpc(dto);
         requestObserver.onNext(grpcMessage);
@@ -57,6 +65,8 @@ public class GrpcChatStreamClient {
                         .receiverId(msg.getReceiverId())
                         .content(msg.getContent())
                         .timestamp(msg.getTimestamp())
+                        .type(msg.getType().name())
+                        .imageUrl(msg.getImageUrlsList())
                         .build();
 
                 // 2) 발신자(mine = true), 수신자(mine = false) 각각 전송

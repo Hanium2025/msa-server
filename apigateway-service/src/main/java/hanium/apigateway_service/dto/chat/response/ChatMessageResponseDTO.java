@@ -20,7 +20,6 @@ public class ChatMessageResponseDTO {
     private String content;
     private Long timestamp;     // 서버 기준 createdAt
     private boolean mine;     // 프론트에서 보낸 사용자 입장 기준
-    private String category; //채팅인지, 공지인지
-    private String type;  //TEXT인지 IMAGE인지
+    private String type;
     private List<String> imageUrl; //0~3개의 이미지 URL
 }
