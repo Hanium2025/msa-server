@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
+import hanium.apigateway_service.dto.product.response.ProductMainDTO;
 import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
 import hanium.apigateway_service.grpc.ProductGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
@@ -27,6 +28,16 @@ public class ProductController {
 
     private final ProductGrpcClient productGrpcClient;
     private final ObjectMapper objectMapper;
+
+    // 메인 페이지
+    @GetMapping("/")
+    public ResponseEntity<ResponseDTO<ProductMainDTO>> getProductMain(Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        ProductMainDTO result = productGrpcClient.getProductMain(memberId);
+        ResponseDTO<ProductMainDTO> response = new ResponseDTO<>(
+                result, HttpStatus.OK, "메인페이지가 조회되었습니다.");
+        return ResponseEntity.ok(response);
+    }
 
     // 상품 등록
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

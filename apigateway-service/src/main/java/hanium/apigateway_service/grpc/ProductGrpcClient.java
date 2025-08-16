@@ -2,6 +2,7 @@ package hanium.apigateway_service.grpc;
 
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
+import hanium.apigateway_service.dto.product.response.ProductMainDTO;
 import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
 import hanium.apigateway_service.mapper.ProductGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
@@ -37,6 +38,16 @@ public class ProductGrpcClient {
     private String bucketName;
 
     private final S3Template s3Template;
+
+    // 메인 페이지
+    public ProductMainDTO getProductMain(Long memberId) {
+        ProductMainRequest request = ProductMainRequest.newBuilder().setMemberId(memberId).build();
+        try {
+            return ProductMainDTO.from(stub.getProductMain(request));
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
 
     // 상품 등록
     public ProductResponseDTO registerProduct(Long memberId,

@@ -8,6 +8,7 @@ import hanium.product_service.dto.request.DeleteImageRequestDTO;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductImageDTO;
+import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
 import hanium.product_service.repository.ProductImageRepository;
 import hanium.product_service.repository.ProductRepository;
@@ -29,6 +30,18 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
+
+    /**
+     * 상품 메인 페이지 화면을 조회합니다.
+     *
+     * @param memberId 조회한 회원 id
+     * @return 메인 페이지 결과 dto (최근 등록된 상품 + 최근 본 카테고리)
+     */
+    @Override
+    public ProductMainDTO getProductMain(Long memberId) {
+        //TODO: ProductService > getProductMain 구현
+        return null;
+    }
 
     /**
      * 새 상품을 등록합니다.

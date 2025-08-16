@@ -5,11 +5,14 @@ import hanium.product_service.dto.request.DeleteImageRequestDTO;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductImageDTO;
+import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
 
 import java.util.List;
 
 public interface ProductService {
+
+    ProductMainDTO getProductMain(Long memberId);
 
     ProductResponseDTO registerProduct(RegisterProductRequestDTO dto);
 

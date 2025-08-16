@@ -7,6 +7,7 @@ import hanium.common.proto.product.*;
 import hanium.product_service.dto.request.DeleteImageRequestDTO;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
+import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
 import hanium.product_service.mapper.ProductGrpcMapper;
 import hanium.product_service.service.ProductService;
@@ -23,6 +24,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBase {
 
     private final ProductService productService;
+
+    // 메인페이지 조회
+    @Override
+    public void getProductMain(ProductMainRequest request, StreamObserver<ProductMainResponse> responseObserver) {
+        try {
+            ProductMainDTO dto = productService.getProductMain(request.getMemberId());
+            responseObserver.onNext(ProductGrpcMapper.toProductMainResponseGrpc(dto));
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
 
     // 상품 등록
     @Override
