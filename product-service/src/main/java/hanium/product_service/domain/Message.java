@@ -1,15 +1,11 @@
 package hanium.product_service.domain;
 
 import hanium.product_service.dto.request.ChatMessageRequestDTO;
-import hanium.product_service.dto.request.CreateChatroomRequestDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -40,7 +36,7 @@ public class Message extends BaseEntity {
 
 
     public static Message from(ChatMessageRequestDTO dto) {
-       return Message.builder()
+        return Message.builder()
                 .chatroomId(dto.getChatroomId())
                 .content(dto.getContent())
                 .senderId(dto.getSenderId())
