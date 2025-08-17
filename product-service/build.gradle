@@ -106,6 +106,8 @@ dependencies {
     // redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    //AWS S3
+    implementation "software.amazon.awssdk:s3:2.17.217"
     // Grpc-Test-Support
 //    testImplementation("io.grpc:grpc-testing")
 //    // Spring-Test-Support (Optional)
