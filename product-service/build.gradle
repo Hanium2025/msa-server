@@ -103,6 +103,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
     // Grpc-Test-Support
 //    testImplementation("io.grpc:grpc-testing")
 //    // Spring-Test-Support (Optional)

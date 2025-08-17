@@ -63,8 +63,11 @@ public class ProductGrpcClient {
     }
 
     // 상품 조회
-    public ProductResponseDTO getProduct(Long productId) {
-        GetProductRequest grpcRequest = GetProductRequest.newBuilder().setProductId(productId).build();
+    public ProductResponseDTO getProduct(Long memberId, Long productId) {
+        GetProductRequest grpcRequest = GetProductRequest.newBuilder()
+                .setMemberId(memberId)
+                .setProductId(productId)
+                .build();
         try {
             return ProductResponseDTO.from(stub.getProduct(grpcRequest));
         } catch (StatusRuntimeException e) {

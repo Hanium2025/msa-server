@@ -54,7 +54,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     @Override
     public void getProduct(GetProductRequest request, StreamObserver<ProductResponse> responseObserver) {
         try {
-            ProductResponseDTO dto = productService.getProductById(request.getProductId());
+            ProductResponseDTO dto = productService.getProductById(request.getMemberId(), request.getProductId());
             responseObserver.onNext(ProductGrpcMapper.toProductResponseGrpc(dto));
             responseObserver.onCompleted();
         } catch (CustomException e) {

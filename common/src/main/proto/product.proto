@@ -37,7 +37,7 @@ message ProductMainResponse {
 message ProductMain {
   int64 product_id = 1;
   string title = 2;
-  int32 price = 3;
+  int64 price = 3;
   string image_url = 4;
 }
 message CategoryMain {
@@ -72,7 +72,8 @@ message ProductImageResponse {
 
 // 2. 상품 조회
 message GetProductRequest {
-  int64 product_id = 1;
+  int64 member_id = 1;
+  int64 product_id = 2;
 }
 
 // 3. 상품 수정

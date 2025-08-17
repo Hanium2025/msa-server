@@ -30,12 +30,12 @@ public class ProductController {
     private final ObjectMapper objectMapper;
 
     // 메인 페이지
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<ResponseDTO<ProductMainDTO>> getProductMain(Authentication authentication) {
         Long memberId = (Long) authentication.getPrincipal();
         ProductMainDTO result = productGrpcClient.getProductMain(memberId);
         ResponseDTO<ProductMainDTO> response = new ResponseDTO<>(
-                result, HttpStatus.OK, "메인페이지가 조회되었습니다.");
+                result, HttpStatus.OK, "메인페이지가 조회되었습니다 - 회원 ID: " + memberId);
         return ResponseEntity.ok(response);
     }
 
@@ -64,9 +64,11 @@ public class ProductController {
 
     // 상품 조회
     @GetMapping("/{productId}")
-    public ResponseEntity<ResponseDTO<ProductResponseDTO>> getProduct(@PathVariable Long productId) {
+    public ResponseEntity<ResponseDTO<ProductResponseDTO>> getProduct(@PathVariable Long productId,
+                                                                      Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
         ResponseDTO<ProductResponseDTO> response = new ResponseDTO<>(
-                productGrpcClient.getProduct(productId), HttpStatus.OK, "해당하는 상품이 조회되었습니다.");
+                productGrpcClient.getProduct(memberId, productId), HttpStatus.OK, "해당하는 상품이 조회되었습니다.");
         return ResponseEntity.ok(response);
     }
 

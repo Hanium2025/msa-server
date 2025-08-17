@@ -1,5 +1,6 @@
 package hanium.product_service.dto.response;
 
+import hanium.product_service.domain.Product;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,8 +22,17 @@ public class ProductMainDTO {
     public static class MainProductsDTO {
         private Long productId;
         private String title;
-        private int price;
+        private Long price;
         private String imageUrl;
+
+        public static MainProductsDTO from(Product product, String imageUrl) {
+            return MainProductsDTO.builder()
+                    .productId(product.getId())
+                    .title(product.getTitle())
+                    .price(product.getPrice())
+                    .imageUrl(imageUrl)
+                    .build();
+        }
     }
 
     @Getter

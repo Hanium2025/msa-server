@@ -57,7 +57,7 @@ public class ProductGrpcMapper {
     private static CategoryMain toCategoryMainGrpc(ProductMainDTO.MainCategoriesDTO dto) {
         return CategoryMain.newBuilder()
                 .setName(dto.getName())
-                .setImageUrl(dto.getName())
+                .setImageUrl(dto.getImageUrl())
                 .build();
     }
 }

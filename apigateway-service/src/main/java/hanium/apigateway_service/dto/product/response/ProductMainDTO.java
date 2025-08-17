@@ -25,7 +25,7 @@ public class ProductMainDTO {
     private static class MainProductsDTO {
         private Long productId;
         private String title;
-        private int price;
+        private Long price;
         private String imageUrl;
 
         public static MainProductsDTO from(ProductMain message) {
