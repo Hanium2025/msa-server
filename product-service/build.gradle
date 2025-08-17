@@ -28,6 +28,9 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    compileProtoPath {
+        exclude group: 'software.amazon.awssdk'
+    }
 }
 
 repositories {
@@ -100,9 +103,10 @@ dependencies {
     implementation project(':common')
 
     //prometheus
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
+    //AWS S3
+    implementation "software.amazon.awssdk:s3:2.17.217"
     // Grpc-Test-Support
 //    testImplementation("io.grpc:grpc-testing")
 //    // Spring-Test-Support (Optional)
@@ -141,6 +145,6 @@ tasks.named('compileJava') {
 }
 
 
-tasks.named('test') {
+test {
     useJUnitPlatform()
 }

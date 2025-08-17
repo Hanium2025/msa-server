@@ -29,6 +29,9 @@ service UserService {
   // 7. SMS 인증번호 검증
   rpc VerifySmsCode(VerifySmsRequest) returns (VerifySmsResponse);
 
+  // 8. 닉네임 조회
+  rpc GetNicknameByMemberId(GetNicknameRequest) returns(GetNicknameResponse);
+
   // 8. 소셜 로그인 키 전송
   rpc GetKakaoConfig(Empty) returns (KakaoConfigResponse);
   rpc GetNaverConfig(Empty) returns (NaverConfigResponse);
@@ -109,6 +112,13 @@ message VerifySmsRequest {
 }
 message VerifySmsResponse {
   bool verified = 1;
+}
+
+message GetNicknameRequest{
+  int64 member_id = 1;
+}
+message GetNicknameResponse{
+  string nickname = 1;
 }
 
 // 8. 소셜 로그인 키 전송
