@@ -219,15 +219,16 @@ public class ProductServiceImpl implements ProductService {
      * @return 최근 조회한 카테고리 목록, 4개, 형식: {이름, 아이콘 이미지 경로}
      */
     private List<ProductMainDTO.MainCategoriesDTO> getRecentCategories(Long memberId) {
+        // 최근 조회한 상품 id 목록 조회
         List<Long> recentProductIds = recentViewRepository.getRecentProductIds(memberId);
         if (recentProductIds.isEmpty()) {
             return new ArrayList<>();
         }
+        // 최근 조회한 상품 id 목록으로 {id, Category} 목록 조회
         List<ProductIdCategory> rows = productRepository.findIdAndCategoryByIdIn(recentProductIds);
         Map<Long, Category> idToCategory = rows.stream().collect(
                 Collectors.toMap(ProductIdCategory::getId, ProductIdCategory::getCategory));
-        System.out.println("✅ 최근 조회된 상품들의 Category = " + idToCategory.values());
-
+        // {id, Category} 목록에서 중복 제거한 Category만 result로 담기
         boolean[] seen = new boolean[Category.values().length];
         List<ProductMainDTO.MainCategoriesDTO> result = new ArrayList<>();
         for (Long productId : recentProductIds) {
@@ -252,7 +253,8 @@ public class ProductServiceImpl implements ProductService {
      * @return {name, imageUrl}
      */
     private ProductMainDTO.MainCategoriesDTO getProductCategories(String key) {
-        String imageUrl = "https://msa-image-bucket.s3.ap-northeast-2.amazonaws.com/product_category/" + key + ".png";
+        String baseUrl = "https://msa-image-bucket.s3.ap-northeast-2.amazonaws.com/product_category/";
+        String imageUrl = baseUrl + key + ".png";
         return ProductMainDTO.MainCategoriesDTO.builder()
                 .name(key)
                 .imageUrl(imageUrl)

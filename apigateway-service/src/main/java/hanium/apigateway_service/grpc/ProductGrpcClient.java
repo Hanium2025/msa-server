@@ -119,7 +119,7 @@ public class ProductGrpcClient {
         }
         List<String> paths = new ArrayList<>();
         for (MultipartFile file : images) {
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            String fileName = "product_image/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
             paths.add(s3Upload(file, fileName));
         }
         return paths;
