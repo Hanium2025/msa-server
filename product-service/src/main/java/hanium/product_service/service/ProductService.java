@@ -6,9 +6,15 @@ import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
 
+import java.util.List;
+
 public interface ProductService {
 
     ProductMainDTO getProductMain(Long memberId);
+
+    List<ProductMainDTO.MainProductsDTO> getRecentProducts();
+
+    List<ProductMainDTO.MainCategoriesDTO> getRecentCategories(Long memberId);
 
     ProductResponseDTO registerProduct(RegisterProductRequestDTO dto);
 

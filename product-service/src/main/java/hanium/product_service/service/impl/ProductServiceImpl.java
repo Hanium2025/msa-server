@@ -192,7 +192,7 @@ public class ProductServiceImpl implements ProductService {
      *
      * @return 최근 등록 게시글 리스트
      */
-    private List<ProductMainDTO.MainProductsDTO> getRecentProducts() {
+    public List<ProductMainDTO.MainProductsDTO> getRecentProducts() {
         List<Product> productList = productRepository.findTop6ByOrderByCreatedAtDescIdDesc();
         List<ProductMainDTO.MainProductsDTO> result = new ArrayList<>();
         for (Product product : productList) {
@@ -218,7 +218,7 @@ public class ProductServiceImpl implements ProductService {
      * @param memberId 사용자 id
      * @return 최근 조회한 카테고리 목록, 4개, 형식: {이름, 아이콘 이미지 경로}
      */
-    private List<ProductMainDTO.MainCategoriesDTO> getRecentCategories(Long memberId) {
+    public List<ProductMainDTO.MainCategoriesDTO> getRecentCategories(Long memberId) {
         // 최근 조회한 상품 id 목록 조회
         List<Long> recentProductIds = recentViewRepository.getRecentProductIds(memberId);
         if (recentProductIds.isEmpty()) {
