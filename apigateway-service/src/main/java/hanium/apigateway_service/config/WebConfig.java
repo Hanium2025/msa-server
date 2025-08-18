@@ -12,7 +12,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins(
                         "http://localhost:8081",
-                        "https://prismatic-dolphin-864e05.netlify.app/"
+                        "https://benevolent-cendol-c0e551.netlify.app/"
                 )
                 .allowedMethods("GET","POST","PUT","PATCH","DELETE","OPTIONS")
                 .allowedHeaders("*")
