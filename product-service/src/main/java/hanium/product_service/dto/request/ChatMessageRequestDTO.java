@@ -2,6 +2,7 @@ package hanium.product_service.dto.request;
 
 
 import chat.Chat;
+import hanium.product_service.domain.Chatroom;
 import hanium.product_service.domain.MessageType;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +12,7 @@ import java.util.List;
 @Getter
 @Builder
 public class ChatMessageRequestDTO {
-    private Long chatroomId;
+    private long chatroomId;
     private Long senderId;
     private Long receiverId;
     private String content;

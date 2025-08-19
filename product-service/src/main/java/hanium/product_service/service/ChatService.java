@@ -2,6 +2,7 @@ package hanium.product_service.service;
 
 import chat.Chat;
 import hanium.product_service.dto.request.CreateChatroomRequestDTO;
+import hanium.product_service.dto.response.ChatMessageResponseDTO;
 import hanium.product_service.dto.response.CreateChatroomResponseDTO;
 import hanium.product_service.dto.response.GetMyChatroomResponseDTO;
 import io.grpc.stub.StreamObserver;
@@ -17,4 +18,7 @@ public interface ChatService{
     //채팅방 조회
      List<GetMyChatroomResponseDTO> getMyChatrooms(Long memberId);
 
+
+     //채팅방별 메시지 조회
+    List<ChatMessageResponseDTO> getAllMessageByChatroomId(Long chatroomId);
 }

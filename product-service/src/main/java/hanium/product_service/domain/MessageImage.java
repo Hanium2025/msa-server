@@ -14,7 +14,7 @@ public class MessageImage extends BaseEntity{
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="MESSAGE_ID")
+    @JoinColumn(name="message_id")
     @Setter // 편의 메서드에서 세팅
     private Message message;
 

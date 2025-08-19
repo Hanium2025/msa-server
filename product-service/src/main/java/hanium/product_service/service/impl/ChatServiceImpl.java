@@ -6,13 +6,17 @@ import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import hanium.product_service.domain.Chatroom;
 import hanium.product_service.domain.Message;
+import hanium.product_service.domain.MessageImage;
+import hanium.product_service.domain.MessageType;
 import hanium.product_service.dto.request.ChatMessageRequestDTO;
 import hanium.product_service.dto.request.CreateChatroomRequestDTO;
+import hanium.product_service.dto.response.ChatMessageResponseDTO;
 import hanium.product_service.dto.response.CreateChatroomResponseDTO;
 import hanium.product_service.dto.response.GetMyChatroomResponseDTO;
 import hanium.product_service.grpc.ProfileGrpcClient;
 import hanium.product_service.repository.ChatRepository;
 import hanium.product_service.repository.ChatroomRepository;
+import hanium.product_service.repository.MessageImageRepository;
 import hanium.product_service.repository.ProductRepository;
 import hanium.product_service.service.ChatMessageTxService;
 import hanium.product_service.service.ChatService;
@@ -24,8 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -37,6 +40,8 @@ public class ChatServiceImpl implements ChatService {
     private final ProductRepository productRepository;
     private final ProfileGrpcClient profileGrpcClient;
     private final ChatMessageTxService chatMessageTxService;
+    private final ChatRepository chatRepository;
+    private final MessageImageRepository messageImageRepository;
     // userId → StreamObserver 저장
     private final ConcurrentHashMap<Long, StreamObserver<Chat.ChatResponseMessage>> userStreamMap = new ConcurrentHashMap<>();
 
@@ -136,6 +141,74 @@ public class ChatServiceImpl implements ChatService {
                     .opponentId(opponentId)
                     .build();
         }).toList();
+    }
+
+    @Override
+    public List<ChatMessageResponseDTO> getAllMessageByChatroomId(Long chatroomId) {
+
+        List<Message> messages = chatRepository.findAllByChatroomIdOrderByCreatedAtAsc(chatroomId);
+
+        List<Long> ids = messages.stream().map(Message::getId).toList();
+        List<MessageImage> images = messageImageRepository.findAllByMessageIdIn(ids);
+
+        Map<Long, List<String>> imageMap = new LinkedHashMap<>();
+
+        for (MessageImage mi : images) {
+            if (mi == null || mi.getMessage() == null)
+                continue;
+            Long messageId = mi.getMessage().getId(); //해당 이미지가 가지고 있는 id
+            String url = mi.getImageUrl();   //해당 이미지의 url
+
+            if (url == null || url.isBlank())
+                continue;
+
+            List<String> bucket = imageMap.get(messageId); //해당 메시지로 만들어진 bucket이 있는지 확인
+
+            if (bucket == null) { //없다면 ArrayList만들고 넣어주기
+                bucket = new ArrayList<>();
+                imageMap.put(messageId, bucket);
+            }
+            bucket.add(url);
+        }
+        List<ChatMessageResponseDTO> dtos = new ArrayList<>(messages.size());
+
+        for (int i = 0; i < messages.size(); i++) {
+            Message m = messages.get(i);
+            if (m == null)
+                continue;
+
+
+            String type = (m.getMessageType() != null ? m.getMessageType() : MessageType.TEXT).name();
+
+            List<String> imagesUrls = imageMap.get(m.getId());
+            if (imagesUrls == null) {
+                imagesUrls = List.of();
+            }
+            long timestamp = 0L;
+            if (m.getCreatedAt() != null) {
+                timestamp = m.getCreatedAt()
+                        .atZone(ZoneId.systemDefault())
+                        .toInstant()
+                        .toEpochMilli();
+            }
+
+
+            ChatMessageResponseDTO dto = ChatMessageResponseDTO.builder()
+                    .messageId(m.getId())
+                    .chatroomId(m.getChatroom().getId())
+                    .senderId(m.getSenderId())
+                    .receiverId(m.getReceiverId())
+                    .content(m.getContent())
+                    .timestamp(timestamp)
+                    .type(type)
+                    .imageUrls(imagesUrls)
+                    .build();
+
+            dtos.add(dto);
+
+        }
+
+        return dtos;
     }
 
 }

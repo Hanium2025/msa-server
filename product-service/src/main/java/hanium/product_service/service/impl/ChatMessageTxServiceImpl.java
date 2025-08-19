@@ -6,6 +6,7 @@ import hanium.product_service.domain.Chatroom;
 import hanium.product_service.domain.Message;
 import hanium.product_service.domain.MessageImage;
 import hanium.product_service.dto.request.ChatMessageRequestDTO;
+import hanium.product_service.dto.response.ChatMessageResponseDTO;
 import hanium.product_service.repository.ChatRepository;
 import hanium.product_service.repository.ChatroomRepository;
 import hanium.product_service.repository.MessageImageRepository;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,10 +31,15 @@ public class ChatMessageTxServiceImpl implements ChatMessageTxService {
     @Transactional
     @Override
     public Message handleMessage(ChatMessageRequestDTO dto) {
-        Message message = Message.from(dto); //엔티티로 바꿈
+        // 채팅방 찾기
+        Chatroom chatroom = chatroomRepository.findById(dto.getChatroomId())
+                .orElseThrow(() -> new CustomException(ErrorCode.CHATROOM_NOT_FOUND));
+
+        Message message = Message.of(chatroom, dto); //엔티티로 바꿈
         Message saved = chatRepository.save(message); // 여기서 createdAt 세팅
 
         List<String> urls = dto.getImageUrls();
+
         if (urls != null && !urls.isEmpty()) {
             if (urls.size() > 3)
                 throw new CustomException(ErrorCode.INVALID_CHAT_IMAGE_REQUEST);
@@ -54,4 +61,6 @@ public class ChatMessageTxServiceImpl implements ChatMessageTxService {
 
         return saved;
     }
+
+
 }
