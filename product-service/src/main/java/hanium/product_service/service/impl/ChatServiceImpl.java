@@ -11,6 +11,7 @@ import hanium.product_service.dto.response.ChatMessageResponseDTO;
 import hanium.product_service.dto.response.CreateChatroomResponseDTO;
 import hanium.product_service.dto.response.GetMyChatroomResponseDTO;
 import hanium.product_service.grpc.ProfileGrpcClient;
+import hanium.product_service.repository.ChatRepository;
 import hanium.product_service.repository.ChatroomRepository;
 import hanium.product_service.repository.MessageImageRepository;
 import hanium.product_service.repository.ProductRepository;
