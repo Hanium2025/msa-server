@@ -2,7 +2,6 @@ package hanium.apigateway_service.grpc;
 
 import chat.Chat;
 import chat.ChatServiceGrpc;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hanium.apigateway_service.dto.chat.request.ChatMessageRequestDTO;
 import hanium.apigateway_service.dto.chat.response.ChatMessageResponseDTO;
@@ -12,9 +11,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
-import org.springframework.web.socket.WebSocketSession; // ✅ Spring MVC용
 import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+
 import java.util.concurrent.ConcurrentHashMap;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -26,11 +27,13 @@ public class GrpcChatStreamClient {
 
     private final ConcurrentHashMap<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
     // 사용자 세션 등록
-    public void registerSession(String userId, WebSocketSession session){
+    public void registerSession(String userId, WebSocketSession session) {
         sessionMap.put(userId, session);
-        if(requestObserver == null) startStream();
+        if (requestObserver == null) startStream();
     }
+
     // 사용자 세션 제거
     public void removeSession(String userId) {
         sessionMap.remove(userId);
@@ -39,9 +42,9 @@ public class GrpcChatStreamClient {
     // 클라이언트로부터 받은 메시지를 gRPC로 전송
     public void sendMessage(ChatMessageRequestDTO dto) {
 
-        if(requestObserver == null){
+        if (requestObserver == null) {
             startStream();
-            if(requestObserver == null){
+            if (requestObserver == null) {
                 log.warn("gRPC stream not ready");
                 return;
             }
@@ -54,7 +57,7 @@ public class GrpcChatStreamClient {
     }
 
     private void startStream() {
-        requestObserver = stub.chat(new StreamObserver<Chat.ChatResponseMessage>() {
+        requestObserver = stub.chat(new StreamObserver<>() {
             @Override
             public void onNext(Chat.ChatResponseMessage msg) {
                 // 1) 공통 DTO 생성
@@ -74,6 +77,7 @@ public class GrpcChatStreamClient {
                 sendToWs(String.valueOf(msg.getReceiverId()), base.toBuilder().mine(false).build());
 
             }
+
             // DTO를 JSON으로 바꿔서 WebSocket으로 보내는 헬퍼
             private void sendToWs(String userId, ChatMessageResponseDTO dto) {
                 WebSocketSession session = sessionMap.get(userId);

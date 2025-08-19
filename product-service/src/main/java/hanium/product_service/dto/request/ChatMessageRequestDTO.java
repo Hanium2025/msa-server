@@ -21,9 +21,9 @@ public class ChatMessageRequestDTO {
     private List<String> imageUrls;
 
     //grpc -> dto
-    public static ChatMessageRequestDTO from(Chat.ChatMessage msg){
+    public static ChatMessageRequestDTO from(Chat.ChatMessage msg) {
         return ChatMessageRequestDTO.builder()
-                    .chatroomId(msg.getChatroomId())
+                .chatroomId(msg.getChatroomId())
                 .receiverId(msg.getReceiverId())
                 .senderId(msg.getSenderId())
                 .content(msg.getContent())
@@ -35,15 +35,13 @@ public class ChatMessageRequestDTO {
     }
 
     private static MessageType mapType(Chat.MessageType type) {
-        if(type == null){
+        if (type == null) {
             return MessageType.TEXT;
         }
-        switch (type){
-            case IMAGE : return MessageType.IMAGE;
-            case NOTICE: return MessageType.NOTICE;
-            case TEXT:
-            default: return MessageType.TEXT;
-        }
+        return switch (type) {
+            case IMAGE -> MessageType.IMAGE;
+            case NOTICE -> MessageType.NOTICE;
+            default -> MessageType.TEXT;
+        };
     }
-
 }

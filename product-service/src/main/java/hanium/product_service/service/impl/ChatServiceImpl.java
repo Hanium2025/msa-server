@@ -1,9 +1,6 @@
 package hanium.product_service.service.impl;
 
 import chat.Chat;
-import chat.ChatServiceGrpc;
-import hanium.common.exception.CustomException;
-import hanium.common.exception.ErrorCode;
 import hanium.product_service.domain.Chatroom;
 import hanium.product_service.domain.Message;
 import hanium.product_service.domain.MessageImage;
@@ -14,7 +11,6 @@ import hanium.product_service.dto.response.ChatMessageResponseDTO;
 import hanium.product_service.dto.response.CreateChatroomResponseDTO;
 import hanium.product_service.dto.response.GetMyChatroomResponseDTO;
 import hanium.product_service.grpc.ProfileGrpcClient;
-import hanium.product_service.repository.ChatRepository;
 import hanium.product_service.repository.ChatroomRepository;
 import hanium.product_service.repository.MessageImageRepository;
 import hanium.product_service.repository.ProductRepository;
@@ -26,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

@@ -1,6 +1,5 @@
 package hanium.user_service.repository;
 
-import hanium.user_service.domain.Member;
 import hanium.user_service.domain.Profile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

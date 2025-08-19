@@ -17,8 +17,8 @@ public interface ChatroomRepository extends JpaRepository<Chatroom, Long> {
 //    void updateLatest(@Param("chatroomId") Long chatroomId, @Param("content") String content, @Param("time") LocalDateTime time);
 
 
-   // 내가 sender거나 receiver인 채팅방을 최신 대화시간 내림차순으로
-   List<Chatroom> findBySenderIdOrReceiverIdOrderByLatestContentTimeDesc(Long senderId, Long receiverId);
+    // 내가 sender거나 receiver인 채팅방을 최신 대화시간 내림차순으로
+    List<Chatroom> findBySenderIdOrReceiverIdOrderByLatestContentTimeDesc(Long senderId, Long receiverId);
 
 }
 

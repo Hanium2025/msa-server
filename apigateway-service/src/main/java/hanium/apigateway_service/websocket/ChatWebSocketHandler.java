@@ -1,14 +1,11 @@
 package hanium.apigateway_service.websocket;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hanium.apigateway_service.dto.chat.request.ChatMessageRequestDTO;
 import hanium.apigateway_service.grpc.GrpcChatStreamClient;
-import hanium.apigateway_service.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
@@ -28,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChatWebSocketHandler implements WebSocketHandler {
     private final GrpcChatStreamClient grpcChatStreamClient;
     private final ObjectMapper objectMapper;
-    private final JwtUtil jwtUtil;
     // WebSocket 세션 저장소: userId -> WebSocketSession
     private final ConcurrentHashMap<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
 
@@ -73,7 +69,7 @@ public class ChatWebSocketHandler implements WebSocketHandler {
      * 메시지 처리 중 오류가 발생했을 때 호출됩니다.
      */
     @Override
-    public void handleTransportError(@NotNull WebSocketSession session, Throwable exception) throws Exception {
+    public void handleTransportError(@NotNull WebSocketSession session, Throwable exception) {
         exception.printStackTrace(); // 개발 중에는 콘솔 출력, 운영에서는 로깅 처리 권장
     }
 
@@ -81,7 +77,7 @@ public class ChatWebSocketHandler implements WebSocketHandler {
      * 클라이언트와의 연결이 종료되었을 때 호출됩니다.
      */
     @Override
-    public void afterConnectionClosed(@NotNull WebSocketSession session, @NotNull CloseStatus closeStatus) throws Exception {
+    public void afterConnectionClosed(@NotNull WebSocketSession session, @NotNull CloseStatus closeStatus) {
         String userId = session.getAttributes().get("userId").toString();
         sessions.remove(userId); // 세션 제거
         grpcChatStreamClient.removeSession(userId); // gRPC 스트림에서도 세션 제거
