@@ -2,9 +2,11 @@ package hanium.apigateway_service.controller;
 
 import hanium.apigateway_service.dto.chat.request.CreateChatroomRequestDTO;
 import hanium.apigateway_service.dto.chat.request.CreatePresignedUrlsApiRequest;
+import hanium.apigateway_service.dto.chat.response.ChatMessageResponseDTO;
 import hanium.apigateway_service.dto.chat.response.CreateChatroomResponseDTO;
 import hanium.apigateway_service.dto.chat.response.GetMyChatroomResponseDTO;
 import hanium.apigateway_service.dto.chat.response.PresignedUrlDTO;
+import hanium.apigateway_service.grpc.ChatGrpcClient;
 import hanium.apigateway_service.grpc.ChatroomGrpcClient;
 import hanium.apigateway_service.grpc.PresignFacadeGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
@@ -24,6 +26,7 @@ public class ChatController {
 
     private final ChatroomGrpcClient chatroomGrpcClient;
     private final PresignFacadeGrpcClient facade;
+    private final ChatGrpcClient chatGrpcClient;
 
     //채팅방 생성
     @PostMapping("/create")
@@ -42,13 +45,15 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
-    //TODO : 채팅방 조회
+    //내가 참여한 채팅방 조회
     @GetMapping("/")
     public ResponseEntity<ResponseDTO<List<GetMyChatroomResponseDTO>>> getAllChatrooms(Authentication authentication) {
         Long memberId = (Long) authentication.getPrincipal();
         var items = chatroomGrpcClient.getMyChatrooms(memberId);
         return ResponseEntity.ok(new ResponseDTO<>(items, HttpStatus.OK, "채팅방 목록 조회 성공!"));
     }
+
+    //S3 Presigned-urls 발급하기
 
     @PostMapping("/presigned-urls")
     public List<PresignedUrlDTO> create(@RequestBody CreatePresignedUrlsApiRequest req) {
@@ -61,6 +66,15 @@ public class ChatController {
         if (req.getContentType() == null || !req.getContentType().startsWith("image/"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "images only");
         return facade.create(req.getChatroomId(), req.getCount(), req.getContentType());
+    }
+
+    //채팅방 별 채팅 내역 조회하기
+    @GetMapping("/get/chatroom/{ChatRoomId}/allMessages")
+public ResponseEntity<ResponseDTO<List<ChatMessageResponseDTO>>> getAllMessagesByChatroomId(@PathVariable("ChatRoomId") Long chatroomId){
+
+        List<ChatMessageResponseDTO> messageResponseDto = chatGrpcClient.getAllMessagesByChatroomId(chatroomId);
+        ResponseDTO<List<ChatMessageResponseDTO>> response = new ResponseDTO<>(messageResponseDto, HttpStatus.OK, "채팅 조회 성공!");
+        return ResponseEntity.ok(response);
     }
 
 }

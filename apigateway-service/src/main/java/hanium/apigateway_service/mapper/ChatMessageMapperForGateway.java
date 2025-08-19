@@ -19,4 +19,11 @@ public class ChatMessageMapperForGateway {
         return b.build();
     }
 
+    //채팅방별 메시지 조회를 위한 요청메시지 dto에서 grpc로 변환
+    public static Chat.GetAllMessagesByChatroomIdRequest chatroomIdToGrpc(Long chatroomId){
+        return Chat.GetAllMessagesByChatroomIdRequest.newBuilder()
+                .setChatRoomId(chatroomId).build();
+    }
+
+
 }
