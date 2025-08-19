@@ -6,7 +6,6 @@ import hanium.product_service.dto.request.CreateChatroomRequestDTO;
 import hanium.product_service.dto.response.CreateChatroomResponseDTO;
 import hanium.product_service.dto.response.GetMyChatroomResponseDTO;
 import hanium.product_service.mapper.ChatGrpcMapper;
-import hanium.product_service.mapper.ProductGrpcMapper;
 import hanium.product_service.service.ChatService;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;

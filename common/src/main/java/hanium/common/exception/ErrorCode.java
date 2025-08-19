@@ -36,6 +36,8 @@ public enum ErrorCode {
     IMAGE_EXCEEDED(404, "이미지는 최대 5개까지 업로드 가능합니다."),
     IMAGE_UPLOAD_ERROR(500, "이미지 업로드에 실패했습니다."),
     IMAGE_NOT_FOUND(404, "이미지를 찾을 수 없습니다."),
+    REDIS_BOUNDZSET_ERROR(500, "레디스 연산자를 불러오는 데에 실패했습니다."),
+    RECENT_VIEW_SERVER_ERROR(500, "상품 조회 기록 저장 중 오류가 발생했습니다."),
     CHATROOM_NOT_FOUND(404,"해당 아이디를 가진 채팅방을 찾을 수 없습니다."),
     INVALID_CHAT_IMAGE_REQUEST(404,"이미지는 최대 3장까지 가능합니다."),
     ;

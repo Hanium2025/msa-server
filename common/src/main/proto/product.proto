@@ -8,6 +8,9 @@ option java_multiple_files = true;
 import "common.proto";
 
 service ProductService {
+  // 1. 메인페이지 조회
+  rpc GetProductMain(ProductMainRequest) returns (ProductMainResponse);
+
   // 1. 상품 등록
   rpc RegisterProduct(RegisterProductRequest) returns (ProductResponse);
 
@@ -23,6 +26,24 @@ service ProductService {
 }
 
 message Empty {}
+
+message ProductMainRequest {
+  int64 member_id = 1;
+}
+message ProductMainResponse {
+  repeated ProductMain products = 1;
+  repeated CategoryMain categories = 2;
+}
+message ProductMain {
+  int64 product_id = 1;
+  string title = 2;
+  int64 price = 3;
+  string image_url = 4;
+}
+message CategoryMain {
+  string name = 1;
+  string image_url = 2;
+}
 
 // 1. 상품 등록
 message RegisterProductRequest {
@@ -51,7 +72,8 @@ message ProductImageResponse {
 
 // 2. 상품 조회
 message GetProductRequest {
-  int64 product_id = 1;
+  int64 member_id = 1;
+  int64 product_id = 2;
 }
 
 // 3. 상품 수정

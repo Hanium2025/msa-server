@@ -10,6 +10,13 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(
+        name = "product",
+        indexes = {
+                @Index(name = "idx_product_created_at", columnList = "created_at"),
+                @Index(name = "idx_product_created_at_id", columnList = "created_at, id")
+        }
+)
 public class Product extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

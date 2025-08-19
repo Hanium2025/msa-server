@@ -2,6 +2,7 @@ package hanium.apigateway_service.grpc;
 
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
+import hanium.apigateway_service.dto.product.response.ProductMainDTO;
 import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
 import hanium.apigateway_service.mapper.ProductGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
@@ -38,6 +39,16 @@ public class ProductGrpcClient {
 
     private final S3Template s3Template;
 
+    // 메인 페이지
+    public ProductMainDTO getProductMain(Long memberId) {
+        ProductMainRequest request = ProductMainRequest.newBuilder().setMemberId(memberId).build();
+        try {
+            return ProductMainDTO.from(stub.getProductMain(request));
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
     // 상품 등록
     public ProductResponseDTO registerProduct(Long memberId,
                                               RegisterProductRequestDTO dto,
@@ -52,8 +63,11 @@ public class ProductGrpcClient {
     }
 
     // 상품 조회
-    public ProductResponseDTO getProduct(Long productId) {
-        GetProductRequest grpcRequest = GetProductRequest.newBuilder().setProductId(productId).build();
+    public ProductResponseDTO getProduct(Long memberId, Long productId) {
+        GetProductRequest grpcRequest = GetProductRequest.newBuilder()
+                .setMemberId(memberId)
+                .setProductId(productId)
+                .build();
         try {
             return ProductResponseDTO.from(stub.getProduct(grpcRequest));
         } catch (StatusRuntimeException e) {
@@ -105,7 +119,7 @@ public class ProductGrpcClient {
         }
         List<String> paths = new ArrayList<>();
         for (MultipartFile file : images) {
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            String fileName = "product_image/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
             paths.add(s3Upload(file, fileName));
         }
         return paths;
