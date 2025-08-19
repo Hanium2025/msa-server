@@ -241,7 +241,7 @@ public class ProductServiceImpl implements ProductService {
             int idx = c.getIndex();
             if (!seen[idx]) {
                 seen[idx] = true;
-                result.add(getProductCategories(c.name()));
+                result.add(getProductCategories(c));
             }
         }
         if (result.size() > 4) {
@@ -252,16 +252,16 @@ public class ProductServiceImpl implements ProductService {
     }
 
     /**
-     * 카테고리 Enum 문자열로, Enum 및 실제 s3 저장경로를 포함해 반환합니다.
+     * 카테고리 Enum을 통해 한글 라벨 및 s3 저장경로를 포함해 반환합니다.
      *
-     * @param key Enum 명
+     * @param category 카테고리
      * @return {name, imageUrl}
      */
-    private ProductMainDTO.MainCategoriesDTO getProductCategories(String key) {
+    private ProductMainDTO.MainCategoriesDTO getProductCategories(Category category) {
         String baseUrl = "https://msa-image-bucket.s3.ap-northeast-2.amazonaws.com/product_category/";
-        String imageUrl = baseUrl + key + ".png";
+        String imageUrl = baseUrl + category.name() + ".png";
         return ProductMainDTO.MainCategoriesDTO.builder()
-                .name(key)
+                .name(category.getLabel())
                 .imageUrl(imageUrl)
                 .build();
     }
