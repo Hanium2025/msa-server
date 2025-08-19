@@ -65,7 +65,7 @@ class ProductServiceImplTest {
         // when
         ProductResponseDTO result = productService.registerProduct(registerDTO1);
         // then
-        assertThat(result.getId()).isNotNull();
+        assertThat(result.getProductId()).isNotNull();
         assertThat(result.getTitle()).isEqualTo(registerDTO1.getTitle());
     }
 
@@ -75,9 +75,9 @@ class ProductServiceImplTest {
         // given
         ProductResponseDTO product1 = productService.registerProduct(registerDTO1);
         // when
-        ProductResponseDTO found = productService.getProductById(product1.getId());
+        ProductResponseDTO found = productService.getProductById(product1.getProductId());
         // then
-        assertThat(found.getId()).isEqualTo(product1.getId());
+        assertThat(found.getProductId()).isEqualTo(product1.getProductId());
         CustomException e = assertThrows(CustomException.class, () -> productService.getProductById(2L));
         assertThat(e.getErrorCode().name()).isEqualTo("PRODUCT_NOT_FOUND");
     }
@@ -87,11 +87,11 @@ class ProductServiceImplTest {
     void getProductAndCheckRedis() {
         // given
         ProductResponseDTO product = productService.registerProduct(registerDTO1);
-        productService.getProductById(1L, product.getId());
+        productService.getProductById(1L, product.getProductId());
         // when
         List<Long> viewedProductIds = recentViewRepository.getRecentProductIds(1L);
         // then
-        assertThat(viewedProductIds).contains(product.getId());
+        assertThat(viewedProductIds).contains(product.getProductId());
     }
 
     @Test
@@ -101,15 +101,15 @@ class ProductServiceImplTest {
         ProductResponseDTO product1 = productService.registerProduct(registerDTO1);
         ProductResponseDTO product2 = productService.registerProduct(registerDTO2);
         // when - 1
-        productService.getProductById(1L, product1.getId());
+        productService.getProductById(1L, product1.getProductId());
         List<Long> viewedProductIds = recentViewRepository.getRecentProductIds(1L);
         // then - 1
-        assertThat(viewedProductIds.getFirst()).isEqualTo(product1.getId());
+        assertThat(viewedProductIds.getFirst()).isEqualTo(product1.getProductId());
         // when - 1
-        productService.getProductById(1L, product2.getId());
+        productService.getProductById(1L, product2.getProductId());
         viewedProductIds = recentViewRepository.getRecentProductIds(1L);
         // then - 1
-        assertThat(viewedProductIds.getFirst()).isEqualTo(product2.getId());
+        assertThat(viewedProductIds.getFirst()).isEqualTo(product2.getProductId());
     }
 
     @Test
@@ -118,11 +118,11 @@ class ProductServiceImplTest {
         // given
         ProductResponseDTO product = productService.registerProduct(registerDTO1);
         UpdateProductRequestDTO updateDTO = UpdateProductRequestDTO.builder()
-                .productId(product.getId()).title("상품명").content("내용").price(10000L)
+                .productId(product.getProductId()).title("상품명").content("내용").price(10000L)
                 .category(Category.valueOf("CLOTHES")).imageUrls(new ArrayList<>()).build();
         // when
         ProductResponseDTO updated = productService.updateProduct(updateDTO);
-        ProductResponseDTO found = productService.getProductById(updated.getId());
+        ProductResponseDTO found = productService.getProductById(updated.getProductId());
         // then
         assertThat(found.getTitle()).isEqualTo(updated.getTitle());
     }
@@ -133,9 +133,9 @@ class ProductServiceImplTest {
         // given
         ProductResponseDTO product = productService.registerProduct(registerDTO1);
         // when
-        productService.deleteProductById(product.getId(), product.getSellerId());
+        productService.deleteProductById(product.getProductId(), product.getSellerId());
         // then
-        assertThat(productRepository.findById(product.getId()).get().isSoftDeleted()).isTrue();
+        assertThat(productRepository.findById(product.getProductId()).get().isSoftDeleted()).isTrue();
         assertThat(assertThrows(CustomException.class, () -> productService.getProductById(2L))
                 .getErrorCode().name()).isEqualTo("PRODUCT_NOT_FOUND");
     }

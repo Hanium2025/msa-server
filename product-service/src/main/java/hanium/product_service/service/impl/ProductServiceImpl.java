@@ -11,6 +11,7 @@ import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductImageDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
+import hanium.product_service.grpc.ProfileGrpcClient;
 import hanium.product_service.repository.ProductImageRepository;
 import hanium.product_service.repository.ProductRepository;
 import hanium.product_service.repository.RecentViewRepository;
@@ -35,6 +36,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
     private final RecentViewRepository recentViewRepository;
+    private final ProfileGrpcClient profileGrpcClient;
 
     /**
      * 상품 메인 페이지 화면을 조회합니다.
@@ -67,7 +69,8 @@ public class ProductServiceImpl implements ProductService {
             productImageRepository.save(productImage);
             images.add(ProductImageDTO.from(productImage));
         }
-        return ProductResponseDTO.of(product, images);
+        String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
+        return ProductResponseDTO.of(sellerNickname, product, images);
     }
 
     /**
@@ -80,7 +83,8 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDTO getProductById(Long id) {
         Product product = productRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-        return ProductResponseDTO.of(product, getProductImages(product));
+        String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
+        return ProductResponseDTO.of(sellerNickname, product, getProductImages(product));
     }
 
     /**
@@ -123,7 +127,8 @@ public class ProductServiceImpl implements ProductService {
             ProductImage productImage = ProductImage.of(product, imageUrl);
             productImageRepository.save(productImage);
         }
-        return ProductResponseDTO.of(product, getProductImages(product));
+        String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
+        return ProductResponseDTO.of(sellerNickname, product, getProductImages(product));
     }
 
     /**

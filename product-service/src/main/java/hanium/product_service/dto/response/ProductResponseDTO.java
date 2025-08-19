@@ -1,38 +1,39 @@
 package hanium.product_service.dto.response;
 
-import hanium.product_service.domain.Category;
 import hanium.product_service.domain.Product;
 import hanium.product_service.domain.Status;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductResponseDTO {
 
-    private Long id;
+    private Long productId;
     private String title;
     private String content;
     private Long price;
     private Long sellerId;
+    private String sellerNickname;
     private Status status;
-    private Category category;
+    private String category;
     private List<ProductImageDTO> images;
 
-    public static ProductResponseDTO of(Product product, List<ProductImageDTO> images) {
+    public static ProductResponseDTO of(String sellerNickname, Product product,
+                                        List<ProductImageDTO> images) {
         return ProductResponseDTO.builder()
-                .id(product.getId())
+                .productId(product.getId())
                 .title(product.getTitle())
                 .content(product.getContent())
                 .price(product.getPrice())
                 .sellerId(product.getSellerId())
-                .category(product.getCategory())
+                .sellerNickname(sellerNickname)
+                .category(product.getCategory().getLabel())
                 .status(product.getStatus())
                 .images(images)
                 .build();
