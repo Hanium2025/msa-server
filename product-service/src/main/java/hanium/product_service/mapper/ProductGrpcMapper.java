@@ -11,12 +11,13 @@ public class ProductGrpcMapper {
 
     public static ProductResponse toProductResponseGrpc(ProductResponseDTO dto) {
         return ProductResponse.newBuilder()
-                .setProductId(dto.getId())
+                .setProductId(dto.getProductId())
                 .setTitle(dto.getTitle())
                 .setContent(dto.getContent())
                 .setPrice(dto.getPrice())
                 .setSellerId(dto.getSellerId())
-                .setCategory(dto.getCategory().name())
+                .setSellerNickname(dto.getSellerNickname())
+                .setCategory(dto.getCategory())
                 .setStatus(dto.getStatus().name())
                 .addAllImages(dto.getImages().stream().map(
                         ProductGrpcMapper::toProductImageGrpc).collect(Collectors.toList()))

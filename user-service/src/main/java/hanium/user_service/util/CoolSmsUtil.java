@@ -34,7 +34,7 @@ public class CoolSmsUtil {
         Message message = new Message();
         message.setFrom(senderNumber);
         message.setTo(receiverNumber);
-        message.setText("[한이음 중고거래] 회원가입 인증번호는 " + smsCode + " 입니다.");
+        message.setText("[PIKIE 피키] 회원가입 인증번호는 " + smsCode + " 입니다.");
         log.info("✅ CoolSMS 메시지객체 생성됨: {}, {}", receiverNumber, smsCode);
         // 메시지 발송
         messageService.sendOne(new SingleMessageSendingRequest(message));

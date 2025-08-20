@@ -2,18 +2,16 @@ package hanium.product_service.dto.request;
 
 import hanium.common.proto.product.RegisterProductRequest;
 import hanium.product_service.domain.Category;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class RegisterProductRequestDTO {
     private Long sellerId;
     private String title;
