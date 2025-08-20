@@ -49,8 +49,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 필터 검사 pass
         for (String prefix : NO_CHECK_URLS) {
             if (request.getRequestURI().startsWith(prefix)) {
-                filterChain.doFilter(request, response);
                 log.info("✅ 필터 pass됨");
+                filterChain.doFilter(request, response);
                 return;
             }
         }
