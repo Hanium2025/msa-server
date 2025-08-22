@@ -197,7 +197,7 @@ public class OAuthServiceImpl implements OAuthService {
      * @return 로그인 결과 토큰
      */
     private TokenResponseDTO proceedSocialLogin(Member member) {
-        log.info("✅ Social Account [{}] exists: {}", member.getProvider(), member.getEmail());
+        log.info("✅ [Social acc] Login Success: provider={}, id={}", member.getProvider(), member.getId());
         List<RefreshToken> refreshToken = refreshRepository.findByMember(member);
         if (!refreshToken.isEmpty()) {
             refreshRepository.deleteAll(refreshToken);
@@ -224,6 +224,7 @@ public class OAuthServiceImpl implements OAuthService {
                 .member(member).build();
         memberRepository.save(member);
         profileRepository.save(profile);
+        log.info("✅ [New Kakao Account Signup] Login Success: id={}", member.getId());
         return jwtUtil.respondTokens(member);
     }
 
@@ -246,6 +247,7 @@ public class OAuthServiceImpl implements OAuthService {
                 .member(member).build();
         memberRepository.save(member);
         profileRepository.save(profile);
+        log.info("✅ [New Naver Account Signup] Login Success: id={}", member.getId());
         return jwtUtil.respondTokens(member);
     }
 
