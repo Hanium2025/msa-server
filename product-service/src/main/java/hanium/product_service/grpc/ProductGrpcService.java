@@ -5,10 +5,12 @@ import hanium.common.exception.ErrorCode;
 import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.*;
 import hanium.product_service.dto.request.DeleteImageRequestDTO;
+import hanium.product_service.dto.request.ProductSearchRequestDTO;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
+import hanium.product_service.dto.response.ProductSearchResponseDTO;
 import hanium.product_service.mapper.ProductGrpcMapper;
 import hanium.product_service.service.ProductService;
 import io.grpc.stub.StreamObserver;
@@ -93,6 +95,18 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
             responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 상품 검색
+    @Override
+    public void searchProduct(ProductSearchRequest request, StreamObserver<ProductSearchResponse> responseObserver) {
+        try {
+            ProductSearchResponseDTO dto = productService.searchProduct(ProductSearchRequestDTO.from(request));
+            responseObserver.onNext(ProductGrpcMapper.toProductSearchResponseGrpc(dto));
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(e);
         }
     }
 }
