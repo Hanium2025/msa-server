@@ -23,6 +23,9 @@ service ProductService {
 
   // 4. 상품 삭제
   rpc DeleteProduct(DeleteProductRequest) returns (Empty);
+
+  // 상품 검색 요청
+  rpc SearchProduct(ProductSearchRequest) returns (ProductSearchResponse);
 }
 
 message Empty {}
@@ -101,4 +104,15 @@ message DeleteImageResponse {
 message DeleteProductRequest {
   int64 member_id = 1;
   int64 product_id = 2;
+}
+
+// 상품 검색 요청
+message ProductSearchRequest {
+  int64 member_id = 1;
+  string keyword = 2;
+}
+
+// 상품 검색 응답
+message ProductSearchResponse {
+  repeated ProductResponse productList = 1;
 }
