@@ -72,13 +72,10 @@ class ProductServiceImplTest {
     void getProduct() {
         // given
         given(productRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(product));
-        given(profileGrpcClient.getNicknameByMemberId(1L)).willReturn("피키");
-        given(imageRepository.findByProductAndDeletedAtIsNull(product)).willReturn(new ArrayList<>());
         // when
-        ProductResponseDTO found = productService.getProductById(1L);
+        Product found = productService.getProductById(1L);
         // then
         assertThat(found.getTitle()).isEqualTo(registerReq.getTitle());
-        assertThat(found.getSellerNickname()).isEqualTo("피키");
     }
 
     @Test
