@@ -2,6 +2,7 @@ package hanium.product_service.service.impl;
 
 import hanium.product_service.domain.Category;
 import hanium.product_service.domain.Product;
+import hanium.product_service.domain.Status;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
@@ -47,7 +48,7 @@ class ProductServiceImplTest {
     @BeforeEach
     void setUp() {
         product = Product.builder().sellerId(1L).title("title").content("content").price(1000L)
-                .category(Category.BEAUTY).build();
+                .category(Category.BEAUTY).status(Status.SELLING).build();
         registerReq = RegisterProductRequestDTO.builder()
                 .sellerId(1L).title("title").content("content").price(1000L)
                 .category(Category.BEAUTY).imageUrls(new ArrayList<>()).build();

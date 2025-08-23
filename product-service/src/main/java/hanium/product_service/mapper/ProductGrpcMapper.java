@@ -18,7 +18,7 @@ public class ProductGrpcMapper {
                 .setSellerId(dto.getSellerId())
                 .setSellerNickname(dto.getSellerNickname())
                 .setCategory(dto.getCategory())
-                .setStatus(dto.getStatus().name())
+                .setStatus(dto.getStatus())
                 .setIsSeller(dto.isSeller())
                 .addAllImages(dto.getImages().stream().map(
                         ProductGrpcMapper::toProductImageGrpc).collect(Collectors.toList()))
