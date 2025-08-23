@@ -28,7 +28,7 @@ public class ProductDocument {
         ProductDocument doc = new ProductDocument();
         doc.id = product.getId();
         doc.title = product.getTitle();
-        doc.createdAt = product.getCreatedAt().toLocalDate();;
+        doc.createdAt = product.getCreatedAt().toLocalDate();
         return doc;
     }
 }
