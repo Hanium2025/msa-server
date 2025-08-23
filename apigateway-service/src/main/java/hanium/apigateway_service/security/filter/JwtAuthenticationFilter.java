@@ -49,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 필터 검사 pass
         for (String prefix : NO_CHECK_URLS) {
             if (request.getRequestURI().startsWith(prefix)) {
-                log.info("✅ 필터 pass됨");
+                log.info("✅ JWT 검사 필터 pass됨: {}", request.getRequestURI());
                 filterChain.doFilter(request, response);
                 return;
             }

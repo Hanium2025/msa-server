@@ -70,7 +70,7 @@ public class ProductServiceImpl implements ProductService {
             images.add(ProductImageDTO.from(productImage));
         }
         String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
-        return ProductResponseDTO.of(sellerNickname, product, images);
+        return ProductResponseDTO.of(sellerNickname, product, images, true);
     }
 
     /**
@@ -80,11 +80,9 @@ public class ProductServiceImpl implements ProductService {
      * @return 상품 정보 dto
      */
     @Override
-    public ProductResponseDTO getProductById(Long id) {
-        Product product = productRepository.findByIdAndDeletedAtIsNull(id)
+    public Product getProductById(Long id) {
+        return productRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-        String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
-        return ProductResponseDTO.of(sellerNickname, product, getProductImages(product));
     }
 
     /**
@@ -98,10 +96,12 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponseDTO getProductById(Long memberId, Long productId) {
-        ProductResponseDTO dto = getProductById(productId);
+        Product product = getProductById(productId);
+        String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
+        boolean isSeller = product.getSellerId().equals(memberId);
         try {
             recentViewRepository.add(memberId, productId);
-            return dto;
+            return ProductResponseDTO.of(sellerNickname, product, getProductImages(product), isSeller);
         } catch (Exception e) {
             throw new CustomException(ErrorCode.RECENT_VIEW_SERVER_ERROR);
         }
@@ -128,7 +128,7 @@ public class ProductServiceImpl implements ProductService {
             productImageRepository.save(productImage);
         }
         String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
-        return ProductResponseDTO.of(sellerNickname, product, getProductImages(product));
+        return ProductResponseDTO.of(sellerNickname, product, getProductImages(product), true);
     }
 
     /**
