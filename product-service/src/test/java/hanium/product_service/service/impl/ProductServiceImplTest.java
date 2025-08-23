@@ -10,8 +10,8 @@ import hanium.product_service.grpc.ProfileGrpcClient;
 import hanium.product_service.repository.ProductImageRepository;
 import hanium.product_service.repository.ProductRepository;
 
-import hanium.product_service.repository.ProductSearchRepository;                // ★ NEW (있으면)
-import hanium.product_service.elasticsearch.ProductSearchElasticRepository;      // ★ NEW (있으면)
+import hanium.product_service.repository.ProductSearchRepository;
+import hanium.product_service.elasticsearch.ProductSearchElasticRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -122,10 +122,10 @@ class ProductServiceImplTest {
         // given
         given(productRepository.findByIdAndDeletedAtIsNull(1L)).willReturn(Optional.of(product));
         given(imageRepository.findByProductAndDeletedAtIsNull(product)).willReturn(new ArrayList<>());
-        given(productRepository.save(any(Product.class))).willAnswer(inv -> {     // ★ CHANGED
+        given(productRepository.save(any(Product.class))).willAnswer(inv -> {
             Product p = inv.getArgument(0);
-            setField(p, "id", 1L);                                               // ★ CHANGED
-            setField(p, "createdAt", LocalDateTime.now());                       // ★ CHANGED
+            setField(p, "id", 1L);
+            setField(p, "createdAt", LocalDateTime.now());
             return p;
         });
 
