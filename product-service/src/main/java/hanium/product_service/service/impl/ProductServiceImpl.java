@@ -11,7 +11,6 @@ import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductImageDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
-import hanium.product_service.elasticsearch.ProductSearchElasticRepository;
 import hanium.product_service.grpc.ProfileGrpcClient;
 import hanium.product_service.repository.ProductImageRepository;
 import hanium.product_service.repository.ProductRepository;
