@@ -12,6 +12,7 @@ import hanium.product_service.dto.response.ProductImageDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
 import hanium.product_service.dto.response.SimpleProductDTO;
+import hanium.product_service.elasticsearch.ProductSearchIndexer;
 import hanium.product_service.grpc.ProfileGrpcClient;
 import hanium.product_service.repository.ProductImageRepository;
 import hanium.product_service.repository.ProductLikeRepository;
@@ -42,6 +43,7 @@ public class ProductServiceImpl implements ProductService {
     private final RecentViewRepository recentViewRepository;
     private final ProfileGrpcClient profileGrpcClient;
     private final ProductLikeRepository productLikeRepository;
+    private final ProductSearchIndexer productSearchIndexer;
 
     /**
      * 상품 메인 페이지 화면을 조회합니다.
@@ -75,7 +77,11 @@ public class ProductServiceImpl implements ProductService {
             images.add(ProductImageDTO.from(productImage));
         }
         String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
-        return ProductResponseDTO.of(sellerNickname, product, images, true, false);
+        
+        // ProductDocument 등록
+        productSearchIndexer.index(product);
+        
+        return ProductResponseDTO.of(sellerNickname, product, images, true);
     }
 
     /**
@@ -134,6 +140,10 @@ public class ProductServiceImpl implements ProductService {
             productImageRepository.save(productImage);
         }
         String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
+
+        // ProductDocument 수정
+        productSearchIndexer.index(product);
+
         return ProductResponseDTO.of(sellerNickname, product, getProductImages(product), true, false);
     }
 
@@ -159,6 +169,7 @@ public class ProductServiceImpl implements ProductService {
                 productImageRepository.save(image);
             }
         }
+
         return dto.getLeftImageIds().size();
     }
 
@@ -184,6 +195,8 @@ public class ProductServiceImpl implements ProductService {
             image.setDeletedAt(LocalDateTime.now());
             productImageRepository.save(image);
         }
+
+        productSearchIndexer.remove(productId);
     }
 
     /**
@@ -267,4 +280,6 @@ public class ProductServiceImpl implements ProductService {
                 .imageUrl(imageUrl)
                 .build();
     }
+
+
 }

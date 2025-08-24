@@ -1,10 +1,12 @@
 package hanium.apigateway_service.grpc;
 
+import hanium.apigateway_service.dto.product.request.ProductSearchRequestDTO;
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
 import hanium.apigateway_service.dto.product.response.ProductMainDTO;
 import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
 import hanium.apigateway_service.dto.product.response.SimpleProductDTO;
+import hanium.apigateway_service.dto.product.response.ProductSearchResponseDTO;
 import hanium.apigateway_service.mapper.ProductGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
@@ -171,6 +173,17 @@ public class ProductGrpcClient {
             s3Template.deleteObject(bucketName, fileName);
         } catch (S3Exception e) {
             throw new CustomException(ErrorCode.IMAGE_NOT_FOUND);
+        }
+    }
+
+    // 상품 검색
+    public ProductSearchResponseDTO searchProduct(Long memberId, ProductSearchRequestDTO dto) {
+        ProductSearchRequest grpcRequest =
+                ProductGrpcMapperForGateway.toSearchProductGrpc(memberId, dto);
+        try{
+            return ProductSearchResponseDTO.from(stub.searchProduct(grpcRequest));
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 }

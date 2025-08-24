@@ -6,9 +6,12 @@ import hanium.product_service.domain.Status;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
+import hanium.product_service.elasticsearch.ProductSearchElasticRepository;
+import hanium.product_service.elasticsearch.ProductSearchIndexer;
 import hanium.product_service.grpc.ProfileGrpcClient;
 import hanium.product_service.repository.ProductImageRepository;
 import hanium.product_service.repository.ProductRepository;
+import hanium.product_service.repository.ProductSearchRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,8 +41,14 @@ class ProductServiceImplTest {
     ProductImageRepository imageRepository;
     @Mock
     ProfileGrpcClient profileGrpcClient;
-    @InjectMocks
-    ProductServiceImpl productService;
+    @Mock
+    ProductSearchElasticRepository productSearchElasticRepository;
+    @Mock
+    ProductSearchRepository productSearchRepository;
+    @Mock
+    ProductSearchIndexer productSearchIndexer;
+
+    @InjectMocks ProductServiceImpl productService;
 
     Product product;
     RegisterProductRequestDTO registerReq;

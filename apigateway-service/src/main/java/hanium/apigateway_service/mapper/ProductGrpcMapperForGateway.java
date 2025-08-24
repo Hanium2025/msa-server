@@ -1,12 +1,14 @@
 package hanium.apigateway_service.mapper;
 
 
+import hanium.apigateway_service.dto.product.request.ProductSearchRequestDTO;
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
 import hanium.common.proto.product.DeleteImageRequest;
 import hanium.common.proto.product.GetProductRequest;
 import hanium.common.proto.product.RegisterProductRequest;
 import hanium.common.proto.product.UpdateProductRequest;
+import hanium.common.proto.product.*;
 
 import java.util.List;
 
@@ -52,6 +54,13 @@ public class ProductGrpcMapperForGateway {
         return GetProductRequest.newBuilder()
                 .setProductId(productId)
                 .setMemberId(memberId)
+                .build();
+    }
+
+    public static ProductSearchRequest toSearchProductGrpc(Long memberId, ProductSearchRequestDTO dto) {
+        return ProductSearchRequest.newBuilder()
+                .setMemberId(memberId)
+                .setKeyword(dto.getKeyword())
                 .build();
     }
 }

@@ -5,6 +5,7 @@ import hanium.product_service.dto.response.ProductImageDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
 import hanium.product_service.dto.response.SimpleProductDTO;
+import hanium.product_service.dto.response.ProductSearchResponseDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -71,6 +72,16 @@ public class ProductGrpcMapper {
                 .addAllLikedProducts(dto.stream()
                         .map(ProductGrpcMapper::toSimpleProduct)
                         .collect(Collectors.toList()))
+                .build();
+    }
+
+    public static ProductSearchResponse toProductSearchResponseGrpc(ProductSearchResponseDTO dto) {
+        return ProductSearchResponse.newBuilder()
+                .addAllProductList(
+                        dto.getProductList().stream()
+                                .map(ProductGrpcMapper::toProductResponseGrpc)
+                                .collect(Collectors.toList())
+                )
                 .build();
     }
 }
