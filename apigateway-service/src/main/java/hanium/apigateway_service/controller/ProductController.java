@@ -2,10 +2,12 @@ package hanium.apigateway_service.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hanium.apigateway_service.dto.product.request.ProductSearchRequestDTO;
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
 import hanium.apigateway_service.dto.product.response.ProductMainDTO;
 import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
+import hanium.apigateway_service.dto.product.response.ProductSearchResponseDTO;
 import hanium.apigateway_service.grpc.ProductGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -95,6 +97,26 @@ public class ProductController {
         productGrpcClient.deleteProduct(productId, memberId);
         ResponseDTO<ProductResponseDTO> response = new ResponseDTO<>(
                 null, HttpStatus.OK, "상품이 삭제되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    // 상품 검색
+    @GetMapping("/search")
+    public ResponseEntity<ResponseDTO<ProductSearchResponseDTO>> searchProduct(
+            @RequestParam("keyword") String keyword,
+            Authentication authentication) {
+
+        Long memberId = (Long) authentication.getPrincipal();
+
+        ProductSearchRequestDTO requestDTO = ProductSearchRequestDTO.builder()
+                .keyword(keyword)
+                .build();
+
+        ProductSearchResponseDTO result = productGrpcClient.searchProduct(memberId, requestDTO);
+
+        ResponseDTO<ProductSearchResponseDTO> response = new ResponseDTO<>(
+                result, HttpStatus.OK, "상품 검색 결과입니다.");
+
         return ResponseEntity.ok(response);
     }
 }

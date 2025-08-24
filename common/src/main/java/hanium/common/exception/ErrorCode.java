@@ -40,6 +40,8 @@ public enum ErrorCode {
     RECENT_VIEW_SERVER_ERROR(500, "상품 조회 기록 저장 중 오류가 발생했습니다."),
     CHATROOM_NOT_FOUND(404,"해당 아이디를 가진 채팅방을 찾을 수 없습니다."),
     INVALID_CHAT_IMAGE_REQUEST(404,"이미지는 최대 3장까지 가능합니다."),
+
+    ELASTICSEARCH_ERROR(500, "검색 중 오류가 발생했습니다."),
     ;
 
     private final int code;

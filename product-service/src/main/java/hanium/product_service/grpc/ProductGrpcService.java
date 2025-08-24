@@ -5,11 +5,14 @@ import hanium.common.exception.ErrorCode;
 import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.*;
 import hanium.product_service.dto.request.DeleteImageRequestDTO;
+import hanium.product_service.dto.request.ProductSearchRequestDTO;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
+import hanium.product_service.dto.response.ProductSearchResponseDTO;
 import hanium.product_service.mapper.ProductGrpcMapper;
+import hanium.product_service.service.ProductSearchService;
 import hanium.product_service.service.ProductService;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBase {
 
     private final ProductService productService;
+    private final ProductSearchService productSearchService;
 
     // 메인페이지 조회
     @Override
@@ -93,6 +97,18 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
             responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 상품 검색
+    @Override
+    public void searchProduct(ProductSearchRequest request, StreamObserver<ProductSearchResponse> responseObserver) {
+        try {
+            ProductSearchResponseDTO dto = productSearchService.searchProduct(ProductSearchRequestDTO.from(request));
+            responseObserver.onNext(ProductGrpcMapper.toProductSearchResponseGrpc(dto));
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            responseObserver.onError(e);
         }
     }
 }
