@@ -28,7 +28,6 @@ public interface ProductLikeRepository extends JpaRepository<ProductLike, Long> 
                 likedProduct.title as title,
                 likedProduct.price as price,
                 singleImage.imageUrl as imageUrl
-            )
             from ProductLike productLike
                 join productLike.product likedProduct
                 left join ProductImage singleImage
