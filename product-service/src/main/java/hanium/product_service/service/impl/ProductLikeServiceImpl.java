@@ -28,7 +28,7 @@ public class ProductLikeServiceImpl implements ProductLikeService {
     @Override
     @Transactional
     public boolean likeProduct(Long memberId, Long productId) {
-        if (likeRepository.existsByProductIdAndMemberId(memberId, productId)) {
+        if (likeRepository.existsByProductIdAndMemberId(productId, memberId)) {
             likeRepository.unlikeProduct(memberId, productId);
             return true;
         }

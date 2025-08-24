@@ -126,11 +126,11 @@ public class ProductGrpcClient {
     }
 
     // 상품 찜 목록 조회
-    public List<SimpleProductDTO> getLikedProducts(Long memberId, int page) {
+    public List<SimpleProductDTO> getLikeProducts(Long memberId, int page) {
         GetLikedProductsRequest grpcRequest =
                 GetLikedProductsRequest.newBuilder().setMemberId(memberId).setPage(page).build();
         try {
-            return stub.getLikedProducts(grpcRequest).getLikedProductsList()
+            return stub.getLikeProducts(grpcRequest).getLikedProductsList()
                     .stream()
                     .map(SimpleProductDTO::from)
                     .collect(Collectors.toList());

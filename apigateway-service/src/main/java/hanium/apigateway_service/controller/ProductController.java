@@ -110,12 +110,12 @@ public class ProductController {
 
     // 상품 찜 목록 조회
     @GetMapping("/like")
-    public ResponseEntity<ResponseDTO<List<SimpleProductDTO>>> getLikedProducts(
+    public ResponseEntity<ResponseDTO<List<SimpleProductDTO>>> getLikeProducts(
             Authentication authentication,
             @RequestParam(defaultValue = "0") int page
     ) {
         Long memberId = (Long) authentication.getPrincipal();
-        List<SimpleProductDTO> result = productGrpcClient.getLikedProducts(memberId, page);
+        List<SimpleProductDTO> result = productGrpcClient.getLikeProducts(memberId, page);
         ResponseDTO<List<SimpleProductDTO>> response = new ResponseDTO<>(
                 result, HttpStatus.OK, "상품 찜 목록이 20개씩 조회되었습니다.");
         return ResponseEntity.ok(response);

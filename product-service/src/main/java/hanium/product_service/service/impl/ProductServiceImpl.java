@@ -244,7 +244,7 @@ public class ProductServiceImpl implements ProductService {
             }
         }
         if (result.size() > 4) {
-            return result.subList(0, 3);
+            return result.subList(0, 4);
         } else {
             return result;
         }

@@ -15,15 +15,16 @@ import java.util.List;
 public interface ProductLikeRepository extends JpaRepository<ProductLike, Long> {
 
     @Modifying
-    @Query(value = "INSERT INTO likes(product_id, member_id) VALUES(:productId, :memberId)", nativeQuery = true)
+    @Query(value = "INSERT INTO product_like(product_id, member_id) VALUES(:productId, :memberId)", nativeQuery = true)
     void likeProduct(@Param("memberId") Long memberId, @Param("productId") Long productId);
 
     @Modifying
-    @Query(value = "DELETE FROM likes WHERE product_id = :productId AND member_id  = :memberId", nativeQuery = true)
+    @Query(value = "DELETE FROM product_like WHERE product_id = :productId AND member_id  = :memberId", nativeQuery = true)
     void unlikeProduct(@Param("memberId") Long memberId, @Param("productId") Long productId);
 
     @Query(value = """
             select distinct
+                productLike.id as likeId,
                 likedProduct.id as productId,
                 likedProduct.title as title,
                 likedProduct.price as price,
