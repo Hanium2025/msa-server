@@ -77,11 +77,11 @@ public class ProductServiceImpl implements ProductService {
             images.add(ProductImageDTO.from(productImage));
         }
         String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
-        
+
         // ProductDocument 등록
         productSearchIndexer.index(product);
-        
-        return ProductResponseDTO.of(sellerNickname, product, images, true);
+
+        return ProductResponseDTO.of(sellerNickname, product, images, true, false);
     }
 
     /**
@@ -223,12 +223,7 @@ public class ProductServiceImpl implements ProductService {
                 productRepository.findRecentWithFirstImage(pageRequest);
         // imageUrl이 null일 경우 빈 문자열로
         return products.stream()
-                .map(p -> SimpleProductDTO.builder()
-                        .productId(p.getProductId())
-                        .title(p.getTitle())
-                        .price(p.getPrice())
-                        .imageUrl(p.getImageUrl() == null ? "" : p.getImageUrl())
-                        .build())
+                .map(SimpleProductDTO::from)
                 .toList();
     }
 

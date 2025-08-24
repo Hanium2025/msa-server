@@ -51,12 +51,7 @@ public class ProductLikeServiceImpl implements ProductLikeService {
                 likeRepository.findLikedProductsWithFirstImage(memberId, pageable);
         // imageUrl이 null일 경우 빈 문자열로
         return products.stream()
-                .map(p -> SimpleProductDTO.builder()
-                        .productId(p.getProductId())
-                        .title(p.getTitle())
-                        .price(p.getPrice())
-                        .imageUrl(p.getImageUrl() == null ? "" : p.getImageUrl())
-                        .build())
+                .map(SimpleProductDTO::from)
                 .toList();
     }
 }

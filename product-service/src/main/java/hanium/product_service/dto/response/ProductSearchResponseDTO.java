@@ -1,24 +1,22 @@
 package hanium.product_service.dto.response;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductSearchResponseDTO {
 
-    private List<ProductResponseDTO> productList;
+    private List<SimpleProductDTO> productList;
 
-    public static ProductSearchResponseDTO of(List<ProductResponseDTO> list) {
-        ProductSearchResponseDTO dto = new ProductSearchResponseDTO();
-        dto.productList = list;
-        return dto;
+    public static ProductSearchResponseDTO from(List<SimpleProductDTO> list) {
+        return ProductSearchResponseDTO.builder()
+                .productList(list)
+                .build();
     }
-
 }

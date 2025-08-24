@@ -43,4 +43,24 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             order by product.createdAt desc, product.id desc
             """)
     List<ProductWithFirstImage> findRecentWithFirstImage(Pageable pageable);
+
+    @Query("""
+            select
+                product.id as productId,
+                product.title as title,
+                product.price as price,
+                singleImage.imageUrl as imageUrl
+            from Product product
+            left join ProductImage singleImage
+                on singleImage.product = product
+               and singleImage.deletedAt is null
+               and singleImage.id = (
+                    select min(allImages.id)
+                    from ProductImage allImages
+                    where allImages.product = product
+                      and allImages.deletedAt is null
+               )
+            where product.id in :ids and product.deletedAt is null
+            """)
+    List<ProductWithFirstImage> findProductWithFirstImageByIds(@Param("ids") Collection<Long> ids);
 }

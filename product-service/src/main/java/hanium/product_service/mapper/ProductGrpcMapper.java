@@ -1,11 +1,7 @@
 package hanium.product_service.mapper;
 
 import hanium.common.proto.product.*;
-import hanium.product_service.dto.response.ProductImageDTO;
-import hanium.product_service.dto.response.ProductMainDTO;
-import hanium.product_service.dto.response.ProductResponseDTO;
-import hanium.product_service.dto.response.SimpleProductDTO;
-import hanium.product_service.dto.response.ProductSearchResponseDTO;
+import hanium.product_service.dto.response.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -79,7 +75,7 @@ public class ProductGrpcMapper {
         return ProductSearchResponse.newBuilder()
                 .addAllProductList(
                         dto.getProductList().stream()
-                                .map(ProductGrpcMapper::toProductResponseGrpc)
+                                .map(ProductGrpcMapper::toSimpleProduct)
                                 .collect(Collectors.toList())
                 )
                 .build();
