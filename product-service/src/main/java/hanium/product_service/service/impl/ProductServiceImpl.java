@@ -5,21 +5,16 @@ import hanium.common.exception.ErrorCode;
 import hanium.product_service.domain.Category;
 import hanium.product_service.domain.Product;
 import hanium.product_service.domain.ProductImage;
-import hanium.product_service.domain.ProductSearch;
 import hanium.product_service.dto.request.DeleteImageRequestDTO;
-import hanium.product_service.dto.request.ProductSearchRequestDTO;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductImageDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
-import hanium.product_service.dto.response.ProductSearchResponseDTO;
-import hanium.product_service.elasticsearch.ProductDocument;
 import hanium.product_service.elasticsearch.ProductSearchElasticRepository;
 import hanium.product_service.grpc.ProfileGrpcClient;
 import hanium.product_service.repository.ProductImageRepository;
 import hanium.product_service.repository.ProductRepository;
-import hanium.product_service.repository.ProductSearchRepository;
 import hanium.product_service.repository.RecentViewRepository;
 import hanium.product_service.repository.projection.ProductIdCategory;
 import hanium.product_service.service.ProductService;
@@ -32,7 +27,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,8 +38,6 @@ public class ProductServiceImpl implements ProductService {
     private final ProductImageRepository productImageRepository;
     private final RecentViewRepository recentViewRepository;
     private final ProfileGrpcClient profileGrpcClient;
-    private final ProductSearchElasticRepository productSearchElasticRepository;
-    private final ProductSearchRepository productSearchRepository;
 
     /**
      * 상품 메인 페이지 화면을 조회합니다.
@@ -79,10 +71,6 @@ public class ProductServiceImpl implements ProductService {
             images.add(ProductImageDTO.from(productImage));
         }
         String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
-
-        // ProductDocument 저장
-        ProductDocument document = ProductDocument.from(product);
-        productSearchElasticRepository.save(document);
 
         return ProductResponseDTO.of(sellerNickname, product, images, true);
     }
@@ -168,8 +156,8 @@ public class ProductServiceImpl implements ProductService {
             }
         }
         // ProductDocument 수정
-        ProductDocument document = ProductDocument.from(product);
-        productSearchElasticRepository.save(document);
+//        ProductDocument document = ProductDocument.from(product);
+//        productSearchElasticRepository.save(document);
 
         return dto.getLeftImageIds().size();
     }
@@ -197,7 +185,7 @@ public class ProductServiceImpl implements ProductService {
             productImageRepository.save(image);
         }
 
-        productSearchElasticRepository.deleteById(product.getId());
+        // productSearchElasticRepository.deleteById(product.getId());
     }
 
     /**
@@ -286,57 +274,5 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
-    /**
-     * 상품 검색 기록을 저장합니다.
-     * searchProductReadOnly(dto)를 호출하여 실제 검색 결과를 반환합니다.
-     *
-     * @param dto 상품 검색 요청 객체
-     * @return searchProductReadOnly(dto)
-     */
-    @Override
-    public ProductSearchResponseDTO searchProduct(ProductSearchRequestDTO dto) {
-        productSearchRepository.save(ProductSearch.from(dto));
-        return searchProductReadOnly(dto);
-    }
 
-    /**
-     * Elastic에서 요청된 키워드로 목록을 검색합니다.
-     *
-     * @param dto 상품 검색 요청 객체
-     * @return 검색 결과 반환
-     */
-    @Override
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public ProductSearchResponseDTO searchProductReadOnly(ProductSearchRequestDTO dto) {
-
-        List<ProductDocument> documents;
-        try {
-            documents = productSearchElasticRepository.findByTitle(dto.getKeyword());
-        } catch (Exception e) {
-            throw new CustomException(ErrorCode.ELASTICSEARCH_ERROR);
-        }
-
-        List<ProductResponseDTO> results = new ArrayList<>();
-        for (ProductDocument document : documents) {
-            Optional<Product> productOpt = productRepository.findById(document.getId());
-
-            if (productOpt.isEmpty()) {
-                log.warn("상품이 존재하지 않음. ID: {}", document.getId());
-                continue;
-            }
-
-            Product product = productOpt.get();
-            List<ProductImage> images = productImageRepository.findByProductAndDeletedAtIsNull(product);
-
-            List<ProductImageDTO> imageDTOS = images.stream()
-                    .map(ProductImageDTO::from)
-                    .collect(Collectors.toList());
-
-            String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
-
-            results.add(ProductResponseDTO.of(sellerNickname, product, imageDTOS, true));
-        }
-
-        return ProductSearchResponseDTO.of(results);
-    }
 }
