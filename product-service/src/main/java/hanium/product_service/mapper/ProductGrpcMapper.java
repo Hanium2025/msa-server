@@ -1,11 +1,9 @@
 package hanium.product_service.mapper;
 
 import hanium.common.proto.product.*;
-import hanium.product_service.dto.response.ProductImageDTO;
-import hanium.product_service.dto.response.ProductMainDTO;
-import hanium.product_service.dto.response.ProductResponseDTO;
-import hanium.product_service.dto.response.ProductSearchResponseDTO;
+import hanium.product_service.dto.response.*;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ProductGrpcMapper {
@@ -20,7 +18,8 @@ public class ProductGrpcMapper {
                 .setSellerNickname(dto.getSellerNickname())
                 .setCategory(dto.getCategory())
                 .setStatus(dto.getStatus())
-                .setIsSeller(dto.isSeller())
+                .setSeller(dto.isSeller())
+                .setLiked(dto.isLiked())
                 .addAllImages(dto.getImages().stream().map(
                         ProductGrpcMapper::toProductImageGrpc).collect(Collectors.toList()))
                 .build();
@@ -38,7 +37,7 @@ public class ProductGrpcMapper {
                 .addAllProducts(dto
                         .getProducts()
                         .stream()
-                        .map(ProductGrpcMapper::toProductMainGrpc)
+                        .map(ProductGrpcMapper::toSimpleProduct)
                         .collect(Collectors.toList()))
                 .addAllCategories(dto
                         .getCategories()
@@ -48,8 +47,8 @@ public class ProductGrpcMapper {
                 .build();
     }
 
-    private static ProductMain toProductMainGrpc(ProductMainDTO.MainProductsDTO dto) {
-        return ProductMain.newBuilder()
+    private static SimpleProductResponse toSimpleProduct(SimpleProductDTO dto) {
+        return SimpleProductResponse.newBuilder()
                 .setProductId(dto.getProductId())
                 .setTitle(dto.getTitle())
                 .setPrice(dto.getPrice())
@@ -64,11 +63,19 @@ public class ProductGrpcMapper {
                 .build();
     }
 
+    public static LikedProductsResponse toLikedProductsResponse(List<SimpleProductDTO> dto) {
+        return LikedProductsResponse.newBuilder()
+                .addAllLikedProducts(dto.stream()
+                        .map(ProductGrpcMapper::toSimpleProduct)
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
     public static ProductSearchResponse toProductSearchResponseGrpc(ProductSearchResponseDTO dto) {
         return ProductSearchResponse.newBuilder()
                 .addAllProductList(
                         dto.getProductList().stream()
-                                .map(ProductGrpcMapper::toProductResponseGrpc)
+                                .map(ProductGrpcMapper::toSimpleProduct)
                                 .collect(Collectors.toList())
                 )
                 .build();

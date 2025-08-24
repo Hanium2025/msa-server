@@ -22,9 +22,15 @@ service ProductService {
   rpc DeleteImage(DeleteImageRequest) returns (DeleteImageResponse);
 
   // 4. 상품 삭제
-  rpc DeleteProduct(DeleteProductRequest) returns (Empty);
+  rpc DeleteProduct(GetProductRequest) returns (Empty);
 
-  // 상품 검색 요청
+  // 5. 상품 찜
+  rpc LikeProduct(GetProductRequest) returns (LikeProductResponse);
+
+  // 6. 상품 찜 목록 조회
+  rpc GetLikeProducts(GetLikedProductsRequest) returns (LikedProductsResponse);
+
+  // 7. 상품 검색 요청
   rpc SearchProduct(ProductSearchRequest) returns (ProductSearchResponse);
 }
 
@@ -34,10 +40,10 @@ message ProductMainRequest {
   int64 member_id = 1;
 }
 message ProductMainResponse {
-  repeated ProductMain products = 1;
+  repeated SimpleProductResponse products = 1;
   repeated CategoryMain categories = 2;
 }
-message ProductMain {
+message SimpleProductResponse {
   int64 product_id = 1;
   string title = 2;
   int64 price = 3;
@@ -67,8 +73,9 @@ message ProductResponse {
   int64 price = 6;
   string category = 7;
   string status = 8;
-  bool is_seller = 9;
-  repeated ProductImageResponse images = 10;
+  bool seller = 9;
+  bool liked = 10;
+  repeated ProductImageResponse images = 11;
 }
 message ProductImageResponse {
   int64 product_image_id = 1;
@@ -100,19 +107,26 @@ message DeleteImageResponse {
   int32 left_img_count = 1;
 }
 
-// 4. 상품 삭제
-message DeleteProductRequest {
-  int64 member_id = 1;
-  int64 product_id = 2;
+// 5. 상품 찜 / 찜 취소
+message LikeProductResponse {
+  bool likeCanceled = 1;
 }
 
-// 상품 검색 요청
+// 6. 상품 찜 목록 조회
+message GetLikedProductsRequest {
+  int64 member_id = 1;
+  int32 page = 2;
+}
+message LikedProductsResponse {
+  repeated SimpleProductResponse likedProducts = 1;
+}
+
+// 7. 상품 검색 요청
 message ProductSearchRequest {
   int64 member_id = 1;
   string keyword = 2;
 }
-
-// 상품 검색 응답
+// 7. 상품 검색 응답
 message ProductSearchResponse {
-  repeated ProductResponse productList = 1;
+  repeated SimpleProductResponse productList = 1;
 }
