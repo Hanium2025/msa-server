@@ -6,6 +6,7 @@ import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
 import hanium.apigateway_service.dto.product.response.ProductMainDTO;
 import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
+import hanium.apigateway_service.dto.product.response.SimpleProductDTO;
 import hanium.apigateway_service.grpc.ProductGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -95,6 +96,28 @@ public class ProductController {
         productGrpcClient.deleteProduct(productId, memberId);
         ResponseDTO<ProductResponseDTO> response = new ResponseDTO<>(
                 null, HttpStatus.OK, "상품이 삭제되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    // 상품 찜/찜 취소
+    @PostMapping("/like/{productId}")
+    public ResponseEntity<?> likeProduct(@PathVariable Long productId, Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        String message = productGrpcClient.likeProduct(memberId, productId);
+        ResponseDTO<?> response = new ResponseDTO<>(null, HttpStatus.OK, message);
+        return ResponseEntity.ok(response);
+    }
+
+    // 상품 찜 목록 조회
+    @GetMapping("/like")
+    public ResponseEntity<ResponseDTO<List<SimpleProductDTO>>> getLikedProducts(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        Long memberId = (Long) authentication.getPrincipal();
+        List<SimpleProductDTO> result = productGrpcClient.getLikedProducts(memberId, page);
+        ResponseDTO<List<SimpleProductDTO>> response = new ResponseDTO<>(
+                result, HttpStatus.OK, "상품 찜 목록이 20개씩 조회되었습니다.");
         return ResponseEntity.ok(response);
     }
 }
