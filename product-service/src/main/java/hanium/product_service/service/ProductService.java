@@ -7,15 +7,9 @@ import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
 
-import java.util.List;
-
 public interface ProductService {
 
     ProductMainDTO getProductMain(Long memberId);
-
-    List<ProductMainDTO.MainProductsDTO> getRecentProducts();
-
-    List<ProductMainDTO.MainCategoriesDTO> getRecentCategories(Long memberId);
 
     ProductResponseDTO registerProduct(RegisterProductRequestDTO dto);
 
@@ -23,10 +17,9 @@ public interface ProductService {
 
     ProductResponseDTO getProductById(Long memberId, Long productId);
 
+    ProductResponseDTO updateProduct(UpdateProductRequestDTO dto);
+
     void deleteProductById(Long productId, Long memberId);
 
     int deleteProductImage(DeleteImageRequestDTO dto);
-
-    ProductResponseDTO updateProduct(UpdateProductRequestDTO dto);
-
 }

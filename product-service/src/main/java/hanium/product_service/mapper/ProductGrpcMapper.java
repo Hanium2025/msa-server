@@ -4,6 +4,7 @@ import hanium.common.proto.product.*;
 import hanium.product_service.dto.response.ProductImageDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
+import hanium.product_service.dto.response.SimpleProductDTO;
 
 import java.util.stream.Collectors;
 
@@ -47,7 +48,7 @@ public class ProductGrpcMapper {
                 .build();
     }
 
-    private static ProductMain toProductMainGrpc(ProductMainDTO.MainProductsDTO dto) {
+    private static ProductMain toProductMainGrpc(SimpleProductDTO dto) {
         return ProductMain.newBuilder()
                 .setProductId(dto.getProductId())
                 .setTitle(dto.getTitle())
