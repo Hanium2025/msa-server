@@ -23,9 +23,10 @@ public class ProductResponseDTO {
     private String category;
     private List<ProductImageDTO> images;
     private boolean isSeller;
+    private boolean isLiked;
 
     public static ProductResponseDTO of(String sellerNickname, Product product,
-                                        List<ProductImageDTO> images, boolean isSeller) {
+                                        List<ProductImageDTO> images, boolean isSeller, boolean liked) {
         return ProductResponseDTO.builder()
                 .productId(product.getId())
                 .title(product.getTitle())
@@ -37,6 +38,7 @@ public class ProductResponseDTO {
                 .status(product.getStatus().getLabel())
                 .images(images)
                 .isSeller(isSeller)
+                .isLiked(liked)
                 .build();
     }
 }

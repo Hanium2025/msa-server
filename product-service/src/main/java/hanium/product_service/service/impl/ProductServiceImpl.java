@@ -14,6 +14,7 @@ import hanium.product_service.dto.response.ProductResponseDTO;
 import hanium.product_service.dto.response.SimpleProductDTO;
 import hanium.product_service.grpc.ProfileGrpcClient;
 import hanium.product_service.repository.ProductImageRepository;
+import hanium.product_service.repository.ProductLikeRepository;
 import hanium.product_service.repository.ProductRepository;
 import hanium.product_service.repository.RecentViewRepository;
 import hanium.product_service.repository.projection.ProductIdCategory;
@@ -40,6 +41,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductImageRepository productImageRepository;
     private final RecentViewRepository recentViewRepository;
     private final ProfileGrpcClient profileGrpcClient;
+    private final ProductLikeRepository productLikeRepository;
 
     /**
      * 상품 메인 페이지 화면을 조회합니다.
@@ -73,7 +75,7 @@ public class ProductServiceImpl implements ProductService {
             images.add(ProductImageDTO.from(productImage));
         }
         String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
-        return ProductResponseDTO.of(sellerNickname, product, images, true);
+        return ProductResponseDTO.of(sellerNickname, product, images, true, false);
     }
 
     /**
@@ -102,9 +104,10 @@ public class ProductServiceImpl implements ProductService {
         Product product = getProductById(productId);
         String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
         boolean isSeller = product.getSellerId().equals(memberId);
+        boolean liked = productLikeRepository.existsByProductIdAndMemberId(productId, memberId);
         try {
             recentViewRepository.add(memberId, productId);
-            return ProductResponseDTO.of(sellerNickname, product, getProductImages(product), isSeller);
+            return ProductResponseDTO.of(sellerNickname, product, getProductImages(product), isSeller, liked);
         } catch (Exception e) {
             throw new CustomException(ErrorCode.RECENT_VIEW_SERVER_ERROR);
         }
@@ -131,7 +134,7 @@ public class ProductServiceImpl implements ProductService {
             productImageRepository.save(productImage);
         }
         String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
-        return ProductResponseDTO.of(sellerNickname, product, getProductImages(product), true);
+        return ProductResponseDTO.of(sellerNickname, product, getProductImages(product), true, false);
     }
 
     /**

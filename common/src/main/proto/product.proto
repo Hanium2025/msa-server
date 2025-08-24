@@ -70,8 +70,9 @@ message ProductResponse {
   int64 price = 6;
   string category = 7;
   string status = 8;
-  bool is_seller = 9;
-  repeated ProductImageResponse images = 10;
+  bool seller = 9;
+  bool liked = 10;
+  repeated ProductImageResponse images = 11;
 }
 message ProductImageResponse {
   int64 product_image_id = 1;

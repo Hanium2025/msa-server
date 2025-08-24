@@ -22,7 +22,8 @@ public class ProductResponseDTO {
     private Long price;
     private String category;
     private String status;
-    private boolean isSeller;
+    private boolean seller;
+    private boolean liked;
     private List<ProductImageResponseDTO> images;
 
     public static ProductResponseDTO from(ProductResponse productResponse) {
@@ -37,7 +38,8 @@ public class ProductResponseDTO {
                 .status(productResponse.getStatus())
                 .images(productResponse.getImagesList().stream().map(
                         ProductImageResponseDTO::from).collect(Collectors.toList()))
-                .isSeller(productResponse.getIsSeller())
+                .seller(productResponse.getSeller())
+                .liked(productResponse.getLiked())
                 .build();
     }
 }
