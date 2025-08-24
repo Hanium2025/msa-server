@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ProductLikeService {
 
-    void likeProduct(Long memberId, Long productId);
+    boolean likeProduct(Long memberId, Long productId);
 
     List<SimpleProductDTO> getLikedProducts(Long memberId, int page);
 }

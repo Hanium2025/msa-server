@@ -6,6 +6,7 @@ import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
 import hanium.product_service.dto.response.SimpleProductDTO;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ProductGrpcMapper {
@@ -38,7 +39,7 @@ public class ProductGrpcMapper {
                 .addAllProducts(dto
                         .getProducts()
                         .stream()
-                        .map(ProductGrpcMapper::toProductMainGrpc)
+                        .map(ProductGrpcMapper::toSimpleProduct)
                         .collect(Collectors.toList()))
                 .addAllCategories(dto
                         .getCategories()
@@ -48,8 +49,8 @@ public class ProductGrpcMapper {
                 .build();
     }
 
-    private static ProductMain toProductMainGrpc(SimpleProductDTO dto) {
-        return ProductMain.newBuilder()
+    private static SimpleProductResponse toSimpleProduct(SimpleProductDTO dto) {
+        return SimpleProductResponse.newBuilder()
                 .setProductId(dto.getProductId())
                 .setTitle(dto.getTitle())
                 .setPrice(dto.getPrice())
@@ -61,6 +62,14 @@ public class ProductGrpcMapper {
         return CategoryMain.newBuilder()
                 .setName(dto.getName())
                 .setImageUrl(dto.getImageUrl())
+                .build();
+    }
+
+    public static LikedProductsResponse toLikedProductsResponse(List<SimpleProductDTO> dto) {
+        return LikedProductsResponse.newBuilder()
+                .addAllLikedProducts(dto.stream()
+                        .map(ProductGrpcMapper::toSimpleProduct)
+                        .collect(Collectors.toList()))
                 .build();
     }
 }

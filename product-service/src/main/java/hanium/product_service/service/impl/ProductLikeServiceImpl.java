@@ -23,14 +23,17 @@ public class ProductLikeServiceImpl implements ProductLikeService {
      *
      * @param memberId  요청한 사용자 id
      * @param productId 대상 상품 id
+     * @return 상품 찜이 취소된 것인지 여부
      */
     @Override
     @Transactional
-    public void likeProduct(Long memberId, Long productId) {
+    public boolean likeProduct(Long memberId, Long productId) {
         if (likeRepository.existsByProductIdAndMemberId(memberId, productId)) {
             likeRepository.unlikeProduct(memberId, productId);
+            return true;
         }
         likeRepository.likeProduct(memberId, productId);
+        return false;
     }
 
     /**

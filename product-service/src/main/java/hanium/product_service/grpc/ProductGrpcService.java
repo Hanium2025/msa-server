@@ -10,6 +10,7 @@ import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
 import hanium.product_service.mapper.ProductGrpcMapper;
+import hanium.product_service.service.ProductLikeService;
 import hanium.product_service.service.ProductService;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBase {
 
     private final ProductService productService;
+    private final ProductLikeService likeService;
 
     // 메인페이지 조회
     @Override
@@ -86,10 +88,39 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
 
     // 상품 삭제
     @Override
-    public void deleteProduct(DeleteProductRequest request, StreamObserver<Empty> responseObserver) {
+    public void deleteProduct(GetProductRequest request, StreamObserver<Empty> responseObserver) {
         try {
             productService.deleteProductById(request.getProductId(), request.getMemberId());
             responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 상품 찜/찜 취소
+    @Override
+    public void likeProduct(GetProductRequest request, StreamObserver<LikeProductResponse> responseObserver) {
+        try {
+            responseObserver.onNext(LikeProductResponse.newBuilder()
+                    .setLikeCanceled(
+                            likeService.likeProduct(request.getMemberId(), request.getProductId()))
+                    .build());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 상품 찜 목록 조회
+    @Override
+    public void getLikeProducts(GetLikedProductsRequest request,
+                                StreamObserver<LikedProductsResponse> responseObserver) {
+        try {
+            responseObserver.onNext(
+                    ProductGrpcMapper.toLikedProductsResponse(
+                            likeService.getLikedProducts(request.getMemberId(), request.getPage()))
+            );
             responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
