@@ -12,10 +12,8 @@ import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
 import hanium.product_service.dto.response.ProductSearchResponseDTO;
 import hanium.product_service.mapper.ProductGrpcMapper;
-import hanium.product_service.repository.ProductRepository;
 import hanium.product_service.service.ProductSearchService;
 import hanium.product_service.service.ProductService;
-import hanium.product_service.elasticsearch.ProductSearchIndexer;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,8 +28,6 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
 
     private final ProductService productService;
     private final ProductSearchService productSearchService;
-    private final ProductSearchIndexer productSearchIndexer;
-    private final ProductRepository productRepository;
 
     // 메인페이지 조회
     @Override
@@ -52,8 +48,6 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
             ProductResponseDTO dto = productService.registerProduct(RegisterProductRequestDTO.from(request));
             responseObserver.onNext(ProductGrpcMapper.toProductResponseGrpc(dto));
             responseObserver.onCompleted();
-            productRepository.findById(dto.getProductId())
-                    .ifPresent(productSearchIndexer::index);
         } catch (Exception e) {
             CustomException ce = new CustomException(ErrorCode.ERROR_ADD_PRODUCT);
             responseObserver.onError(GrpcUtil.generateException(ce.getErrorCode()));
@@ -78,8 +72,6 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
             ProductResponseDTO dto = productService.updateProduct(UpdateProductRequestDTO.from(request));
             responseObserver.onNext(ProductGrpcMapper.toProductResponseGrpc(dto));
             responseObserver.onCompleted();
-            productRepository.findById(dto.getProductId())
-                    .ifPresent(productSearchIndexer::index);
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
         }
@@ -103,7 +95,6 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
             productService.deleteProductById(request.getProductId(), request.getMemberId());
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
-            productSearchIndexer.remove(request.getProductId());
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
         }
