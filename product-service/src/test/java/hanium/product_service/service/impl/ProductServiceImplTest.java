@@ -28,7 +28,7 @@ import static org.mockito.Mockito.verify;
 
 
 @ActiveProfiles("test")
-@DisplayName("ProductServiceImpl 테스트")
+@DisplayName("상품 서비스 테스트")
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest {
 
