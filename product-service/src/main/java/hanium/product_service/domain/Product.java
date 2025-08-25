@@ -3,13 +3,14 @@ package hanium.product_service.domain;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Getter
-@Setter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@DynamicUpdate
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(
         name = "product",
         indexes = {

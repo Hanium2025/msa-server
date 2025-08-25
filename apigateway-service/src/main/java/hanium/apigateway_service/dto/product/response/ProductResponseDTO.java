@@ -17,6 +17,8 @@ public class ProductResponseDTO {
     private Long productId;
     private Long sellerId;
     private String sellerNickname;
+    private String sellerImageUrl;
+    private String createdAt;
     private String title;
     private String content;
     private Long price;
@@ -24,6 +26,7 @@ public class ProductResponseDTO {
     private String status;
     private boolean seller;
     private boolean liked;
+    private Long likeCount;
     private List<ProductImageResponseDTO> images;
 
     public static ProductResponseDTO from(ProductResponse productResponse) {
@@ -31,15 +34,20 @@ public class ProductResponseDTO {
                 .productId(productResponse.getProductId())
                 .sellerId(productResponse.getSellerId())
                 .sellerNickname(productResponse.getSellerNickname())
+                .sellerImageUrl(productResponse.getSellerProfileImg())
+                .createdAt(productResponse.getCreatedAt())
                 .title(productResponse.getTitle())
                 .content(productResponse.getContent())
                 .price(productResponse.getPrice())
                 .category(productResponse.getCategory())
                 .status(productResponse.getStatus())
-                .images(productResponse.getImagesList().stream().map(
-                        ProductImageResponseDTO::from).collect(Collectors.toList()))
                 .seller(productResponse.getSeller())
                 .liked(productResponse.getLiked())
+                .likeCount(productResponse.getLikeCount())
+                .images(productResponse.getImagesList()
+                        .stream()
+                        .map(ProductImageResponseDTO::from)
+                        .collect(Collectors.toList()))
                 .build();
     }
 }

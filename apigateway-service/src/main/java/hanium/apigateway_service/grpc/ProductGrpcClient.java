@@ -5,8 +5,8 @@ import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
 import hanium.apigateway_service.dto.product.response.ProductMainDTO;
 import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
-import hanium.apigateway_service.dto.product.response.SimpleProductDTO;
 import hanium.apigateway_service.dto.product.response.ProductSearchResponseDTO;
+import hanium.apigateway_service.dto.product.response.SimpleProductDTO;
 import hanium.apigateway_service.mapper.ProductGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
@@ -95,7 +95,7 @@ public class ProductGrpcClient {
             }
             // 새로 추가된 이미지와 수정할 상품 dto로 상품 수정
             UpdateProductRequest updateRequest =
-                    ProductGrpcMapperForGateway.toUpdateProduct2Grpc(memberId, productId, dto, s3Paths);
+                    ProductGrpcMapperForGateway.toUpdateProductGrpc(memberId, productId, dto, s3Paths);
             return ProductResponseDTO.from(stub.updateProduct(updateRequest));
 
         } catch (StatusRuntimeException e) {
@@ -180,7 +180,7 @@ public class ProductGrpcClient {
     public ProductSearchResponseDTO searchProduct(Long memberId, ProductSearchRequestDTO dto) {
         ProductSearchRequest grpcRequest =
                 ProductGrpcMapperForGateway.toSearchProductGrpc(memberId, dto);
-        try{
+        try {
             return ProductSearchResponseDTO.from(stub.searchProduct(grpcRequest));
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));

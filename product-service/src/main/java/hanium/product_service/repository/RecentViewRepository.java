@@ -45,12 +45,12 @@ public class RecentViewRepository {
         BoundZSetOperations<Long, Long> zSet = getOperations(memberId);
         double score = (double) Instant.now().toEpochMilli();
         Boolean newlyAdded = zSet.add(productId, score);
-        // 새로 들어와서 길이가 늘어난 경우 50개 이하로 유지
+        // 새로 들어와서 길이가 늘어난 경우 30개 이하로 유지
         if (Boolean.TRUE.equals(newlyAdded)) {
             Long size = zSet.size();
-            if (size != null && size > 50) {
+            if (size != null && size > 30) {
                 // 오래된(점수 낮은) 것부터 제거
-                zSet.removeRange(0, size - 50 - 1);
+                zSet.removeRange(0, size - 30 - 1);
                 log.info("❎ 오래된 기록 삭제됨");
             }
         }
@@ -70,7 +70,6 @@ public class RecentViewRepository {
         if (members == null || members.isEmpty()) {
             return Collections.emptyList();
         } else {
-            log.info("✅ 최근 조회된 상품 id 리스트 반환: {}", members.toArray());
             return new ArrayList<>(members);
         }
     }

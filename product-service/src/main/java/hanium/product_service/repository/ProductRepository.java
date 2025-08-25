@@ -1,10 +1,12 @@
 package hanium.product_service.repository;
 
+import hanium.product_service.domain.Category;
 import hanium.product_service.domain.Product;
 import hanium.product_service.repository.projection.ProductIdCategory;
 import hanium.product_service.repository.projection.ProductWithFirstImage;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,7 +21,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("""
             select p.id as id, p.category as category
             from Product p
-            where p.id in :ids and p.deletedAt is null
+            where p.id in :ids
+              and p.deletedAt is null
             """)
     List<ProductIdCategory> findIdAndCategoryByIdIn(@Param("ids") Collection<Long> ids);
 
@@ -63,4 +66,20 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             where product.id in :ids and product.deletedAt is null
             """)
     List<ProductWithFirstImage> findProductWithFirstImageByIds(@Param("ids") Collection<Long> ids);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            update Product p
+            set p.title   = :title,
+                p.content = :content,
+                p.price   = :price,
+                p.category = :category,
+                p.updatedAt = now()
+            where p.id      = :productId
+            """)
+    int updateFieldsById(@Param("productId") Long productId,
+                         @Param("title") String title,
+                         @Param("content") String content,
+                         @Param("price") Long price,
+                         @Param("category") Category category);
 }

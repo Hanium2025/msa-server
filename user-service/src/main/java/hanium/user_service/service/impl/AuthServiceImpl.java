@@ -48,9 +48,14 @@ public class AuthServiceImpl implements AuthService {
                     .isAgreeMarketing(dto.getAgreeMarketing())
                     .isAgreeThirdParty(dto.getAgreeThirdParty())
                     .build();
+
+            String imageUrl = "https://msa-image-bucket.s3.ap-northeast-2.amazonaws.com/"
+                    + "profile_image/default/default_profile.png";
             Profile profile = Profile.builder()
                     .nickname(dto.getNickname())
+                    .imageUrl(imageUrl)
                     .member(member).build();
+
             memberRepository.save(member);
             profileRepository.save(profile);
 

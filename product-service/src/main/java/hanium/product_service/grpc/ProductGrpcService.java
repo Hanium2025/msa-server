@@ -60,7 +60,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     @Override
     public void getProduct(GetProductRequest request, StreamObserver<ProductResponse> responseObserver) {
         try {
-            ProductResponseDTO dto = productService.getProductById(request.getMemberId(), request.getProductId());
+            ProductResponseDTO dto = productService.getProductAndViewLog(request.getMemberId(), request.getProductId());
             responseObserver.onNext(ProductGrpcMapper.toProductResponseGrpc(dto));
             responseObserver.onCompleted();
         } catch (CustomException e) {
@@ -130,7 +130,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
         }
     }
-    
+
     // 상품 검색
     @Override
     public void searchProduct(ProductSearchRequest request, StreamObserver<ProductSearchResponse> responseObserver) {

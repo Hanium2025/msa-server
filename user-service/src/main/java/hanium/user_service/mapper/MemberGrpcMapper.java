@@ -1,10 +1,7 @@
 package hanium.user_service.mapper;
 
 import hanium.common.proto.user.*;
-import hanium.user_service.dto.response.MemberResponseDTO;
-import hanium.user_service.dto.response.NaverConfigResponseDTO;
-import hanium.user_service.dto.response.SignUpResponseDTO;
-import hanium.user_service.dto.response.TokenResponseDTO;
+import hanium.user_service.dto.response.*;
 
 import java.util.Map;
 
@@ -64,6 +61,14 @@ public class MemberGrpcMapper {
                 .setClientId(dto.getClientId())
                 .setRedirectUri(dto.getRedirectUri())
                 .setState(dto.getState())
+                .build();
+    }
+
+    // 프로필
+    public static ProfileResponse toProfileResponse(ProfileResponseDTO dto) {
+        return ProfileResponse.newBuilder()
+                .setNickname(dto.getNickname())
+                .setProfileImg(dto.getProfileImg())
                 .build();
     }
 }

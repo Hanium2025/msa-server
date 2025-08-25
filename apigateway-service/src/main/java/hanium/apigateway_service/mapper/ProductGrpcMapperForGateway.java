@@ -27,9 +27,9 @@ public class ProductGrpcMapperForGateway {
                 .build();
     }
 
-    public static UpdateProductRequest toUpdateProduct2Grpc(Long memberId, Long productId,
-                                                            UpdateProductRequestDTO dto,
-                                                            List<String> s3Paths) {
+    public static UpdateProductRequest toUpdateProductGrpc(Long memberId, Long productId,
+                                                           UpdateProductRequestDTO dto,
+                                                           List<String> s3Paths) {
         return UpdateProductRequest.newBuilder()
                 .setMemberId(memberId)
                 .setProductId(productId)
