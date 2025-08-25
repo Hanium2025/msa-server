@@ -31,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -229,15 +231,24 @@ public class ProductServiceImpl implements ProductService {
         if (recentProductIds.isEmpty()) {
             return new ArrayList<>();
         }
-
         // 최근 조회한 상품 id 목록을 통해 {id, Category} 목록 조회
         List<ProductIdCategory> rows = productRepository.findIdAndCategoryByIdIn(recentProductIds);
+        Map<Long, Category> idToCategory = rows.stream()
+                .collect(Collectors.toMap(ProductIdCategory::getId, ProductIdCategory::getCategory));
+        // {id, Category} 목록에서 id만 추출
+        List<Long> idsFromProductIdCategory = rows.stream()
+                .map(ProductIdCategory::getId)
+                .toList();
+        // {id, Category} 목록의 id에 존재하는 recentProductIds만 추출
+        List<Long> presentIds = recentProductIds.stream()
+                .filter(idsFromProductIdCategory::contains)
+                .toList();
 
         // {id, Category} 목록에서 중복 제거한 Category만 result로 담기
         boolean[] seen = new boolean[Category.values().length];
         List<ProductMainDTO.MainCategoriesDTO> result = new ArrayList<>();
-        for (ProductIdCategory idCategory : rows) {
-            Category c = idCategory.getCategory();
+        for (Long pid : presentIds) {
+            Category c = idToCategory.get(pid);
             int idx = c.getIndex();
             if (!seen[idx]) {
                 seen[idx] = true;
