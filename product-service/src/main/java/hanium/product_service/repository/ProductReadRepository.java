@@ -26,17 +26,22 @@ public class ProductReadRepository {
         try {
             core = em.createQuery("""
                                     select new hanium.product_service.repository.projection.ProductCoreProjection(
-                                            p.id, p.title, p.content, p.price, p.sellerId,
-                                            p.status, p.category,
-                                            (select
-                                            case when count(pl) > 0 then true else false end
-                                                from ProductLike pl
-                                               where pl.product.id = :productId
-                                                 and pl.memberId   = :memberId),
-                                             case when p.sellerId = :memberId then true else false end
+                                      p.id, p.title, p.content, p.price, p.sellerId,
+                                      p.status, p.category,
+                                      /* liked */
+                                      (case when sum(case when pl.memberId = :memberId then 1 else 0 end) > 0
+                                            then true else false end),
+                                      /* likeCount */
+                                      count(distinct pl.id),
+                                      /* seller */
+                                      (case when p.sellerId = :memberId then true else false end)
                                     )
                                     from Product p
-                                    where p.id = :productId and p.deletedAt is null
+                                    left join ProductLike pl
+                                      on pl.product = p
+                                    where p.id = :productId
+                                      and p.deletedAt is null
+                                    group by p.id, p.title, p.content, p.price, p.sellerId, p.status, p.category
                                     """,
                             ProductCoreProjection.class
                     )
@@ -67,8 +72,9 @@ public class ProductReadRepository {
                 .price(core.getPrice())
                 .status(core.getStatus().getLabel())
                 .category(core.getCategory().getLabel())
-                .isLiked(core.isLiked())
-                .isSeller(core.isSeller())
+                .liked(core.isLiked())
+                .likeCount(core.getLikeCount())
+                .seller(core.isSeller())
                 .images(images)
                 .build();
 

@@ -75,7 +75,8 @@ message ProductResponse {
   string status = 8;
   bool seller = 9;
   bool liked = 10;
-  repeated ProductImageResponse images = 11;
+  int64 like_count = 11;
+  repeated ProductImageResponse images = 12;
 }
 message ProductImageResponse {
   int64 product_image_id = 1;

@@ -16,5 +16,6 @@ public class ProductCoreProjection {
     private Status status;
     private Category category;
     private boolean liked;
+    private Long likeCount;
     private boolean seller;
 }
