@@ -15,6 +15,7 @@ public class ProductResponseDTO {
     private Long productId;
     private Long sellerId;
     private String sellerNickname;
+    private String createdAt;
     private String title;
     private String content;
     private Long price;

@@ -5,6 +5,8 @@ import hanium.product_service.domain.Status;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @AllArgsConstructor
 public class ProductCoreProjection {
@@ -15,6 +17,7 @@ public class ProductCoreProjection {
     private Long sellerId;
     private Status status;
     private Category category;
+    private LocalDateTime createdAt;
     private boolean liked;
     private Long likeCount;
     private boolean seller;

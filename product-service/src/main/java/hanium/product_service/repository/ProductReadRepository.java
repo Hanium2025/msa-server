@@ -9,6 +9,7 @@ import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +28,7 @@ public class ProductReadRepository {
             core = em.createQuery("""
                                     select new hanium.product_service.repository.projection.ProductCoreProjection(
                                       p.id, p.title, p.content, p.price, p.sellerId,
-                                      p.status, p.category,
+                                      p.status, p.category, p.createdAt,
                                       /* liked */
                                       (case when sum(case when pl.memberId = :memberId then 1 else 0 end) > 0
                                             then true else false end),
@@ -41,7 +42,7 @@ public class ProductReadRepository {
                                       on pl.product = p
                                     where p.id = :productId
                                       and p.deletedAt is null
-                                    group by p.id, p.title, p.content, p.price, p.sellerId, p.status, p.category
+                                    group by p.id, p.title, p.content, p.price, p.sellerId, p.status, p.category, p.createdAt
                                     """,
                             ProductCoreProjection.class
                     )
@@ -63,10 +64,13 @@ public class ProductReadRepository {
                 .setParameter("productId", productId)
                 .getResultList();
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd");
+
         // 응답 반환
         ProductResponseDTO response = ProductResponseDTO.builder()
                 .productId(core.getId())
                 .sellerId(core.getSellerId())
+                .createdAt(core.getCreatedAt().format(formatter))
                 .title(core.getTitle())
                 .content(core.getContent())
                 .price(core.getPrice())
