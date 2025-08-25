@@ -1,5 +1,6 @@
 package hanium.product_service.repository;
 
+import hanium.product_service.domain.Category;
 import hanium.product_service.domain.Product;
 import hanium.product_service.repository.projection.ProductIdCategory;
 import hanium.product_service.repository.projection.ProductWithFirstImage;
@@ -79,5 +80,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                          @Param("title") String title,
                          @Param("content") String content,
                          @Param("price") Long price,
-                         @Param("category") String category);
+                         @Param("category") Category category);
 }

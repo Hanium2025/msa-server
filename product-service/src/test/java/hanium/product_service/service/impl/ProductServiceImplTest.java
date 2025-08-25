@@ -154,7 +154,7 @@ class ProductServiceImplTest {
                     .thenAnswer(inv -> mock(ProductImage.class));
 
             given(productReadRepository.findById(34L, 12L)).willReturn(Optional.of(res));
-            given(profileGrpcClient.getNicknameByMemberId(12L)).willReturn("피키");
+            given(profileGrpcClient.getNicknameByMemberId(res.getSellerId())).willReturn("피키");
 
             // when
             ProductResponseDTO result = sut.registerProduct(req);
@@ -164,7 +164,7 @@ class ProductServiceImplTest {
             then(productRepository).should().save(product);
             then(productImageRepository).should(times(2)).save(any(ProductImage.class));
             then(productSearchIndexer).should().index(product);
-            then(profileGrpcClient).should().getNicknameByMemberId(12L);
+            then(profileGrpcClient).should().getNicknameByMemberId(res.getSellerId());
             then(res).should().updateSellerNickname("피키");
         }
     }
@@ -176,7 +176,7 @@ class ProductServiceImplTest {
         Long memberId = 1L, productId = 2L;
         ProductResponseDTO dto = mock(ProductResponseDTO.class);
         given(productReadRepository.findById(productId, memberId)).willReturn(Optional.of(dto));
-        given(profileGrpcClient.getNicknameByMemberId(memberId)).willReturn("피키");
+        given(profileGrpcClient.getNicknameByMemberId(dto.getSellerId())).willReturn("피키");
 
         // when
         ProductResponseDTO result = sut.getProductById(memberId, productId);
@@ -205,7 +205,7 @@ class ProductServiceImplTest {
         Long memberId = 1L, productId = 2L;
         ProductResponseDTO dto = mock(ProductResponseDTO.class);
         given(productReadRepository.findById(productId, memberId)).willReturn(Optional.of(dto));
-        given(profileGrpcClient.getNicknameByMemberId(memberId)).willReturn("피키");
+        given(profileGrpcClient.getNicknameByMemberId(dto.getSellerId())).willReturn("피키");
 
         // when
         ProductResponseDTO result = sut.getProductAndViewLog(memberId, productId);
@@ -231,7 +231,7 @@ class ProductServiceImplTest {
 
         // when
         given(productRepository.updateFieldsById(
-                anyLong(), any(), any(), any(), anyString())
+                anyLong(), any(), any(), any(), any())
         ).willReturn(0);
 
         // then
@@ -256,7 +256,7 @@ class ProductServiceImplTest {
                 .build();
 
         given(productRepository.updateFieldsById(
-                dto.getProductId(), dto.getTitle(), dto.getContent(), dto.getPrice(), dto.getCategory().toString()
+                dto.getProductId(), dto.getTitle(), dto.getContent(), dto.getPrice(), dto.getCategory()
         )).willReturn(3);
 
         Product productRef = mock(Product.class);
@@ -264,7 +264,7 @@ class ProductServiceImplTest {
 
         ProductResponseDTO res = mock(ProductResponseDTO.class);
         given(productReadRepository.findById(1L, 1L)).willReturn(Optional.of(res));
-        given(profileGrpcClient.getNicknameByMemberId(1L)).willReturn("피키");
+        given(profileGrpcClient.getNicknameByMemberId(res.getSellerId())).willReturn("피키");
 
         try (MockedStatic<ProductImage> imageOf = Mockito.mockStatic(ProductImage.class)) {
             imageOf.when(() -> ProductImage.of(eq(productRef), anyString()))

@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -82,6 +83,8 @@ public class ProductServiceImpl implements ProductService {
         // ProductDocument 등록
         productSearchIndexer.index(product);
 
+        log.info("✅ Product [{}: {}] has been registered successfully", product.getId(), product.getTitle());
+
         return getProductById(dto.getSellerId(), product.getId());
     }
 
@@ -93,11 +96,12 @@ public class ProductServiceImpl implements ProductService {
      * @return 상품 정보 dto
      */
     @Override
-    @Transactional
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
     public ProductResponseDTO getProductById(Long memberId, Long productId) {
+        log.info("✅ Getting info for product id={}...", productId);
         ProductResponseDTO dto = productReadRepository.findById(productId, memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-        String sellerNickname = profileGrpcClient.getNicknameByMemberId(memberId);
+        String sellerNickname = profileGrpcClient.getNicknameByMemberId(dto.getSellerId());
         dto.updateSellerNickname(sellerNickname);
         return dto;
     }
@@ -133,7 +137,7 @@ public class ProductServiceImpl implements ProductService {
                 dto.getTitle(),
                 dto.getContent(),
                 dto.getPrice(),
-                dto.getCategory().toString()
+                dto.getCategory()
         );
         if (updatedFields == 0) {
             throw new CustomException(ErrorCode.PRODUCT_NOT_FOUND);
@@ -167,7 +171,7 @@ public class ProductServiceImpl implements ProductService {
         }
         // 삭제 처리
         for (ProductImage image : productImageRepository.findByProductAndDeletedAtIsNull(product)) {
-            if (!dto.getLeftImageIds().contains(image.getId())) {
+            if (!(dto.getLeftImageIds().contains(image.getId()))) {
                 image.softDelete();
             }
         }
