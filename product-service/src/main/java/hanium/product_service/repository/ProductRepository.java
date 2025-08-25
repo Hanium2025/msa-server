@@ -21,7 +21,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("""
             select p.id as id, p.category as category
             from Product p
-            where p.id in :ids and p.deletedAt is null
+            where p.id in :ids
+              and p.deletedAt is null
             """)
     List<ProductIdCategory> findIdAndCategoryByIdIn(@Param("ids") Collection<Long> ids);
 

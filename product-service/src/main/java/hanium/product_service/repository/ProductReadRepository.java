@@ -47,8 +47,6 @@ public class ProductReadRepository {
             return Optional.empty();
         }
 
-        log.info("✅ Product core checked: {}", core.getTitle());
-
         // 상품 + 이미지목록
         List<ProductImageDTO> images = em.createQuery("""
                                 select new hanium.product_service.dto.response.ProductImageDTO(i.id, i.imageUrl)
@@ -59,8 +57,6 @@ public class ProductReadRepository {
                         ProductImageDTO.class)
                 .setParameter("productId", productId)
                 .getResultList();
-
-        log.info("✅ Product image checked: {}", images);
 
         // 응답 반환
         ProductResponseDTO response = ProductResponseDTO.builder()
@@ -76,7 +72,6 @@ public class ProductReadRepository {
                 .images(images)
                 .build();
 
-        log.info("✅ ProductResponseDTO built: {}", response);
         return Optional.of(response);
     }
 }

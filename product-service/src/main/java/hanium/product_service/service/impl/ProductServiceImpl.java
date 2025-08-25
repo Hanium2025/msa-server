@@ -31,8 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -83,7 +81,7 @@ public class ProductServiceImpl implements ProductService {
         // ProductDocument 등록
         productSearchIndexer.index(product);
 
-        log.info("✅ Product [{}: {}] has been registered successfully", product.getId(), product.getTitle());
+        log.info("✅ 상품 [{}: {}] 저장됨", product.getId(), product.getTitle());
 
         return getProductById(dto.getSellerId(), product.getId());
     }
@@ -98,7 +96,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
     public ProductResponseDTO getProductById(Long memberId, Long productId) {
-        log.info("✅ Getting info for product id={}...", productId);
+        log.info("✅ Product id={} 상품 정보 불러오는 중...", productId);
         ProductResponseDTO dto = productReadRepository.findById(productId, memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
         String sellerNickname = profileGrpcClient.getNicknameByMemberId(dto.getSellerId());
@@ -231,26 +229,22 @@ public class ProductServiceImpl implements ProductService {
         if (recentProductIds.isEmpty()) {
             return new ArrayList<>();
         }
-        // 최근 조회한 상품 id 목록으로 {id, Category} 목록 조회
+
+        // 최근 조회한 상품 id 목록을 통해 {id, Category} 목록 조회
         List<ProductIdCategory> rows = productRepository.findIdAndCategoryByIdIn(recentProductIds);
-        Map<Long, Category> idToCategory = rows.stream().collect(
-                Collectors.toMap(ProductIdCategory::getId, ProductIdCategory::getCategory));
+
         // {id, Category} 목록에서 중복 제거한 Category만 result로 담기
         boolean[] seen = new boolean[Category.values().length];
         List<ProductMainDTO.MainCategoriesDTO> result = new ArrayList<>();
-        for (Long productId : recentProductIds) {
-            Category c = idToCategory.get(productId);
+        for (ProductIdCategory idCategory : rows) {
+            Category c = idCategory.getCategory();
             int idx = c.getIndex();
             if (!seen[idx]) {
                 seen[idx] = true;
                 result.add(getProductCategories(c));
             }
         }
-        if (result.size() > 4) {
-            return result.subList(0, 4);
-        } else {
-            return result;
-        }
+        return (result.size() > 4) ? result.subList(0, 4) : result;
     }
 
     /**

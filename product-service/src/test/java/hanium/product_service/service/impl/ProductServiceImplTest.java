@@ -102,9 +102,7 @@ class ProductServiceImplTest {
         Category c2 = categories[1];
         ProductIdCategory ic1 = mock(ProductIdCategory.class);
         ProductIdCategory ic2 = mock(ProductIdCategory.class);
-        given(ic1.getId()).willReturn(10L);
         given(ic1.getCategory()).willReturn(c1);
-        given(ic2.getId()).willReturn(11L);
         given(ic2.getCategory()).willReturn(c2);
         given(productRepository.findIdAndCategoryByIdIn(recentViewedProductIds)).willReturn(List.of(ic1, ic2));
 
