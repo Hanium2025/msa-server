@@ -17,6 +17,8 @@ public class ProductResponseDTO {
     private Long productId;
     private Long sellerId;
     private String sellerNickname;
+    private String sellerImageUrl;
+    private String createdAt;
     private String title;
     private String content;
     private Long price;
@@ -32,6 +34,8 @@ public class ProductResponseDTO {
                 .productId(productResponse.getProductId())
                 .sellerId(productResponse.getSellerId())
                 .sellerNickname(productResponse.getSellerNickname())
+                .sellerImageUrl(productResponse.getSellerProfileImg())
+                .createdAt(productResponse.getCreatedAt())
                 .title(productResponse.getTitle())
                 .content(productResponse.getContent())
                 .price(productResponse.getPrice())

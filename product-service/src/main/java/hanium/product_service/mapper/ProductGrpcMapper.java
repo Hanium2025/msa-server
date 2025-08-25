@@ -13,6 +13,7 @@ public class ProductGrpcMapper {
                 .setProductId(dto.getProductId())
                 .setSellerId(dto.getSellerId())
                 .setSellerNickname(dto.getSellerNickname())
+                .setCreatedAt(dto.getCreatedAt())
                 .setTitle(dto.getTitle())
                 .setContent(dto.getContent())
                 .setPrice(dto.getPrice())

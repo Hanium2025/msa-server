@@ -10,6 +10,7 @@ import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
+import hanium.product_service.dto.response.ProfileResponseDTO;
 import hanium.product_service.dto.response.SimpleProductDTO;
 import hanium.product_service.elasticsearch.ProductSearchIndexer;
 import hanium.product_service.grpc.ProfileGrpcClient;
@@ -101,8 +102,8 @@ public class ProductServiceImpl implements ProductService {
         log.info("✅ Product id={} 상품 정보 불러오는 중...", productId);
         ProductResponseDTO dto = productReadRepository.findById(productId, memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-        String sellerNickname = profileGrpcClient.getNicknameByMemberId(dto.getSellerId());
-        dto.updateSellerNickname(sellerNickname);
+        ProfileResponseDTO sellerProfile = profileGrpcClient.getProfileByMemberId(dto.getSellerId());
+        dto.updateSellerProfile(sellerProfile);
         return dto;
     }
 

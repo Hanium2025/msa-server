@@ -9,6 +9,7 @@ import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
+import hanium.product_service.dto.response.ProfileResponseDTO;
 import hanium.product_service.dto.response.SimpleProductDTO;
 import hanium.product_service.elasticsearch.ProductSearchIndexer;
 import hanium.product_service.grpc.ProfileGrpcClient;
@@ -140,6 +141,7 @@ class ProductServiceImplTest {
         // given
         RegisterProductRequestDTO req = mock(RegisterProductRequestDTO.class);
         ProductResponseDTO res = mock(ProductResponseDTO.class);
+        ProfileResponseDTO profile = mock(ProfileResponseDTO.class);
         Product product = mock(Product.class);
 
         given(req.getImageUrls()).willReturn(List.of("u1", "u2"));
@@ -154,7 +156,7 @@ class ProductServiceImplTest {
                     .thenAnswer(inv -> mock(ProductImage.class));
 
             given(productReadRepository.findById(34L, 12L)).willReturn(Optional.of(res));
-            given(profileGrpcClient.getNicknameByMemberId(res.getSellerId())).willReturn("피키");
+            given(profileGrpcClient.getProfileByMemberId(res.getSellerId())).willReturn(profile);
 
             // when
             ProductResponseDTO result = sut.registerProduct(req);
@@ -164,8 +166,8 @@ class ProductServiceImplTest {
             then(productRepository).should().save(product);
             then(productImageRepository).should(times(2)).save(any(ProductImage.class));
             then(productSearchIndexer).should().index(product);
-            then(profileGrpcClient).should().getNicknameByMemberId(res.getSellerId());
-            then(res).should().updateSellerNickname("피키");
+            then(profileGrpcClient).should().getProfileByMemberId(res.getSellerId());
+            then(res).should().updateSellerProfile(profile);
         }
     }
 
@@ -175,15 +177,17 @@ class ProductServiceImplTest {
         // given
         Long memberId = 1L, productId = 2L;
         ProductResponseDTO dto = mock(ProductResponseDTO.class);
+        ProfileResponseDTO profile = mock(ProfileResponseDTO.class);
         given(productReadRepository.findById(productId, memberId)).willReturn(Optional.of(dto));
-        given(profileGrpcClient.getNicknameByMemberId(dto.getSellerId())).willReturn("피키");
+        given(profileGrpcClient.getProfileByMemberId(dto.getSellerId())).willReturn(profile);
 
         // when
         ProductResponseDTO result = sut.getProductById(memberId, productId);
 
         // then
         assertThat(result).isSameAs(dto);
-        then(dto).should().updateSellerNickname("피키");
+        then(profileGrpcClient).should().getProfileByMemberId(dto.getSellerId());
+        then(dto).should().updateSellerProfile(profile);
     }
 
     @Test
@@ -204,14 +208,17 @@ class ProductServiceImplTest {
         // given
         Long memberId = 1L, productId = 2L;
         ProductResponseDTO dto = mock(ProductResponseDTO.class);
+        ProfileResponseDTO profile = mock(ProfileResponseDTO.class);
         given(productReadRepository.findById(productId, memberId)).willReturn(Optional.of(dto));
-        given(profileGrpcClient.getNicknameByMemberId(dto.getSellerId())).willReturn("피키");
+        given(profileGrpcClient.getProfileByMemberId(dto.getSellerId())).willReturn(profile);
 
         // when
         ProductResponseDTO result = sut.getProductAndViewLog(memberId, productId);
 
         // then
         assertThat(result).isSameAs(dto);
+        then(profileGrpcClient).should().getProfileByMemberId(dto.getSellerId());
+        then(dto).should().updateSellerProfile(profile);
         then(recentViewRepository).should().add(memberId, productId);
     }
 
@@ -225,7 +232,7 @@ class ProductServiceImplTest {
                 .title("t")
                 .content("c")
                 .price(1000L)
-                .category(Category.BEAUTY)
+                .category(Category.LIVING)
                 .imageUrls(List.of("u1", "u2"))
                 .build();
 
@@ -251,7 +258,7 @@ class ProductServiceImplTest {
                 .title("t")
                 .content("c")
                 .price(1000L)
-                .category(Category.BEAUTY)
+                .category(Category.LIVING)
                 .imageUrls(List.of("u1", "u2"))
                 .build();
 
@@ -263,8 +270,9 @@ class ProductServiceImplTest {
         given(em.getReference(Product.class, 1L)).willReturn(productRef);
 
         ProductResponseDTO res = mock(ProductResponseDTO.class);
+        ProfileResponseDTO profile = mock(ProfileResponseDTO.class);
         given(productReadRepository.findById(1L, 1L)).willReturn(Optional.of(res));
-        given(profileGrpcClient.getNicknameByMemberId(res.getSellerId())).willReturn("피키");
+        given(profileGrpcClient.getProfileByMemberId(res.getSellerId())).willReturn(profile);
 
         try (MockedStatic<ProductImage> imageOf = Mockito.mockStatic(ProductImage.class)) {
             imageOf.when(() -> ProductImage.of(eq(productRef), anyString()))
@@ -277,7 +285,8 @@ class ProductServiceImplTest {
             assertThat(result).isSameAs(res);
             then(productImageRepository).should(times(2)).save(any(ProductImage.class));
             then(productSearchIndexer).should().index(productRef);
-            then(res).should().updateSellerNickname("피키");
+            then(profileGrpcClient).should().getProfileByMemberId(res.getSellerId());
+            then(res).should().updateSellerProfile(profile);
         }
     }
 

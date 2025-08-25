@@ -15,6 +15,7 @@ public class ProductResponseDTO {
     private Long productId;
     private Long sellerId;
     private String sellerNickname;
+    private String sellerProfileImg;
     private String createdAt;
     private String title;
     private String content;
@@ -26,7 +27,8 @@ public class ProductResponseDTO {
     private Long likeCount;
     private List<ProductImageDTO> images;
 
-    public void updateSellerNickname(String sellerNickname) {
-        this.sellerNickname = sellerNickname;
+    public void updateSellerProfile(ProfileResponseDTO sellerProfile) {
+        this.sellerNickname = sellerProfile.getNickname();
+        this.sellerProfileImg = sellerProfile.getProfileImageUrl();
     }
 }
