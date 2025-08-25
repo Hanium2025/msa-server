@@ -41,5 +41,8 @@ public class ProductResponseDTO {
                 .isLiked(liked)
                 .build();
     }
-}
 
+    public void updateSellerNickname(String sellerNickname) {
+        this.sellerNickname = sellerNickname;
+    }
+}

@@ -27,7 +27,7 @@ public class ProductGrpcMapper {
 
     private static ProductImageResponse toProductImageGrpc(ProductImageDTO dto) {
         return ProductImageResponse.newBuilder()
-                .setProductImageId(dto.getProductImageId())
+                .setProductImageId(dto.getId())
                 .setImageUrl(dto.getImageUrl())
                 .build();
     }

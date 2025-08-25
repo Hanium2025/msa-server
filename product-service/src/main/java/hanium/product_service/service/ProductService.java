@@ -1,6 +1,5 @@
 package hanium.product_service.service;
 
-import hanium.product_service.domain.Product;
 import hanium.product_service.dto.request.DeleteImageRequestDTO;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
@@ -13,9 +12,9 @@ public interface ProductService {
 
     ProductResponseDTO registerProduct(RegisterProductRequestDTO dto);
 
-    Product getProductById(Long id);
-
     ProductResponseDTO getProductById(Long memberId, Long productId);
+
+    ProductResponseDTO getProductAndViewLog(Long memberId, Long productId);
 
     ProductResponseDTO updateProduct(UpdateProductRequestDTO dto);
 
