@@ -2,11 +2,10 @@ package hanium.product_service.repository;
 
 import hanium.product_service.domain.Product;
 import hanium.product_service.repository.projection.ProductIdCategory;
-import jakarta.persistence.QueryHint;
-import org.hibernate.jpa.AvailableHints;
+import hanium.product_service.repository.projection.ProductWithFirstImage;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
@@ -24,6 +23,44 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             """)
     List<ProductIdCategory> findIdAndCategoryByIdIn(@Param("ids") Collection<Long> ids);
 
-    @QueryHints(@QueryHint(name = AvailableHints.HINT_READ_ONLY, value = "true"))
-    List<Product> findTop6ByOrderByCreatedAtDescIdDesc();
+    @Query("""
+            select
+                product.id as productId,
+                product.title as title,
+                product.price as price,
+                singleImage.imageUrl as imageUrl
+            from Product product
+            left join ProductImage singleImage
+                on singleImage.product = product
+               and singleImage.deletedAt is null
+               and singleImage.id = (
+                    select min(allImages.id)
+                    from ProductImage allImages
+                    where allImages.product = product
+                      and allImages.deletedAt is null
+               )
+            where product.deletedAt is null
+            order by product.createdAt desc, product.id desc
+            """)
+    List<ProductWithFirstImage> findRecentWithFirstImage(Pageable pageable);
+
+    @Query("""
+            select
+                product.id as productId,
+                product.title as title,
+                product.price as price,
+                singleImage.imageUrl as imageUrl
+            from Product product
+            left join ProductImage singleImage
+                on singleImage.product = product
+               and singleImage.deletedAt is null
+               and singleImage.id = (
+                    select min(allImages.id)
+                    from ProductImage allImages
+                    where allImages.product = product
+                      and allImages.deletedAt is null
+               )
+            where product.id in :ids and product.deletedAt is null
+            """)
+    List<ProductWithFirstImage> findProductWithFirstImageByIds(@Param("ids") Collection<Long> ids);
 }

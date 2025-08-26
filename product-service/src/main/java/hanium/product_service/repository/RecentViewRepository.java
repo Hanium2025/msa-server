@@ -51,6 +51,7 @@ public class RecentViewRepository {
             if (size != null && size > 50) {
                 // 오래된(점수 낮은) 것부터 제거
                 zSet.removeRange(0, size - 50 - 1);
+                log.info("❎ 오래된 기록 삭제됨");
             }
         }
         log.info("✅ 상품 조회 기록 완료: memberId={}, productId={}, score={}", memberId, productId, score);

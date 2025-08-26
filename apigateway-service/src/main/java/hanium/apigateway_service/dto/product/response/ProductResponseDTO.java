@@ -16,17 +16,21 @@ import java.util.stream.Collectors;
 public class ProductResponseDTO {
     private Long productId;
     private Long sellerId;
+    private String sellerNickname;
     private String title;
     private String content;
     private Long price;
     private String category;
     private String status;
+    private boolean seller;
+    private boolean liked;
     private List<ProductImageResponseDTO> images;
 
     public static ProductResponseDTO from(ProductResponse productResponse) {
         return ProductResponseDTO.builder()
                 .productId(productResponse.getProductId())
                 .sellerId(productResponse.getSellerId())
+                .sellerNickname(productResponse.getSellerNickname())
                 .title(productResponse.getTitle())
                 .content(productResponse.getContent())
                 .price(productResponse.getPrice())
@@ -34,6 +38,8 @@ public class ProductResponseDTO {
                 .status(productResponse.getStatus())
                 .images(productResponse.getImagesList().stream().map(
                         ProductImageResponseDTO::from).collect(Collectors.toList()))
+                .seller(productResponse.getSeller())
+                .liked(productResponse.getLiked())
                 .build();
     }
 }

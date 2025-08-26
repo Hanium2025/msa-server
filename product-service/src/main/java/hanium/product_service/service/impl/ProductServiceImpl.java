@@ -11,14 +11,20 @@ import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductImageDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
+import hanium.product_service.dto.response.SimpleProductDTO;
+import hanium.product_service.elasticsearch.ProductSearchIndexer;
+import hanium.product_service.grpc.ProfileGrpcClient;
 import hanium.product_service.repository.ProductImageRepository;
+import hanium.product_service.repository.ProductLikeRepository;
 import hanium.product_service.repository.ProductRepository;
 import hanium.product_service.repository.RecentViewRepository;
 import hanium.product_service.repository.projection.ProductIdCategory;
+import hanium.product_service.repository.projection.ProductWithFirstImage;
 import hanium.product_service.service.ProductService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -35,6 +41,9 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
     private final RecentViewRepository recentViewRepository;
+    private final ProfileGrpcClient profileGrpcClient;
+    private final ProductLikeRepository productLikeRepository;
+    private final ProductSearchIndexer productSearchIndexer;
 
     /**
      * 상품 메인 페이지 화면을 조회합니다.
@@ -67,7 +76,12 @@ public class ProductServiceImpl implements ProductService {
             productImageRepository.save(productImage);
             images.add(ProductImageDTO.from(productImage));
         }
-        return ProductResponseDTO.of(product, images);
+        String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
+
+        // ProductDocument 등록
+        productSearchIndexer.index(product);
+
+        return ProductResponseDTO.of(sellerNickname, product, images, true, false);
     }
 
     /**
@@ -77,10 +91,9 @@ public class ProductServiceImpl implements ProductService {
      * @return 상품 정보 dto
      */
     @Override
-    public ProductResponseDTO getProductById(Long id) {
-        Product product = productRepository.findByIdAndDeletedAtIsNull(id)
+    public Product getProductById(Long id) {
+        return productRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
-        return ProductResponseDTO.of(product, getProductImages(product));
     }
 
     /**
@@ -94,10 +107,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponseDTO getProductById(Long memberId, Long productId) {
-        ProductResponseDTO dto = getProductById(productId);
+        Product product = getProductById(productId);
+        String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
+        boolean isSeller = product.getSellerId().equals(memberId);
+        boolean liked = productLikeRepository.existsByProductIdAndMemberId(productId, memberId);
         try {
             recentViewRepository.add(memberId, productId);
-            return dto;
+            return ProductResponseDTO.of(sellerNickname, product, getProductImages(product), isSeller, liked);
         } catch (Exception e) {
             throw new CustomException(ErrorCode.RECENT_VIEW_SERVER_ERROR);
         }
@@ -123,7 +139,12 @@ public class ProductServiceImpl implements ProductService {
             ProductImage productImage = ProductImage.of(product, imageUrl);
             productImageRepository.save(productImage);
         }
-        return ProductResponseDTO.of(product, getProductImages(product));
+        String sellerNickname = profileGrpcClient.getNicknameByMemberId(product.getSellerId());
+
+        // ProductDocument 수정
+        productSearchIndexer.index(product);
+
+        return ProductResponseDTO.of(sellerNickname, product, getProductImages(product), true, false);
     }
 
     /**
@@ -148,6 +169,7 @@ public class ProductServiceImpl implements ProductService {
                 productImageRepository.save(image);
             }
         }
+
         return dto.getLeftImageIds().size();
     }
 
@@ -173,6 +195,8 @@ public class ProductServiceImpl implements ProductService {
             image.setDeletedAt(LocalDateTime.now());
             productImageRepository.save(image);
         }
+
+        productSearchIndexer.remove(productId);
     }
 
     /**
@@ -192,24 +216,15 @@ public class ProductServiceImpl implements ProductService {
      *
      * @return 최근 등록 게시글 리스트
      */
-    public List<ProductMainDTO.MainProductsDTO> getRecentProducts() {
-        List<Product> productList = productRepository.findTop6ByOrderByCreatedAtDescIdDesc();
-        List<ProductMainDTO.MainProductsDTO> result = new ArrayList<>();
-        for (Product product : productList) {
-            List<ProductImage> imageUrls = productImageRepository.findByProductAndDeletedAtIsNull(product);
-            String imageUrl;
-            if (imageUrls.isEmpty()) {
-                imageUrl = "";
-            } else {
-                imageUrl = imageUrls.getFirst().getImageUrl();
-            }
-            result.add(ProductMainDTO.MainProductsDTO.from(product, imageUrl));
-        }
-        if (result.size() > 6) {
-            return result.subList(0, 5);
-        } else {
-            return result;
-        }
+    private List<SimpleProductDTO> getRecentProducts() {
+        // 최근 6개만
+        PageRequest pageRequest = PageRequest.of(0, 6);
+        List<ProductWithFirstImage> products =
+                productRepository.findRecentWithFirstImage(pageRequest);
+        // imageUrl이 null일 경우 빈 문자열로
+        return products.stream()
+                .map(SimpleProductDTO::from)
+                .toList();
     }
 
     /**
@@ -218,7 +233,7 @@ public class ProductServiceImpl implements ProductService {
      * @param memberId 사용자 id
      * @return 최근 조회한 카테고리 목록, 4개, 형식: {이름, 아이콘 이미지 경로}
      */
-    public List<ProductMainDTO.MainCategoriesDTO> getRecentCategories(Long memberId) {
+    private List<ProductMainDTO.MainCategoriesDTO> getRecentCategories(Long memberId) {
         // 최근 조회한 상품 id 목록 조회
         List<Long> recentProductIds = recentViewRepository.getRecentProductIds(memberId);
         if (recentProductIds.isEmpty()) {
@@ -236,28 +251,30 @@ public class ProductServiceImpl implements ProductService {
             int idx = c.getIndex();
             if (!seen[idx]) {
                 seen[idx] = true;
-                result.add(getProductCategories(c.name()));
+                result.add(getProductCategories(c));
             }
         }
         if (result.size() > 4) {
-            return result.subList(0, 3);
+            return result.subList(0, 4);
         } else {
             return result;
         }
     }
 
     /**
-     * 카테고리 Enum 문자열로, Enum 및 실제 s3 저장경로를 포함해 반환합니다.
+     * 카테고리 Enum을 통해 한글 라벨 및 s3 저장경로를 포함해 반환합니다.
      *
-     * @param key Enum 명
+     * @param category 카테고리
      * @return {name, imageUrl}
      */
-    private ProductMainDTO.MainCategoriesDTO getProductCategories(String key) {
+    private ProductMainDTO.MainCategoriesDTO getProductCategories(Category category) {
         String baseUrl = "https://msa-image-bucket.s3.ap-northeast-2.amazonaws.com/product_category/";
-        String imageUrl = baseUrl + key + ".png";
+        String imageUrl = baseUrl + category.name() + ".png";
         return ProductMainDTO.MainCategoriesDTO.builder()
-                .name(key)
+                .name(category.getLabel())
                 .imageUrl(imageUrl)
                 .build();
     }
+
+
 }
