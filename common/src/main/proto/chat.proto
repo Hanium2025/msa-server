@@ -32,6 +32,7 @@ message ChatResponseMessage {
   int64 messageId = 6;
   MessageType type = 7;
   repeated string imageUrls = 8;
+  string receiverNickname = 9;
 }
 
 enum MessageType{

@@ -26,6 +26,7 @@ public class ChatMessageResponseDTO {
     private boolean mine;     // 프론트에서 보낸 사용자 입장 기준
     private String type;
     private List<String> imageUrl; //0~3개의 이미지 URL
+    private String receiverNickname; //상대방 닉네임
 
     //응답 받은 grpc 응답 값을 dto로 변환
     public static List<ChatMessageResponseDTO> from (Chat.GetAllMessagesByChatroomResponse response){
@@ -39,6 +40,7 @@ public class ChatMessageResponseDTO {
                         .timestamp(i.getTimestamp())
                         .type(i.getType().name())
                         .imageUrl(i.getImageUrlsList())
+                        .receiverNickname(i.getReceiverNickname())
                         .build())
                 .toList();
     }

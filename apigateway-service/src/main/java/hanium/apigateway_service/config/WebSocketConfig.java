@@ -26,7 +26,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
         log.info("✅ WebSocket 핸들러 등록됨");
         registry.addHandler(chatWebSocketHandler, "/ws/chat")
                 .addInterceptors(new JwtHandshakeInterceptor(jwtUtil))
-                .setAllowedOrigins("*");
+                .setAllowedOriginPatterns("*");
     }
 }
 

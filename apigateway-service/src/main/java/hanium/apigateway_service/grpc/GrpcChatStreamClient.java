@@ -31,6 +31,7 @@ public class GrpcChatStreamClient {
     // 사용자 세션 등록
     public void registerSession(String userId, WebSocketSession session) {
         sessionMap.put(userId, session);
+        log.info("Session등록 userID : {} ", userId);
         if (requestObserver == null) startStream();
     }
 

@@ -22,6 +22,7 @@ import java.util.List;
 public class ChattingGrpcService extends ChatServiceGrpc.ChatServiceImplBase {
     private final ChatService chatService;
     private final PresignService presign;
+    private final ProfileGrpcClient profileGrpcClient;
 
     @Override
     public StreamObserver<Chat.ChatMessage> chat(StreamObserver<Chat.ChatResponseMessage> responseObserver) {
@@ -58,6 +59,8 @@ public class ChattingGrpcService extends ChatServiceGrpc.ChatServiceImplBase {
         Chat.GetAllMessagesByChatroomResponse.Builder resp = Chat.GetAllMessagesByChatroomResponse.newBuilder();
 
         for (ChatMessageResponseDTO dto : allMessagesByChatroomId) {
+            String opponentNickname = profileGrpcClient.getNicknameByMemberId(dto.getReceiverId());
+
             Chat.ChatResponseMessage.Builder responseMessage =
                     Chat.ChatResponseMessage.newBuilder()
                             .setMessageId(dto.getMessageId())
@@ -66,6 +69,7 @@ public class ChattingGrpcService extends ChatServiceGrpc.ChatServiceImplBase {
                             .setReceiverId(dto.getReceiverId())
                             .setContent(dto.getContent())
                             .setTimestamp(dto.getTimestamp())
+                            .setReceiverNickname(opponentNickname)
                             .setType(Chat.MessageType.valueOf(dto.getType()));
 
             if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
