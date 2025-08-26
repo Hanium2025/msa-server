@@ -4,13 +4,13 @@ import lombok.Getter;
 
 @Getter
 public enum Category {
-    ELECTRONICS(0, "IT, 전자제품"),
-    FURNITURE(1, "가구, 인테리어"),
-    CLOTHES(2, "옷, 잡화, 장신구"),
-    BOOK(3, "도서, 학습 용품"),
-    BEAUTY(4, "헤어, 뷰티, 화장품"),
-    FOOD(5, "음식, 식료품"),
-    ETC(6, "기타");
+    TRAVEL(0, "이동·안전장비"),
+    FEEDING(1, "식사·수유·위생 가전"),
+    SLEEP(2, "수면·안전"),
+    PLAY(3, "놀이·교육"),
+    LIVING(4, "리빙·가구"),
+    APPAREL(5, "의류·잡화"),
+    OTHER(6, "기타");
 
     private final int index;
     private final String label;

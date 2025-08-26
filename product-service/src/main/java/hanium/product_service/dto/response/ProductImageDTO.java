@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductImageDTO {
-    private Long productImageId;
+    private Long id;
     private String imageUrl;
 
     public static ProductImageDTO from(ProductImage productImage) {
         return ProductImageDTO.builder()
-                .productImageId(productImage.getId())
+                .id(productImage.getId())
                 .imageUrl(productImage.getImageUrl())
                 .build();
     }

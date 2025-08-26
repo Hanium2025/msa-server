@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class UpdateProductRequestDTO {
 
+    private Long memberId;
     private Long productId;
     private String title;
     private String content;
@@ -24,6 +25,7 @@ public class UpdateProductRequestDTO {
 
     public static UpdateProductRequestDTO from(UpdateProductRequest request) {
         return UpdateProductRequestDTO.builder()
+                .memberId(request.getMemberId())
                 .productId(request.getProductId())
                 .title(request.getTitle())
                 .content(request.getContent())

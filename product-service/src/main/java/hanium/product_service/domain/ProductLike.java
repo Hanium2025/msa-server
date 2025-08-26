@@ -11,10 +11,10 @@ import lombok.*;
 @Table(
         name = "product_like",
         indexes = {
-                @Index(name = "idx_product_like_member_product", columnList = "member_id, product_id")
+                @Index(name = "idx_product_like_member_product", columnList = "product_id, member_id")
         },
         uniqueConstraints = {
-                @UniqueConstraint(name = "uq_product_like_member_product", columnNames = {"member_id", "product_id"})
+                @UniqueConstraint(name = "uq_product_like_member_product", columnNames = {"product_id", "member_id"})
         }
 )
 public class ProductLike {
