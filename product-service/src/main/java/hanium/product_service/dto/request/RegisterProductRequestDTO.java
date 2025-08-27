@@ -1,5 +1,7 @@
 package hanium.product_service.dto.request;
 
+import hanium.common.exception.CustomException;
+import hanium.common.exception.ErrorCode;
 import hanium.common.proto.product.RegisterProductRequest;
 import hanium.product_service.domain.Category;
 import lombok.AccessLevel;
@@ -21,13 +23,18 @@ public class RegisterProductRequestDTO {
     private List<String> imageUrls;
 
     public static RegisterProductRequestDTO from(RegisterProductRequest request) {
-        return RegisterProductRequestDTO.builder()
-                .sellerId(request.getSellerId())
-                .title(request.getTitle())
-                .content(request.getContent())
-                .price(request.getPrice())
-                .category(Category.valueOf(request.getCategory()))
-                .imageUrls(request.getImageUrlsList())
-                .build();
+        try {
+            Category category = Category.valueOf(request.getCategory());
+            return RegisterProductRequestDTO.builder()
+                    .sellerId(request.getSellerId())
+                    .title(request.getTitle())
+                    .content(request.getContent())
+                    .price(request.getPrice())
+                    .category(category)
+                    .imageUrls(request.getImageUrlsList())
+                    .build();
+        } catch (RuntimeException e) {
+            throw new CustomException(ErrorCode.UNKNOWN_PRODUCT_CATEGORY);
+        }
     }
 }

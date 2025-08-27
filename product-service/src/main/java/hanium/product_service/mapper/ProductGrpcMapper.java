@@ -85,4 +85,12 @@ public class ProductGrpcMapper {
                 )
                 .build();
     }
+
+    public static SimpleProductsResponse toSimpleProducts(List<SimpleProductDTO> dto) {
+        return SimpleProductsResponse.newBuilder()
+                .addAllProducts(dto.stream()
+                        .map(ProductGrpcMapper::toSimpleProduct)
+                        .collect(Collectors.toList()))
+                .build();
+    }
 }

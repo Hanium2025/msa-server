@@ -32,6 +32,9 @@ service ProductService {
 
   // 7. 상품 검색 요청
   rpc SearchProduct(ProductSearchRequest) returns (ProductSearchResponse);
+
+  // 8. 상품 카테고리별 보기
+  rpc GetProductByCategory(GetProductByCategoryRequest) returns (SimpleProductsResponse);
 }
 
 message Empty {}
@@ -132,4 +135,15 @@ message ProductSearchRequest {
 // 7. 상품 검색 응답
 message ProductSearchResponse {
   repeated SimpleProductResponse productList = 1;
+}
+
+// 8. 상품 카테고리별 조회 요청
+message GetProductByCategoryRequest {
+  int64 member_id = 1;
+  string category = 2;
+  string sort = 3;
+  int32 page = 4;
+}
+message SimpleProductsResponse {
+  repeated SimpleProductResponse products = 1;
 }
