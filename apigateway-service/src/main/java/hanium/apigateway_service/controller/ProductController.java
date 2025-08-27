@@ -43,7 +43,7 @@ public class ProductController {
     }
 
     // 카테고리별 조회
-    @GetMapping("/{category}")
+    @GetMapping("/category/{category}")
     public ResponseEntity<ResponseDTO<List<SimpleProductDTO>>> getProductByCategory(
             Authentication authentication,
             @PathVariable String category,
@@ -52,9 +52,9 @@ public class ProductController {
     ) {
         Long memberId = (Long) authentication.getPrincipal();
         ResponseDTO<List<SimpleProductDTO>> result = new ResponseDTO<>(
-                productGrpcClient.getProductByCategory(memberId, category, sort, page),
+                productGrpcClient.getProductByCategory(memberId, category.toUpperCase(), sort, page),
                 HttpStatus.OK,
-                "카테고리 [" + category + "]가 조회되었습니다: 페이지=" + page + ", 정렬=" + sort
+                "카테고리 [" + category + "]가 [" + sort + "]순으로 조회되었습니다."
         );
         return ResponseEntity.ok(result);
     }

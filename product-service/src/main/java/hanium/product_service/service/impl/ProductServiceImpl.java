@@ -6,6 +6,7 @@ import hanium.product_service.domain.Category;
 import hanium.product_service.domain.Product;
 import hanium.product_service.domain.ProductImage;
 import hanium.product_service.dto.request.DeleteImageRequestDTO;
+import hanium.product_service.dto.request.GetProductByCategoryRequestDTO;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
@@ -26,6 +27,7 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +65,30 @@ public class ProductServiceImpl implements ProductService {
                 .products(getRecentProducts())
                 .categories(getRecentCategories(memberId))
                 .build();
+    }
+
+    /**
+     * 상품을 카테고리별로 최신순/인기순 조회하고 20개씩 페이지네이션해 결과를 반환합니다.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<SimpleProductDTO> getProductByCategory(GetProductByCategoryRequestDTO dto) {
+
+        List<ProductWithFirstImage> list;
+        Pageable pageable = PageRequest.of(dto.getPage(), 20);
+
+        if (dto.getSort().equals("recent")) {
+            log.info("✅ 카테고리 [{}] 최신순 조회 호출하는 중...", dto.getCategory().getLabel());
+            list = productRepository.findProductByCategoryAndSortByRecent(dto.getCategory().name(), pageable);
+        } else if (dto.getSort().equals("like")) {
+            log.info("✅ 카테고리 [{}] 인기순 조회 호출하는 중...", dto.getCategory().getLabel());
+            list = productRepository.findProductByCategoryAndSortByLike(dto.getCategory().name(), pageable);
+        } else {
+            throw new CustomException(ErrorCode.UNKNOWN_SORT);
+        }
+        return list.stream()
+                .map(SimpleProductDTO::from)
+                .toList();
     }
 
     /**

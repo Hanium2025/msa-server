@@ -4,13 +4,11 @@ import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.*;
-import hanium.product_service.dto.request.DeleteImageRequestDTO;
-import hanium.product_service.dto.request.ProductSearchRequestDTO;
-import hanium.product_service.dto.request.RegisterProductRequestDTO;
-import hanium.product_service.dto.request.UpdateProductRequestDTO;
+import hanium.product_service.dto.request.*;
 import hanium.product_service.dto.response.ProductMainDTO;
 import hanium.product_service.dto.response.ProductResponseDTO;
 import hanium.product_service.dto.response.ProductSearchResponseDTO;
+import hanium.product_service.dto.response.SimpleProductDTO;
 import hanium.product_service.mapper.ProductGrpcMapper;
 import hanium.product_service.service.ProductLikeService;
 import hanium.product_service.service.ProductSearchService;
@@ -20,6 +18,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @GrpcService
 @Slf4j
@@ -37,6 +37,20 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         try {
             ProductMainDTO dto = productService.getProductMain(request.getMemberId());
             responseObserver.onNext(ProductGrpcMapper.toProductMainResponseGrpc(dto));
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 상품 카테고리별 조회
+    @Override
+    public void getProductByCategory(GetProductByCategoryRequest request,
+                                     StreamObserver<SimpleProductsResponse> responseObserver) {
+        try {
+            List<SimpleProductDTO> dto =
+                    productService.getProductByCategory(GetProductByCategoryRequestDTO.from(request));
+            responseObserver.onNext(ProductGrpcMapper.toSimpleProducts(dto));
             responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
