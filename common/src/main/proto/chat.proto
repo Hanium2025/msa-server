@@ -39,6 +39,8 @@ enum MessageType{
   TEXT = 0;
   IMAGE = 1;
   NOTICE = 3;
+  DIRECT = 4;
+  PARCEL= 5;
 }
 message PresignedUrl {
   string putUrl = 1;

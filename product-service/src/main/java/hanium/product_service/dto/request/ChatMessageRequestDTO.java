@@ -41,6 +41,8 @@ public class ChatMessageRequestDTO {
         return switch (type) {
             case IMAGE -> MessageType.IMAGE;
             case NOTICE -> MessageType.NOTICE;
+            case DIRECT -> MessageType.DIRECT;
+            case PARCEL -> MessageType.PARCEL;
             default -> MessageType.TEXT;
         };
     }
