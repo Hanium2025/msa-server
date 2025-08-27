@@ -7,8 +7,8 @@ import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
 import hanium.apigateway_service.dto.product.response.ProductMainDTO;
 import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
-import hanium.apigateway_service.dto.product.response.SimpleProductDTO;
 import hanium.apigateway_service.dto.product.response.ProductSearchResponseDTO;
+import hanium.apigateway_service.dto.product.response.SimpleProductDTO;
 import hanium.apigateway_service.grpc.ProductGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +40,23 @@ public class ProductController {
         ResponseDTO<ProductMainDTO> response = new ResponseDTO<>(
                 result, HttpStatus.OK, "메인페이지가 조회되었습니다 - 회원 ID: " + memberId);
         return ResponseEntity.ok(response);
+    }
+
+    // 카테고리별 조회
+    @GetMapping("/{category}")
+    public ResponseEntity<ResponseDTO<List<SimpleProductDTO>>> getProductByCategory(
+            Authentication authentication,
+            @PathVariable String category,
+            @RequestParam(defaultValue = "recent") String sort,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        Long memberId = (Long) authentication.getPrincipal();
+        ResponseDTO<List<SimpleProductDTO>> result = new ResponseDTO<>(
+                productGrpcClient.getProductByCategory(memberId, category, sort, page),
+                HttpStatus.OK,
+                "카테고리 [" + category + "]가 조회되었습니다: 페이지=" + page + ", 정렬=" + sort
+        );
+        return ResponseEntity.ok(result);
     }
 
     // 상품 등록
@@ -122,7 +139,7 @@ public class ProductController {
                 result, HttpStatus.OK, "상품 찜 목록이 20개씩 조회되었습니다.");
         return ResponseEntity.ok(response);
     }
-      
+
     // 상품 검색
     @GetMapping("/search")
     public ResponseEntity<ResponseDTO<ProductSearchResponseDTO>> searchProduct(

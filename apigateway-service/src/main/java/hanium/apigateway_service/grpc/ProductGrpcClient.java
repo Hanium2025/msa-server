@@ -53,6 +53,21 @@ public class ProductGrpcClient {
         }
     }
 
+    // 카테고리별 보기
+    public List<SimpleProductDTO> getProductByCategory(Long memberId, String category,
+                                                       String sort, int page) {
+        GetProductByCategoryRequest req =
+                ProductGrpcMapperForGateway.toGetProductByCategoryGrpc(memberId, category, sort, page);
+        try {
+            return stub.getProductByCategory(req).getProductsList()
+                    .stream()
+                    .map(SimpleProductDTO::from)
+                    .collect(Collectors.toList());
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
     // 상품 등록
     public ProductResponseDTO registerProduct(Long memberId,
                                               RegisterProductRequestDTO dto,
