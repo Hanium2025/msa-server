@@ -34,6 +34,7 @@ public class Chatroom extends BaseEntity{
                 .productId(dto.getProductId())
                 .senderId(dto.getSenderId())
                 .receiverId(dto.getReceiverId())
+                .latestContentTime(LocalDateTime.now())
                 .roomName(roomName)
                 .build();
     }

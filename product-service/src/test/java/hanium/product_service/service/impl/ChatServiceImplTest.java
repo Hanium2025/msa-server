@@ -71,6 +71,7 @@ public class ChatServiceImplTest {
                             .productId(c.getProductId())
                             .senderId(c.getSenderId())
                             .receiverId(c.getReceiverId())
+                            .latestContentTime(c.getLatestContentTime())
                             .roomName(c.getRoomName())
                             .build();
                 });
