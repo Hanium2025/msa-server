@@ -4,7 +4,9 @@ import hanium.common.exception.CustomException;
 import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.user.GetNicknameRequest;
 import hanium.common.proto.user.GetNicknameResponse;
+import hanium.common.proto.user.GetProfileRequest;
 import hanium.common.proto.user.UserServiceGrpc;
+import hanium.product_service.dto.response.ProfileResponseDTO;
 import hanium.product_service.mapper.ProfileGrpcMapper;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,16 @@ public class ProfileGrpcClient {
 
         } catch (
                 StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 프로필 (닉네임, 사진) 조회
+    public ProfileResponseDTO getProfileByMemberId(Long memberId) {
+        try {
+            GetProfileRequest request = GetProfileRequest.newBuilder().setMemberId(memberId).build();
+            return ProfileResponseDTO.from(stub.getProfile(request));
+        } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }

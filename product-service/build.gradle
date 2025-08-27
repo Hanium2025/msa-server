@@ -48,7 +48,6 @@ bootJar {
 dependencies {
     // spring
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    //implementation 'org.springframework.boot:spring-boot-starter-security'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -115,6 +114,13 @@ dependencies {
 //    testImplementation("io.grpc:grpc-testing")
 //    // Spring-Test-Support (Optional)
 //    testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    // test
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'org.mockito:mockito-core:5.12.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.12.0'
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
 }
 springBoot {
     mainClass = 'hanium.product_service.ProductServiceApplication'

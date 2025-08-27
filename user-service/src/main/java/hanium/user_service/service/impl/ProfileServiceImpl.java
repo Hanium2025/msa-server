@@ -2,8 +2,10 @@ package hanium.user_service.service.impl;
 
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
+import hanium.user_service.domain.Profile;
 import hanium.user_service.dto.request.GetNicknameRequestDTO;
 import hanium.user_service.dto.response.GetNicknameResponseDTO;
+import hanium.user_service.dto.response.ProfileResponseDTO;
 import hanium.user_service.repository.ProfileRepository;
 import hanium.user_service.service.ProfileService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @Slf4j
 public class ProfileServiceImpl implements ProfileService {
+
     private final ProfileRepository profileRepository;
+
     @Override
     public GetNicknameResponseDTO getNicknameByMemberId(GetNicknameRequestDTO requestDTO) {
 
@@ -28,5 +32,13 @@ public class ProfileServiceImpl implements ProfileService {
         return GetNicknameResponseDTO.builder()
                 .nickname(nickname)
                 .build();
+    }
+
+    // 프로필 반환
+    @Override
+    public ProfileResponseDTO getProfileByMemberId(Long memberId) {
+        Profile profile = profileRepository.findByMemberIdAndDeletedAtIsNull(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        return ProfileResponseDTO.from(profile);
     }
 }

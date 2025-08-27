@@ -38,6 +38,9 @@ service UserService {
 
   // 9. 소셜 로그인으로 회원가입 or 로그인
   rpc SocialLogin(SocialLoginRequest) returns (TokenResponse);
+
+  // 10. 프로필 조회
+  rpc GetProfile(GetProfileRequest) returns (ProfileResponse);
 }
 
 // 1. 회원가입
@@ -136,4 +139,13 @@ message NaverConfigResponse {
 message SocialLoginRequest {
   string code = 1;
   string provider = 2;
+}
+
+// 10. 프로필 조회
+message GetProfileRequest {
+  int64 member_id = 1;
+}
+message ProfileResponse {
+  string nickname = 1;
+  string profile_img = 2;
 }
