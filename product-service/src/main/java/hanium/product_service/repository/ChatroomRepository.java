@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface ChatroomRepository extends JpaRepository<Chatroom, Long> {
 
+    
     //해당 채팅방 존재 여부 확인
     Optional<Chatroom> findByProductIdAndSenderIdAndReceiverId(Long productId, Long senderId, Long receiverId);
 

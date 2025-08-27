@@ -1,14 +1,10 @@
-package hanium.apigateway_service.dto.chat.response;
+package hanium.product_service.dto.response;
 
 import chat.Chat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 
 @Getter
@@ -25,13 +21,12 @@ public class ChatMessageResponseDTO {
     private Long timestamp;     // 서버 기준 createdAt
     private boolean mine;     // 프론트에서 보낸 사용자 입장 기준
     private String type;
-    private List<String> imageUrl; //0~3개의 이미지 URL
-    private String receiverNickname; //상대방 닉네임
+    private List<String> imageUrls; //0~3개의 이미지 URL
 
     //응답 받은 grpc 응답 값을 dto로 변환
-    public static List<ChatMessageResponseDTO> from (Chat.GetAllMessagesByChatroomResponse response){
+    public static List<ChatMessageResponseDTO> from(Chat.GetAllMessagesByChatroomResponse response) {
         return response.getChatResponseMessageList().stream()
-                .map(i-> ChatMessageResponseDTO.builder()
+                .map(i -> ChatMessageResponseDTO.builder()
                         .messageId(i.getMessageId())
                         .chatroomId(i.getChatroomId())
                         .senderId(i.getSenderId())
@@ -39,8 +34,7 @@ public class ChatMessageResponseDTO {
                         .content(i.getContent())
                         .timestamp(i.getTimestamp())
                         .type(i.getType().name())
-                        .imageUrl(i.getImageUrlsList())
-                        .receiverNickname(i.getReceiverNickname())
+                        .imageUrls(i.getImageUrlsList())
                         .build())
                 .toList();
     }

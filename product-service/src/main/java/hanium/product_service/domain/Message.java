@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Optional;
+
 @Entity
 @Getter
 @Builder
@@ -21,8 +23,9 @@ public class Message extends BaseEntity {
     @Column
     private String content;
 
-    @Column
-    private Long chatroomId;
+    @ManyToOne(fetch= FetchType.LAZY)
+    @JoinColumn(name="chatroom_id", nullable=false)
+    private Chatroom chatroom;
 
     @Column
     private Long senderId;
@@ -35,9 +38,9 @@ public class Message extends BaseEntity {
     private MessageType messageType;
 
 
-    public static Message from(ChatMessageRequestDTO dto) {
-        return Message.builder()
-                .chatroomId(dto.getChatroomId())
+    public static Message of(Chatroom chatroom, ChatMessageRequestDTO dto) {
+       return Message.builder()
+                .chatroom(chatroom)
                 .content(dto.getContent())
                 .senderId(dto.getSenderId())
                 .receiverId(dto.getReceiverId())
