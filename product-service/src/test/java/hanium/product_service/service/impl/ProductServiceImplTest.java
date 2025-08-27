@@ -5,6 +5,7 @@ import hanium.common.exception.ErrorCode;
 import hanium.product_service.domain.Category;
 import hanium.product_service.domain.Product;
 import hanium.product_service.domain.ProductImage;
+import hanium.product_service.dto.request.GetProductByCategoryRequestDTO;
 import hanium.product_service.dto.request.RegisterProductRequestDTO;
 import hanium.product_service.dto.request.UpdateProductRequestDTO;
 import hanium.product_service.dto.response.ProductMainDTO;
@@ -133,6 +134,28 @@ class ProductServiceImplTest {
             then(recentViewRepository).should().getRecentProductIds(memberId);
             then(productRepository).should().findIdAndCategoryByIdIn(recentViewedProductIds);
         }
+    }
+
+    @Test
+    @DisplayName("상품 카테고리별 조회")
+    void getProductByCategory() {
+        // given
+        GetProductByCategoryRequestDTO req = mock(GetProductByCategoryRequestDTO.class);
+        given(req.getCategory()).willReturn(Category.TRAVEL);
+        given(req.getSort()).willReturn("recent");
+        given(req.getPage()).willReturn(0);
+        ProductWithFirstImage p1 = stubProduct(1L, "A", 1000L, "url");
+        ProductWithFirstImage p2 = stubProduct(2L, "B", 2000L, null);
+        given(productRepository.findProductByCategoryAndSortByRecent(any(), any())).willReturn(List.of(p1, p2));
+
+        // when
+        List<SimpleProductDTO> result = sut.getProductByCategory(req);
+
+        // then
+        assertThat(result).hasSize(2);
+        SimpleProductDTO dto2 = result.get(1);
+        assertThat(dto2.getProductId()).isEqualTo(2L);
+        assertThat(dto2.getImageUrl()).isEqualTo("");
     }
 
     @Test
@@ -339,5 +362,29 @@ class ProductServiceImplTest {
         then(img1).should().softDelete();
         then(img2).should().softDelete();
         then(productSearchIndexer).should().remove(productId);
+    }
+
+    private ProductWithFirstImage stubProduct(Long id, String title, Long price, String imageUrl) {
+        return new ProductWithFirstImage() {
+            @Override
+            public Long getProductId() {
+                return id;
+            }
+
+            @Override
+            public String getTitle() {
+                return title;
+            }
+
+            @Override
+            public Long getPrice() {
+                return price;
+            }
+
+            @Override
+            public String getImageUrl() {
+                return imageUrl;
+            }
+        };
     }
 }
