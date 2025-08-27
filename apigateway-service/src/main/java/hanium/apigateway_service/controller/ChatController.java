@@ -10,14 +10,16 @@ import hanium.apigateway_service.grpc.ChatGrpcClient;
 import hanium.apigateway_service.grpc.ChatroomGrpcClient;
 import hanium.apigateway_service.grpc.PresignFacadeGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
+import hanium.common.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+
+import static hanium.common.exception.ErrorCode.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -58,18 +60,18 @@ public class ChatController {
     @PostMapping("/presigned-urls")
     public List<PresignedUrlDTO> create(@RequestBody CreatePresignedUrlsApiRequest req) {
         if (req.getChatroomId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "chatroomId required");
+            throw new CustomException(CHATROOM_ID_NOT_FOUND);
         }
         if (req.getCount() == null || req.getCount() < 1 || req.getCount() > 3) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "count 1..3");
+            throw new CustomException(INVALID_CHAT_IMAGE_REQUEST);
         }
         if (req.getContentType() == null || !req.getContentType().startsWith("image/"))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "images only");
+            throw new CustomException(NOT_IMAGE);
         return facade.create(req.getChatroomId(), req.getCount(), req.getContentType());
     }
 
     //채팅방 별 채팅 내역 조회하기
-    @GetMapping("/get/chatroom/{ChatRoomId}/allMessages")
+    @GetMapping("/get/{ChatRoomId}/allMessages")
 public ResponseEntity<ResponseDTO<List<ChatMessageResponseDTO>>> getAllMessagesByChatroomId(@PathVariable("ChatRoomId") Long chatroomId){
 
         List<ChatMessageResponseDTO> messageResponseDto = chatGrpcClient.getAllMessagesByChatroomId(chatroomId);
