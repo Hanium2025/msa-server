@@ -52,9 +52,7 @@ public class ChatServiceImplTest {
                 .willReturn(Optional.empty());
 
         //상품명 조회
-        var product = new Product();
-        product.setId(productId);
-        product.setTitle("맥북프로");
+       var product =  Product.builder().id(productId).title("맥북프로").build();
 
         given(productRepository.findByIdAndDeletedAtIsNull(productId))
                 .willReturn(Optional.of(product));
