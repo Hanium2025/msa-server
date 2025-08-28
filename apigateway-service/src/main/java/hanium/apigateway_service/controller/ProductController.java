@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hanium.apigateway_service.dto.product.request.ProductSearchRequestDTO;
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
+import hanium.apigateway_service.dto.product.request.ReportProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
 import hanium.apigateway_service.dto.product.response.ProductMainDTO;
 import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
@@ -157,6 +158,17 @@ public class ProductController {
         ResponseDTO<ProductSearchResponseDTO> response = new ResponseDTO<>(
                 result, HttpStatus.OK, "상품 검색 결과입니다.");
 
+        return ResponseEntity.ok(response);
+    }
+
+    // 상품 신고
+    @PostMapping("/report/{productId}")
+    public ResponseEntity<ResponseDTO<?>> reportProduct(@PathVariable Long productId,
+                                                        @RequestBody ReportProductRequestDTO dto,
+                                                        Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        productGrpcClient.reportProduct(memberId, productId, dto);
+        ResponseDTO<?> response = new ResponseDTO<>(null, HttpStatus.OK, "상품 신고가 접수되었습니다.");
         return ResponseEntity.ok(response);
     }
 }
