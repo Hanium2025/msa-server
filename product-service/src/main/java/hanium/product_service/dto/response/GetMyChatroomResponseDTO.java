@@ -21,6 +21,8 @@ public class GetMyChatroomResponseDTO {
     private String latestMessage;
     private Long productId;
     private Long opponentId; //상대방 아이디
+    private String opponentProfileUrl; //상대방 프로필 아이디
+    private String opponentNickname; //상대방 프로필 닉네임
 
     public static GetMyChatroomResponseDTO from(Chatroom.ChatroomSummary summary) {
         return GetMyChatroomResponseDTO.builder()

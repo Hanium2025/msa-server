@@ -28,6 +28,8 @@ message ChatroomSummary{
   int64 productId = 4;
   int64 opponentId = 5; //상대방 아이디
   int64 latestTime = 6;
+  string opponentProfileUrl =7;
+  string opponentNickname =8;
 
 }
 message ListMyChatroomsResponse {

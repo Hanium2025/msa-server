@@ -27,15 +27,23 @@ public class Chatroom extends BaseEntity{
     @Column(length = 50)
     private String latestContent;
 
+    @Column
     private LocalDateTime latestContentTime;
 
-    public static Chatroom from(CreateChatroomRequestDTO dto, String roomName) {
+    @Column
+    private String opponentProfileUrl;
+    @Column
+    private String opponentNickname;
+
+    public static Chatroom from(CreateChatroomRequestDTO dto, String roomName,String opponentProfileUrl, String opponentNickname) {
         return Chatroom.builder()
                 .productId(dto.getProductId())
                 .senderId(dto.getSenderId())
                 .receiverId(dto.getReceiverId())
                 .latestContentTime(LocalDateTime.now())
                 .roomName(roomName)
+                .opponentProfileUrl(opponentProfileUrl)
+                .opponentNickname(opponentNickname)
                 .build();
     }
 
