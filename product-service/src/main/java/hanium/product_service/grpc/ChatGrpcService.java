@@ -55,6 +55,8 @@ public class ChatGrpcService extends ChatroomServiceGrpc.ChatroomServiceImplBase
                             .setProductId(dto.getProductId() == null ? 0L : dto.getProductId())
                             .setOpponentId(dto.getOpponentId() == null ? 0L : dto.getOpponentId())
                             .setLatestTime(latestMillis)
+                            .setOpponentProfileUrl(dto.getOpponentProfileUrl())
+                            .setOpponentNickname(dto.getOpponentNickname())
                             .build();
 
             resp.addItems(summary);

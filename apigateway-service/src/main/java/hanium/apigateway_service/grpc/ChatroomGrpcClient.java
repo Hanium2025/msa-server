@@ -22,9 +22,9 @@ public class ChatroomGrpcClient {
     //grpc stub
     private ChatroomServiceGrpc.ChatroomServiceBlockingStub chatroomStub;
 
-    public Long createChatroom(CreateChatroomRequestDTO dto) {
+    public Long createChatroom(CreateChatroomRequestDTO dto,Long memberId) {
         try {
-            Chatroom.CreateChatroomRequest grpcRequest = ChatGrpcMapperForGateway.toGrpc(dto);
+            Chatroom.CreateChatroomRequest grpcRequest = ChatGrpcMapperForGateway.toGrpc(dto, memberId);
 
             Chatroom.CreateChatroomResponse response = chatroomStub.createChatroom(grpcRequest);
             return response.getChatroomId();

@@ -3,6 +3,7 @@ package hanium.product_service.grpc;
 import chat.Chat;
 import chat.ChatServiceGrpc;
 import hanium.product_service.dto.response.ChatMessageResponseDTO;
+import hanium.product_service.dto.response.ProfileResponseDTO;
 import hanium.product_service.s3.PresignService;
 import hanium.product_service.service.ChatService;
 import io.grpc.Status;
@@ -59,7 +60,8 @@ public class ChattingGrpcService extends ChatServiceGrpc.ChatServiceImplBase {
         Chat.GetAllMessagesByChatroomResponse.Builder resp = Chat.GetAllMessagesByChatroomResponse.newBuilder();
 
         for (ChatMessageResponseDTO dto : allMessagesByChatroomId) {
-            String opponentNickname = profileGrpcClient.getNicknameByMemberId(dto.getReceiverId());
+
+            ProfileResponseDTO profileResponseDTO = profileGrpcClient.getProfileByMemberId(dto.getReceiverId());
 
             Chat.ChatResponseMessage.Builder responseMessage =
                     Chat.ChatResponseMessage.newBuilder()
@@ -69,7 +71,7 @@ public class ChattingGrpcService extends ChatServiceGrpc.ChatServiceImplBase {
                             .setReceiverId(dto.getReceiverId())
                             .setContent(dto.getContent())
                             .setTimestamp(dto.getTimestamp())
-                            .setReceiverNickname(opponentNickname)
+                            .setReceiverNickname(profileResponseDTO.getNickname())
                             .setType(Chat.MessageType.valueOf(dto.getType()));
 
             if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {

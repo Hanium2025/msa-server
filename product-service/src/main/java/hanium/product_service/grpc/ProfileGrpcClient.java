@@ -21,19 +21,6 @@ public class ProfileGrpcClient {
     @GrpcClient("user-service") //discovery:///user-service 사용
     private UserServiceGrpc.UserServiceBlockingStub stub;
 
-    public String getNicknameByMemberId(Long memberId) {
-        try {
-            GetNicknameRequest request = ProfileGrpcMapper.toGrpc(memberId);
-
-            GetNicknameResponse response = stub.getNicknameByMemberId(request);
-            return response.getNickname();
-
-        } catch (
-                StatusRuntimeException e) {
-            throw new CustomException(GrpcUtil.extractErrorCode(e));
-        }
-    }
-
     // 프로필 (닉네임, 사진) 조회
     public ProfileResponseDTO getProfileByMemberId(Long memberId) {
         try {

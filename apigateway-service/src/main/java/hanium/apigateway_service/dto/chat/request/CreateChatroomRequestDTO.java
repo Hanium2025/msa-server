@@ -8,6 +8,5 @@ import lombok.*;
 @NoArgsConstructor
 public class CreateChatroomRequestDTO {
     private Long productId;
-    private Long senderId;
     private Long receiverId;
 }

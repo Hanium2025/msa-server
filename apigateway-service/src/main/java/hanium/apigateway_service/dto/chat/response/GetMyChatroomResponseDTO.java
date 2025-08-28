@@ -22,6 +22,8 @@ public class GetMyChatroomResponseDTO {
     private String latestMessage;
     private Long productId;
     private Long opponentId; //상대방 아이디
+    private String opponentProfileUrl; //상대방 프로필 아이디
+    private String opponentNickname; //상대방 프로필 닉네임
 
     public static List<GetMyChatroomResponseDTO> from(Chatroom.ListMyChatroomsResponse response) {
         return response.getItemsList().stream()
@@ -39,6 +41,8 @@ public class GetMyChatroomResponseDTO {
                         )
                         .productId(i.getProductId())
                         .opponentId(i.getOpponentId())
+                        .opponentProfileUrl(i.getOpponentProfileUrl())
+                        .opponentNickname(i.getOpponentNickname())
                         .build())
                 .toList();
     }
