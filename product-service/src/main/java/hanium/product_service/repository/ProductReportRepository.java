@@ -1,4 +1,4 @@
-package hanium.product_service.service.impl;
+package hanium.product_service.repository;
 
 import hanium.product_service.domain.ProductReport;
 import org.springframework.data.jpa.repository.JpaRepository;

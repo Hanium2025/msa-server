@@ -5,6 +5,7 @@ import hanium.common.exception.ErrorCode;
 import hanium.product_service.domain.Product;
 import hanium.product_service.domain.ProductReport;
 import hanium.product_service.dto.request.ReportProductRequestDTO;
+import hanium.product_service.repository.ProductReportRepository;
 import hanium.product_service.repository.ProductRepository;
 import hanium.product_service.service.ProductReportService;
 import jakarta.persistence.EntityManager;
