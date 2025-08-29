@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hanium.apigateway_service.dto.product.request.ProductSearchRequestDTO;
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
-import hanium.apigateway_service.dto.product.response.ProductMainDTO;
-import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
-import hanium.apigateway_service.dto.product.response.ProductSearchResponseDTO;
-import hanium.apigateway_service.dto.product.response.SimpleProductDTO;
+import hanium.apigateway_service.dto.product.response.*;
 import hanium.apigateway_service.grpc.ProductGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -141,9 +138,9 @@ public class ProductController {
     }
 
     // 상품 검색
-    @GetMapping("/search")
+    @GetMapping("/search/{keyword}")
     public ResponseEntity<ResponseDTO<ProductSearchResponseDTO>> searchProduct(
-            @RequestParam("keyword") String keyword,
+            @PathVariable ("keyword") String keyword,
             Authentication authentication) {
 
         Long memberId = (Long) authentication.getPrincipal();
@@ -157,6 +154,41 @@ public class ProductController {
         ResponseDTO<ProductSearchResponseDTO> response = new ResponseDTO<>(
                 result, HttpStatus.OK, "상품 검색 결과입니다.");
 
+        return ResponseEntity.ok(response);
+    }
+
+
+    // 상품 검색 기록 조회
+    @GetMapping("/search-history")
+    public ResponseEntity<ResponseDTO<List<ProductSearchHistoryDTO>>> searchProductHistory(
+            Authentication authentication
+    ){
+        Long memberId = (Long) authentication.getPrincipal();
+        List<ProductSearchHistoryDTO> result = productGrpcClient.searchProductHistory(memberId);
+
+        ResponseDTO<List<ProductSearchHistoryDTO>> response = new ResponseDTO<>(
+                result, HttpStatus.OK, "상품 검색 기록입니다.");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // 상품 검색 기록 선택 삭제
+    @DeleteMapping("/search-history/{searchId}")
+    public ResponseEntity<?> deleteProductHistory(@PathVariable Long searchId, Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        productGrpcClient.deleteProductHistory(searchId, memberId);
+        ResponseDTO<Void> response = new ResponseDTO<>(
+                null, HttpStatus.OK, "검색 기록이 삭제되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    // 상품 검색 기록 전체 삭제
+    @DeleteMapping("/search-history")
+    public ResponseEntity<?> deleteAllProductHistory(Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        productGrpcClient.deleteAllProductHistory(memberId);
+        ResponseDTO<Void> response = new ResponseDTO<>(
+                null, HttpStatus.OK, "검색 기록이 전체 삭제되었습니다.");
         return ResponseEntity.ok(response);
     }
 }
