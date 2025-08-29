@@ -5,10 +5,7 @@ import hanium.common.exception.ErrorCode;
 import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.*;
 import hanium.product_service.dto.request.*;
-import hanium.product_service.dto.response.ProductMainDTO;
-import hanium.product_service.dto.response.ProductResponseDTO;
-import hanium.product_service.dto.response.ProductSearchResponseDTO;
-import hanium.product_service.dto.response.SimpleProductDTO;
+import hanium.product_service.dto.response.*;
 import hanium.product_service.mapper.ProductGrpcMapper;
 import hanium.product_service.service.ProductLikeService;
 import hanium.product_service.service.ProductSearchService;
@@ -151,6 +148,42 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         try {
             ProductSearchResponseDTO dto = productSearchService.searchProduct(ProductSearchRequestDTO.from(request));
             responseObserver.onNext(ProductGrpcMapper.toProductSearchResponseGrpc(dto));
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 상품 검색 기록
+    public void productSearchHistory(ProductSearchHistoryRequest request, StreamObserver<ProductSearchHistoryResponse> responseObserver) {
+        try {
+            List<ProductSearchHistoryDTO> historyList = productSearchService.productSearchHistory(request.getMemberId());
+            ProductSearchHistoryResponse response =
+                    ProductGrpcMapper.toProductSearchHistoryResponseGrpc(historyList);
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 상품 검색 기록 선택 삭제
+    public void deleteProductSearchHistory(DeleteProductSearchHistoryRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            productSearchService.deleteProductSearchHistory(request.getSearchId(), request.getMemberId());
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+
+    }
+
+    // 상품 검색 기록 전체 삭제
+    public void deleteAllProductSearchHistory(DeleteAllProductSearchHistoryRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            productSearchService.deleteAllProductSearchHistory(request.getMemberId());
+            responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));

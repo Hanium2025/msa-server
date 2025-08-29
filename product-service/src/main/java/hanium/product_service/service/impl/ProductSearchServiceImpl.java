@@ -2,8 +2,11 @@ package hanium.product_service.service.impl;
 
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
+import hanium.product_service.domain.Product;
+import hanium.product_service.domain.ProductImage;
 import hanium.product_service.domain.ProductSearch;
 import hanium.product_service.dto.request.ProductSearchRequestDTO;
+import hanium.product_service.dto.response.ProductSearchHistoryDTO;
 import hanium.product_service.dto.response.ProductSearchResponseDTO;
 import hanium.product_service.dto.response.SimpleProductDTO;
 import hanium.product_service.elasticsearch.ProductDocument;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -65,5 +69,53 @@ public class ProductSearchServiceImpl implements ProductSearchService {
         List<ProductWithFirstImage> products = productRepository.findProductWithFirstImageByIds(ids);
 
         return ProductSearchResponseDTO.from(products.stream().map(SimpleProductDTO::from).toList());
+    }
+
+    /**
+     * 상품 검색 기록을 조회합니다.
+     *
+     * @param memberId
+     * @return keyword 리스트
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductSearchHistoryDTO> productSearchHistory(Long memberId) {
+        log.info("Fetching product search history for memberId: {}", memberId);
+
+        List<ProductSearch> searches = productSearchRepository.findByMemberIdAndDeletedAtIsNullOrderByCreatedAtDesc(memberId);
+        return searches.stream()
+                .map(ProductSearchHistoryDTO::from)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 특정 검색 기록을 삭제합니다.
+     *
+     * @param searchId
+     * @param memberId
+     */
+    @Override
+    @Transactional
+    public void deleteProductSearchHistory(Long searchId, Long memberId){
+        log.info("Deleting search history. historyId={}, memberId={}", searchId, memberId);
+
+        ProductSearch productSearch = productSearchRepository.findByIdAndMemberIdAndDeletedAtIsNull(searchId, memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SEARCH_NOT_FOUND));
+
+        productSearch.softDelete();
+    }
+
+    /**
+     * 전체 검색 기록을 삭제합니다.
+     *
+     * @param memberId
+     */
+    @Override
+    @Transactional
+    public void deleteAllProductSearchHistory(Long memberId){
+        log.info("Deleting all search history. memberId={}", memberId);
+
+        List<ProductSearch> searches = productSearchRepository.findByMemberIdAndDeletedAtIsNull(memberId);
+        searches.forEach(ProductSearch::softDelete);
     }
 }
