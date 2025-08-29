@@ -158,18 +158,6 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-    // 상품 신고
-    @PostMapping("/report/{productId}")
-    public ResponseEntity<ResponseDTO<?>> reportProduct(@PathVariable Long productId,
-                                                        @RequestBody ReportProductRequestDTO dto,
-                                                        Authentication authentication) {
-        Long memberId = (Long) authentication.getPrincipal();
-        productGrpcClient.reportProduct(memberId, productId, dto);
-        ResponseDTO<?> response = new ResponseDTO<>(null, HttpStatus.OK, "상품 신고가 접수되었습니다.");
-        return ResponseEntity.ok(response);
-    }
-
-
     // 상품 검색 기록 조회
     @GetMapping("/search-history")
     public ResponseEntity<ResponseDTO<List<ProductSearchHistoryDTO>>> searchProductHistory(
@@ -201,6 +189,17 @@ public class ProductController {
         productGrpcClient.deleteAllProductHistory(memberId);
         ResponseDTO<Void> response = new ResponseDTO<>(
                 null, HttpStatus.OK, "검색 기록이 전체 삭제되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    // 상품 신고
+    @PostMapping("/report/{productId}")
+    public ResponseEntity<ResponseDTO<?>> reportProduct(@PathVariable Long productId,
+                                                        @RequestBody ReportProductRequestDTO dto,
+                                                        Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        productGrpcClient.reportProduct(memberId, productId, dto);
+        ResponseDTO<?> response = new ResponseDTO<>(null, HttpStatus.OK, "상품 신고가 접수되었습니다.");
         return ResponseEntity.ok(response);
     }
 }
