@@ -33,6 +33,7 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND(404, "해당하는 상품을 찾을 수 없습니다."),
     UNKNOWN_SORT(400, "sort 파라미터 값은 recent 혹은 like만 가능합니다."),
     UNKNOWN_PRODUCT_CATEGORY(400, "입력할 수 있는 상품 카테고리 범위가 아닙니다."),
+    UNKNOWN_REPORT_REASON(400, "입력할 수 있는 신고 사유 범위가 아닙니다."),
     NO_PERMISSION(403, "해당 상품 등록자가 아니므로 권한이 없습니다."),
     BLANK_IMAGE(400, "이미지가 요청되었으나, 서버에 빈 파일이 전송되었습니다."),
     IMAGE_EXCEEDED(404, "이미지는 최대 5개까지 업로드 가능합니다."),
@@ -43,7 +44,7 @@ public enum ErrorCode {
     CHATROOM_NOT_FOUND(404, "해당 아이디를 가진 채팅방을 찾을 수 없습니다."),
     INVALID_CHAT_IMAGE_REQUEST(404, "이미지는 최소 0장 부터 최대 3장까지 가능합니다."),
     CHATROOM_ID_NOT_FOUND(400, "해당 아이디를 가진 채팅방이 없습니다."),
-    NOT_IMAGE(400,"타입이 이미지가 아닙니다."),
+    NOT_IMAGE(400, "타입이 이미지가 아닙니다."),
     ELASTICSEARCH_ERROR(500, "검색 중 오류가 발생했습니다."),
     SEARCH_NOT_FOUND(404, "해당하는 검색 기록을 찾을 수 없습니다."),
     ;

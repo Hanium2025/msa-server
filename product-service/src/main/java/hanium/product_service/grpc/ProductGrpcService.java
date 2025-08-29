@@ -8,6 +8,7 @@ import hanium.product_service.dto.request.*;
 import hanium.product_service.dto.response.*;
 import hanium.product_service.mapper.ProductGrpcMapper;
 import hanium.product_service.service.ProductLikeService;
+import hanium.product_service.service.ProductReportService;
 import hanium.product_service.service.ProductSearchService;
 import hanium.product_service.service.ProductService;
 import io.grpc.stub.StreamObserver;
@@ -26,6 +27,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
 
     private final ProductService productService;
     private final ProductLikeService likeService;
+    private final ProductReportService reportService;
     private final ProductSearchService productSearchService;
 
     // 메인페이지 조회
@@ -183,6 +185,19 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     public void deleteAllProductSearchHistory(DeleteAllProductSearchHistoryRequest request, StreamObserver<Empty> responseObserver) {
         try {
             productSearchService.deleteAllProductSearchHistory(request.getMemberId());
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 상품 신고
+    @Override
+    public void reportProduct(ReportProductRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            ReportProductRequestDTO requestDTO = ReportProductRequestDTO.from(request);
+            reportService.reportProduct(requestDTO);
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (CustomException e) {

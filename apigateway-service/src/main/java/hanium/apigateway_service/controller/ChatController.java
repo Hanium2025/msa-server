@@ -37,9 +37,8 @@ public class ChatController {
         CreateChatroomRequestDTO requestDTO = CreateChatroomRequestDTO.builder()
                 .productId(createChatroomDTO.getProductId())
                 .receiverId(createChatroomDTO.getReceiverId())
-                .senderId(memberId)
                 .build();
-        Long chatroomId = chatroomGrpcClient.createChatroom(requestDTO);
+        Long chatroomId = chatroomGrpcClient.createChatroom(requestDTO,memberId);
 
         CreateChatroomResponseDTO responseData = new CreateChatroomResponseDTO(chatroomId, "채팅방 생성 성공!");
         ResponseDTO<CreateChatroomResponseDTO> response =

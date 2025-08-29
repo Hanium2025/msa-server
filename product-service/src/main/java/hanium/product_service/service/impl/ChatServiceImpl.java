@@ -10,6 +10,7 @@ import hanium.product_service.dto.request.CreateChatroomRequestDTO;
 import hanium.product_service.dto.response.ChatMessageResponseDTO;
 import hanium.product_service.dto.response.CreateChatroomResponseDTO;
 import hanium.product_service.dto.response.GetMyChatroomResponseDTO;
+import hanium.product_service.dto.response.ProfileResponseDTO;
 import hanium.product_service.grpc.ProfileGrpcClient;
 import hanium.product_service.repository.ChatRepository;
 import hanium.product_service.repository.ChatroomRepository;
@@ -60,12 +61,14 @@ public class ChatServiceImpl implements ChatService {
                 .getTitle();
 
         // 3. receiver 닉네임 조회 (gRPC call to user-service)
-        String receiverNickname = profileGrpcClient.getNicknameByMemberId(receiverId);
+        ProfileResponseDTO profileResponseDTO = profileGrpcClient.getProfileByMemberId(receiverId);
+        String opponentNickname = profileResponseDTO.getNickname();
+        String opponentProfileUrl = profileResponseDTO.getProfileImageUrl();
 
         // 4. 채팅방 이름 생성
-        String roomName = receiverNickname + "/" + productName;
+        String roomName = opponentNickname + "/" + productName;
         // 5. 채팅방 저장
-        Chatroom chatroom = Chatroom.from(requestDTO, roomName);
+        Chatroom chatroom = Chatroom.from(requestDTO, roomName,opponentProfileUrl,opponentNickname);
         // 중복 채팅방 검사
 
         Chatroom saved = chatroomRepository.save(chatroom);
@@ -120,6 +123,7 @@ public class ChatServiceImpl implements ChatService {
 
     }
 
+    // 내가 참여한 채팅방 리스트 조회
     @Transactional
     @Override
     public List<GetMyChatroomResponseDTO> getMyChatrooms(Long memberId) {
@@ -135,10 +139,13 @@ public class ChatServiceImpl implements ChatService {
                     .latestTime(r.getLatestContentTime()) // LocalDateTime 그대로
                     .productId(r.getProductId())
                     .opponentId(opponentId)
+                    .opponentProfileUrl(r.getOpponentProfileUrl())
+                    .opponentNickname(r.getOpponentNickname())
                     .build();
         }).toList();
     }
 
+    // 특정 채팅방의 모든 메시지 조회
     @Override
     public List<ChatMessageResponseDTO> getAllMessageByChatroomId(Long chatroomId) {
 

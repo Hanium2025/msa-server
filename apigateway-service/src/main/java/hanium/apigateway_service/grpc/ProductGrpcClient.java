@@ -2,6 +2,7 @@ package hanium.apigateway_service.grpc;
 
 import hanium.apigateway_service.dto.product.request.ProductSearchRequestDTO;
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
+import hanium.apigateway_service.dto.product.request.ReportProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
 import hanium.apigateway_service.dto.product.response.*;
 import hanium.apigateway_service.mapper.ProductGrpcMapperForGateway;
@@ -229,6 +230,16 @@ public class ProductGrpcClient {
         DeleteAllProductSearchHistoryRequest request = ProductGrpcMapperForGateway.toDeleteAllProductSearchHistoryGrpc(memberId);
         try {
             stub.deleteAllProductSearchHistory(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 상품 신고
+    public void reportProduct(Long memberId, Long productId, ReportProductRequestDTO dto) {
+        ReportProductRequest req = ProductGrpcMapperForGateway.toReportProductGrpc(memberId, productId, dto);
+        try {
+            stub.reportProduct(req);
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }

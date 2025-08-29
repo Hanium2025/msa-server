@@ -3,6 +3,7 @@ package hanium.apigateway_service.mapper;
 
 import hanium.apigateway_service.dto.product.request.ProductSearchRequestDTO;
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
+import hanium.apigateway_service.dto.product.request.ReportProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
 import hanium.common.proto.product.*;
 
@@ -86,6 +87,16 @@ public class ProductGrpcMapperForGateway {
                 .setCategory(category)
                 .setSort(sort)
                 .setPage(page)
+                .build();
+    }
+
+    public static ReportProductRequest toReportProductGrpc(Long memberId, Long productId,
+                                                           ReportProductRequestDTO dto) {
+        return ReportProductRequest.newBuilder()
+                .setMemberId(memberId)
+                .setProductId(productId)
+                .setReason(dto.getReason())
+                .setDetails(dto.getDetails())
                 .build();
     }
 }
