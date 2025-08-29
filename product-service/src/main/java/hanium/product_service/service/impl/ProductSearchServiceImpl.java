@@ -2,8 +2,6 @@ package hanium.product_service.service.impl;
 
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
-import hanium.product_service.domain.Product;
-import hanium.product_service.domain.ProductImage;
 import hanium.product_service.domain.ProductSearch;
 import hanium.product_service.dto.request.ProductSearchRequestDTO;
 import hanium.product_service.dto.response.ProductSearchHistoryDTO;
