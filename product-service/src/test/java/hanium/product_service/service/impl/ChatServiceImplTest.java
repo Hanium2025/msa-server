@@ -16,7 +16,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
@@ -35,11 +34,6 @@ public class ChatServiceImplTest {
     @Mock
     ChatroomRepository chatroomRepository;
 
-    @Mock
-    ProductRepository productRepository;
-
-    @Mock
-    ProfileGrpcClient profileGrpcClient;
 
     @InjectMocks
     ChatServiceImpl sut; //테스트 대상
@@ -51,21 +45,8 @@ public class ChatServiceImplTest {
         var req = CreateChatroomRequestDTO.builder().productId(productId).senderId(senderId)
                 .receiverId(receiverId).build();
         //given
-        given(chatroomRepository.findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId))
+        given(chatroomRepository.findByProductIdAndMembers(productId, senderId, receiverId))
                 .willReturn(Optional.empty());
-
-        //상품명 조회
-        var product = Product.builder().id(productId).title("맥북프로").build();
-
-        given(productRepository.findByIdAndDeletedAtIsNull(productId))
-                .willReturn(Optional.of(product));
-
-        var profile = ProfileResponseDTO.builder()
-                .nickname("피키")
-                .profileImageUrl("http:oppp")
-                .build();
-        //닉네임 조회
-        given(profileGrpcClient.getProfileByMemberId(receiverId)).willReturn(profile);
 
         //저장 결과
         given(chatroomRepository.save(any(Chatroom.class)))
@@ -77,9 +58,6 @@ public class ChatServiceImplTest {
                             .senderId(c.getSenderId())
                             .receiverId(c.getReceiverId())
                             .latestContentTime(c.getLatestContentTime())
-                            .roomName(c.getRoomName())
-                            .opponentNickname(c.getOpponentNickname())
-                            .opponentProfileUrl(c.getOpponentProfileUrl())
                             .build();
                 });
 
@@ -91,14 +69,10 @@ public class ChatServiceImplTest {
         assertThat(responseDTO.getChatroomId()).isEqualTo(999L);
         assertThat(responseDTO.getMessage()).isEqualTo("채팅방 생성 성공");
 
-        then(chatroomRepository).should().findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId);
-        then(productRepository).should().findByIdAndDeletedAtIsNull(productId);
-        then(profileGrpcClient).should().getProfileByMemberId(receiverId);
+        then(chatroomRepository).should().findByProductIdAndMembers(productId, senderId, receiverId);
+
 
         var captor = ArgumentCaptor.forClass(Chatroom.class);
         then(chatroomRepository).should().save(captor.capture());
-        assertThat(captor.getValue().getRoomName()).isEqualTo("피키/맥북프로");
-        assertThat(captor.getValue().getOpponentNickname()).isEqualTo("피키");
-        assertThat(captor.getValue().getOpponentProfileUrl()).isEqualTo("http:oppp");
     }
 }
