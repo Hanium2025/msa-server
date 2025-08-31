@@ -16,8 +16,6 @@ public class Chatroom extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column
-    private String roomName;
-    @Column
     private Long productId;
     @Column
     private Long senderId;
@@ -30,20 +28,17 @@ public class Chatroom extends BaseEntity{
     @Column
     private LocalDateTime latestContentTime;
 
-    @Column
-    private String opponentProfileUrl;
-    @Column
-    private String opponentNickname;
+//    @Column
+//    private String opponentProfileUrl;
+//    @Column
+//    private String opponentNickname;
 
-    public static Chatroom from(CreateChatroomRequestDTO dto, String roomName,String opponentProfileUrl, String opponentNickname) {
+    public static Chatroom from(CreateChatroomRequestDTO dto) {
         return Chatroom.builder()
                 .productId(dto.getProductId())
                 .senderId(dto.getSenderId())
                 .receiverId(dto.getReceiverId())
                 .latestContentTime(LocalDateTime.now())
-                .roomName(roomName)
-                .opponentProfileUrl(opponentProfileUrl)
-                .opponentNickname(opponentNickname)
                 .build();
     }
 
