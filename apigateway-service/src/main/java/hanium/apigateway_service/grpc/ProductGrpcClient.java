@@ -4,10 +4,7 @@ import hanium.apigateway_service.dto.product.request.ProductSearchRequestDTO;
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.ReportProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
-import hanium.apigateway_service.dto.product.response.ProductMainDTO;
-import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
-import hanium.apigateway_service.dto.product.response.ProductSearchResponseDTO;
-import hanium.apigateway_service.dto.product.response.SimpleProductDTO;
+import hanium.apigateway_service.dto.product.response.*;
 import hanium.apigateway_service.mapper.ProductGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
@@ -198,6 +195,41 @@ public class ProductGrpcClient {
                 ProductGrpcMapperForGateway.toSearchProductGrpc(memberId, dto);
         try {
             return ProductSearchResponseDTO.from(stub.searchProduct(grpcRequest));
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 상품 검색 기록
+    public List<ProductSearchHistoryDTO> searchProductHistory(Long memberId) {
+        ProductSearchHistoryRequest request =
+                ProductGrpcMapperForGateway.toSearchProductHistoryGrpc(memberId);
+        try {
+            return stub.productSearchHistory(request)
+                    .getProductSearchHistoryListList()
+                    .stream()
+                    .map(ProductSearchHistoryDTO::from)
+                    .collect(Collectors.toList());
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 상품 검색 기록 선택 삭제
+    public void deleteProductHistory(Long searchId, Long memberId) {
+        DeleteProductSearchHistoryRequest request = ProductGrpcMapperForGateway.toDeleteProductSearchHistoryGrpc(searchId, memberId);
+        try {
+            stub.deleteProductSearchHistory(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 상품 검색 기록 전체 삭제
+    public void deleteAllProductHistory(Long memberId) {
+        DeleteAllProductSearchHistoryRequest request = ProductGrpcMapperForGateway.toDeleteAllProductSearchHistoryGrpc(memberId);
+        try {
+            stub.deleteAllProductSearchHistory(request);
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }

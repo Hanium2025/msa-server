@@ -46,6 +46,7 @@ public enum ErrorCode {
     CHATROOM_ID_NOT_FOUND(400, "해당 아이디를 가진 채팅방이 없습니다."),
     NOT_IMAGE(400, "타입이 이미지가 아닙니다."),
     ELASTICSEARCH_ERROR(500, "검색 중 오류가 발생했습니다."),
+    SEARCH_NOT_FOUND(404, "해당하는 검색 기록을 찾을 수 없습니다."),
     ;
 
     private final int code;

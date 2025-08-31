@@ -86,6 +86,22 @@ public class ProductGrpcMapper {
                 .build();
     }
 
+    public static ProductSearchHistoryResponse toProductSearchHistoryResponseGrpc(List<ProductSearchHistoryDTO> dtoList) {
+        return ProductSearchHistoryResponse.newBuilder()
+                .addAllProductSearchHistoryList(
+                        dtoList.stream()
+                                .map(ProductGrpcMapper::toProductSearchHistory)
+                                .collect(Collectors.toList()))
+                .build();
+    }
+
+    public static ProductSearchHistory toProductSearchHistory(ProductSearchHistoryDTO dto){
+        return ProductSearchHistory.newBuilder()
+                .setSearchId(dto.getSearchId())
+                .setKeyword(dto.getKeyword())
+                .build();
+    }
+
     public static SimpleProductsResponse toSimpleProducts(List<SimpleProductDTO> dto) {
         return SimpleProductsResponse.newBuilder()
                 .addAllProducts(dto.stream()

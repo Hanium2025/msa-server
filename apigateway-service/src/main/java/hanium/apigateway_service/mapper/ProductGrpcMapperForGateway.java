@@ -61,6 +61,25 @@ public class ProductGrpcMapperForGateway {
                 .build();
     }
 
+    public static ProductSearchHistoryRequest toSearchProductHistoryGrpc(Long memberId) {
+        return ProductSearchHistoryRequest.newBuilder()
+                .setMemberId(memberId)
+                .build();
+    }
+
+    public static DeleteProductSearchHistoryRequest toDeleteProductSearchHistoryGrpc(Long searchId, Long memberId) {
+        return DeleteProductSearchHistoryRequest.newBuilder()
+                .setSearchId(searchId)
+                .setMemberId(memberId)
+                .build();
+    }
+
+    public static DeleteAllProductSearchHistoryRequest toDeleteAllProductSearchHistoryGrpc(Long memberId) {
+        return DeleteAllProductSearchHistoryRequest.newBuilder()
+                .setMemberId(memberId)
+                .build();
+    }
+
     public static GetProductByCategoryRequest toGetProductByCategoryGrpc(Long memberId, String category,
                                                                          String sort, int page) {
         return GetProductByCategoryRequest.newBuilder()
