@@ -1,4 +1,4 @@
-name: deploy-product.yml
+name: Product 서비스 ECS에 배포
 on:
   push:
     branches: [ main ]
