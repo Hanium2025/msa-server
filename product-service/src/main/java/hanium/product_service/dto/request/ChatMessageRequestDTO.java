@@ -40,9 +40,15 @@ public class ChatMessageRequestDTO {
         }
         return switch (type) {
             case IMAGE -> MessageType.IMAGE;
-            case NOTICE -> MessageType.NOTICE;
-            case DIRECT -> MessageType.DIRECT;
-            case PARCEL -> MessageType.PARCEL;
+            case DIRECT_REQUEST -> MessageType.DIRECT_REQUEST;
+            case DIRECT_ACCEPT -> MessageType.DIRECT_ACCEPT;
+            case PARCEL_REQUEST -> MessageType.PARCEL_REQUEST;
+            case PARCEL_ACCEPT -> MessageType.PARCEL_ACCEPT;
+            case PAYMENT_REQUEST -> MessageType.PAYMENT_REQUEST;
+            case PAYMENT_DONE -> MessageType.PAYMENT_DONE;
+            case ADDRESS_REGISTER -> MessageType.ADDRESS_REGISTER;
+            case ADDRESS_REGISTER_DONE -> MessageType.ADDRESS_REGISTER_DONE;
+
             default -> MessageType.TEXT;
         };
     }
