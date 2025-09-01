@@ -1,6 +1,7 @@
 package hanium.product_service.service.impl;
 
 import chat.Chat;
+import hanium.common.exception.CustomException;
 import hanium.product_service.domain.Chatroom;
 import hanium.product_service.domain.Message;
 import hanium.product_service.domain.MessageImage;
@@ -28,6 +29,8 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static hanium.common.exception.ErrorCode.PRODUCT_NOT_FOUND;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -50,25 +53,14 @@ public class ChatServiceImpl implements ChatService {
         Long receiverId = requestDTO.getReceiverId();
         // 1. 중복 채팅방 조회
         Optional<Chatroom> existing = chatroomRepository
-                .findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId);
+                .findByProductIdAndMembers(productId, senderId, receiverId);
 
         if (existing.isPresent()) {
             return new CreateChatroomResponseDTO(existing.get().getId(), "기존 채팅방입니다");
         }
-        // 2. 상품명 가져오기
-        String productName = productRepository.findByIdAndDeletedAtIsNull(productId)
-                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다"))
-                .getTitle();
 
-        // 3. receiver 닉네임 조회 (gRPC call to user-service)
-        ProfileResponseDTO profileResponseDTO = profileGrpcClient.getProfileByMemberId(receiverId);
-        String opponentNickname = profileResponseDTO.getNickname();
-        String opponentProfileUrl = profileResponseDTO.getProfileImageUrl();
-
-        // 4. 채팅방 이름 생성
-        String roomName = opponentNickname + "/" + productName;
         // 5. 채팅방 저장
-        Chatroom chatroom = Chatroom.from(requestDTO, roomName,opponentProfileUrl,opponentNickname);
+        Chatroom chatroom = Chatroom.from(requestDTO);
         // 중복 채팅방 검사
 
         Chatroom saved = chatroomRepository.save(chatroom);
@@ -132,15 +124,25 @@ public class ChatServiceImpl implements ChatService {
 
         return rooms.stream().map(r -> {
             Long opponentId = r.getSenderId().equals(memberId) ? r.getReceiverId() : r.getSenderId();
+
+            ProfileResponseDTO profileResponseDTO = profileGrpcClient.getProfileByMemberId(opponentId);
+
+            String opponentNickname = profileResponseDTO.getNickname();
+            String productName = productRepository.findByIdAndDeletedAtIsNull(r.getProductId())
+                    .orElseThrow(() -> new CustomException(PRODUCT_NOT_FOUND))
+                    .getTitle();
+
+            String roomName = opponentNickname + "/" + productName;
+
             return GetMyChatroomResponseDTO.builder()
                     .chatroomId(r.getId())
-                    .roomName(r.getRoomName())
+                    .roomName(roomName)
                     .latestMessage(r.getLatestContent())
                     .latestTime(r.getLatestContentTime()) // LocalDateTime 그대로
                     .productId(r.getProductId())
                     .opponentId(opponentId)
-                    .opponentProfileUrl(r.getOpponentProfileUrl())
-                    .opponentNickname(r.getOpponentNickname())
+                    .opponentProfileUrl(profileResponseDTO.getProfileImageUrl())
+                    .opponentNickname(profileResponseDTO.getNickname())
                     .build();
         }).toList();
     }
@@ -190,7 +192,7 @@ public class ChatServiceImpl implements ChatService {
             long timestamp = 0L;
             if (m.getCreatedAt() != null) {
                 timestamp = m.getCreatedAt()
-                        .atZone(ZoneId.systemDefault())
+                        .atZone(ZoneId.of("Asia/Seoul"))
                         .toInstant()
                         .toEpochMilli();
             }

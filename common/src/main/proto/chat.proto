@@ -38,9 +38,14 @@ message ChatResponseMessage {
 enum MessageType{
   TEXT = 0;
   IMAGE = 1;
-  NOTICE = 3;
-  DIRECT = 4;
-  PARCEL= 5;
+  DIRECT_REQUEST = 3;
+  DIRECT_ACCEPT = 4;
+  PARCEL_REQUEST= 5;
+  PARCEL_ACCEPT= 6;
+  PAYMENT_REQUEST=7;
+  PAYMENT_DONE=8;
+  ADDRESS_REGISTER=9;
+  ADDRESS_REGISTER_DONE=10;
 }
 message PresignedUrl {
   string putUrl = 1;
