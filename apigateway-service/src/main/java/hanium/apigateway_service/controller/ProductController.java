@@ -27,9 +27,7 @@ public class ProductController {
 
     private final ProductGrpcClient productGrpcClient;
     private final ObjectMapper objectMapper;
-
-    // ci/cd 스크립트 테스트를 진행합니다.
-
+    
     // 상품 등록
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseDTO<ProductResponseDTO>> registerProduct(
