@@ -60,10 +60,10 @@ jobs:
           export GIT_USERNAME=${{ secrets.GIT_USERNAME }}
           export GIT_TOKEN=${{ secrets.GIT_TOKEN }}
           export IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
-          envsubst < ecs/taskdef-config-template.json > ecs/taskdef-config.json
+          envsubst < ecs/taskdef-product-template.json > ecs/taskdef-product.json
 
-      - name: taskdef-config.json 존재 확인
-        run: cat ecs/taskdef-config.json
+      - name: taskdef-product.json 존재 확인
+        run: cat ecs/taskdef-product.json
 
       - name: 태스크 정의 등록
         id: register-task
