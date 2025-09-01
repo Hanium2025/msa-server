@@ -113,6 +113,13 @@ dependencies {
     implementation 'commons-codec:commons-codec:1.13'
     implementation 'com.auth0:java-jwt:3.13.0'
 
+    //prometheus
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    //Websocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
     //health-check
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }

@@ -40,7 +40,8 @@ public class JwtUtil {
     private final UserGrpcClient userGrpcClient;
 
     // 사용할 상수 정의
-    private static final String EMAIL_CLAIM = "email"; // username 클레임
+    private static final String ID_CLAIM = "id";
+    private static final String EMAIL_CLAIM = "email";
     private static final String BEARER = "Bearer ";
     // ★ 추가: 쿠키 이름 상수
     private static final String REFRESH_COOKIE_NAME = "RefreshToken";
@@ -75,6 +76,23 @@ public class JwtUtil {
                         .getName().equals("RefreshToken")).findFirst()
                 .orElse(null);
         return Objects.requireNonNull(cookie).getValue();
+    }
+
+    /**
+     * Access 토큰의 Claim 중 id 키에서 사용자 아이디를 추출합니다.
+     *
+     * @param accessToken 전달된 Access 토큰
+     * @return 사용자 아이디
+     */
+    public Long extractId(String accessToken) throws CustomException {
+        if (isTokenValid(accessToken)) {
+            return JWT.require(Algorithm.HMAC512(secret)).build()
+                    .verify(accessToken)
+                    .getClaim(ID_CLAIM)
+                    .asLong();
+        } else {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
     }
 
     /**

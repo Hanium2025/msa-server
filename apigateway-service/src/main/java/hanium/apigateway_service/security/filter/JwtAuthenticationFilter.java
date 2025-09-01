@@ -26,19 +26,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final List<String> NO_CHECK_URLS = new ArrayList<>(Arrays.asList(
-            "/user/auth/login", "/user/auth/signup", "/health/user-service",
-            "/health/community-service", "/health/notification-service", "/health/product-service", "/health/discovery-service", "/health-check", "/actuator/health",
-            "/user/auth/login",
-            "/user/auth/signup",
-            "/user/auth/refresh",
-            "/user/sms/send",
-            "/user/sms/verify",
-            "/health/user-service",
-            "/health/community-service",
-            "/health/notification-service",
-            "/health/product-service",
-            "/health/discovery-service",
-            "/health-check"
+            "/user/auth",
+            "/user/sms",
+            "/health",
+            "/health-check",
+            "/actuator"
     ));
 
     @Override
@@ -46,11 +38,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        // 필터 검사 제외할 uri
-        if (NO_CHECK_URLS.contains(request.getRequestURI())) {
+        String uri = request.getRequestURI();
+
+        //  WebSocket 경로 예외 처리
+        if (uri.startsWith("/ws")) {
+            log.info("✅ WebSocket 경로 필터 패스됨: {}", uri);
             filterChain.doFilter(request, response);
             log.info("✅ 필터 pass됨");
             return;
+        }
+        // 필터 검사 pass
+        for (String prefix : NO_CHECK_URLS) {
+            if (request.getRequestURI().startsWith(prefix)) {
+                log.info("✅ JWT 검사 필터 pass됨: {}", request.getRequestURI());
+                filterChain.doFilter(request, response);
+                return;
+            }
         }
 
         // Access 존재하는 경우 -> Access 토큰 인증해 Authentication 객체 생성

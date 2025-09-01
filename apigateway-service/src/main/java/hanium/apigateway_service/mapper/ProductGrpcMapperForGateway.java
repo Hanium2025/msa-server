@@ -1,12 +1,11 @@
 package hanium.apigateway_service.mapper;
 
 
+import hanium.apigateway_service.dto.product.request.ProductSearchRequestDTO;
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
+import hanium.apigateway_service.dto.product.request.ReportProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
-import hanium.common.proto.product.DeleteImageRequest;
-import hanium.common.proto.product.DeleteProductRequest;
-import hanium.common.proto.product.RegisterProductRequest;
-import hanium.common.proto.product.UpdateProductRequest;
+import hanium.common.proto.product.*;
 
 import java.util.List;
 
@@ -25,9 +24,9 @@ public class ProductGrpcMapperForGateway {
                 .build();
     }
 
-    public static UpdateProductRequest toUpdateProduct2Grpc(Long memberId, Long productId,
-                                                            UpdateProductRequestDTO dto,
-                                                            List<String> s3Paths) {
+    public static UpdateProductRequest toUpdateProductGrpc(Long memberId, Long productId,
+                                                           UpdateProductRequestDTO dto,
+                                                           List<String> s3Paths) {
         return UpdateProductRequest.newBuilder()
                 .setMemberId(memberId)
                 .setProductId(productId)
@@ -48,10 +47,56 @@ public class ProductGrpcMapperForGateway {
                 .build();
     }
 
-    public static DeleteProductRequest toDeleteProductGrpc(Long productId, Long memberId) {
-        return DeleteProductRequest.newBuilder()
+    public static GetProductRequest toGetProductGrpc(Long productId, Long memberId) {
+        return GetProductRequest.newBuilder()
                 .setProductId(productId)
                 .setMemberId(memberId)
+                .build();
+    }
+
+    public static ProductSearchRequest toSearchProductGrpc(Long memberId, ProductSearchRequestDTO dto) {
+        return ProductSearchRequest.newBuilder()
+                .setMemberId(memberId)
+                .setKeyword(dto.getKeyword())
+                .build();
+    }
+
+    public static ProductSearchHistoryRequest toSearchProductHistoryGrpc(Long memberId) {
+        return ProductSearchHistoryRequest.newBuilder()
+                .setMemberId(memberId)
+                .build();
+    }
+
+    public static DeleteProductSearchHistoryRequest toDeleteProductSearchHistoryGrpc(Long searchId, Long memberId) {
+        return DeleteProductSearchHistoryRequest.newBuilder()
+                .setSearchId(searchId)
+                .setMemberId(memberId)
+                .build();
+    }
+
+    public static DeleteAllProductSearchHistoryRequest toDeleteAllProductSearchHistoryGrpc(Long memberId) {
+        return DeleteAllProductSearchHistoryRequest.newBuilder()
+                .setMemberId(memberId)
+                .build();
+    }
+
+    public static GetProductByCategoryRequest toGetProductByCategoryGrpc(Long memberId, String category,
+                                                                         String sort, int page) {
+        return GetProductByCategoryRequest.newBuilder()
+                .setMemberId(memberId)
+                .setCategory(category)
+                .setSort(sort)
+                .setPage(page)
+                .build();
+    }
+
+    public static ReportProductRequest toReportProductGrpc(Long memberId, Long productId,
+                                                           ReportProductRequestDTO dto) {
+        return ReportProductRequest.newBuilder()
+                .setMemberId(memberId)
+                .setProductId(productId)
+                .setReason(dto.getReason())
+                .setDetails(dto.getDetails())
                 .build();
     }
 }

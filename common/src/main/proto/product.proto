@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package hanium.common.proto.user;
+package hanium.common.proto.product;
 
 option java_package = "hanium.common.proto.product";
 option java_multiple_files = true;
@@ -8,6 +8,9 @@ option java_multiple_files = true;
 import "common.proto";
 
 service ProductService {
+  // 1. 메인페이지 조회
+  rpc GetProductMain(ProductMainRequest) returns (ProductMainResponse);
+
   // 1. 상품 등록
   rpc RegisterProduct(RegisterProductRequest) returns (ProductResponse);
 
@@ -19,10 +22,52 @@ service ProductService {
   rpc DeleteImage(DeleteImageRequest) returns (DeleteImageResponse);
 
   // 4. 상품 삭제
-  rpc DeleteProduct(DeleteProductRequest) returns (Empty);
+  rpc DeleteProduct(GetProductRequest) returns (Empty);
+
+  // 5. 상품 찜
+  rpc LikeProduct(GetProductRequest) returns (LikeProductResponse);
+
+  // 6. 상품 찜 목록 조회
+  rpc GetLikeProducts(GetLikedProductsRequest) returns (LikedProductsResponse);
+
+  // 7. 상품 검색 요청
+  rpc SearchProduct(ProductSearchRequest) returns (ProductSearchResponse);
+
+  // 8. 상품 검색 기록 조회
+  rpc ProductSearchHistory(ProductSearchHistoryRequest) returns (ProductSearchHistoryResponse);
+
+  // 9. 상품 검색 기록 선택 삭제
+  rpc DeleteProductSearchHistory(DeleteProductSearchHistoryRequest) returns (Empty);
+
+  // 10. 상품 검색 기록 전체 삭제
+  rpc DeleteAllProductSearchHistory(DeleteAllProductSearchHistoryRequest) returns (Empty);
+
+  // 11. 상품 카테고리별 보기
+  rpc GetProductByCategory(GetProductByCategoryRequest) returns (SimpleProductsResponse);
+
+  // 9. 상품 신고
+  rpc ReportProduct(ReportProductRequest) returns (Empty);
 }
 
 message Empty {}
+
+message ProductMainRequest {
+  int64 member_id = 1;
+}
+message ProductMainResponse {
+  repeated SimpleProductResponse products = 1;
+  repeated CategoryMain categories = 2;
+}
+message SimpleProductResponse {
+  int64 product_id = 1;
+  string title = 2;
+  int64 price = 3;
+  string image_url = 4;
+}
+message CategoryMain {
+  string name = 1;
+  string image_url = 2;
+}
 
 // 1. 상품 등록
 message RegisterProductRequest {
@@ -37,12 +82,18 @@ message RegisterProductRequest {
 message ProductResponse {
   int64 product_id = 1;
   int64 seller_id = 2;
-  string title = 3;
-  string content = 4;
-  int64 price = 5;
-  string category = 6;
-  string status = 7;
-  repeated ProductImageResponse images = 8;
+  string seller_nickname = 3;
+  string seller_profile_img = 4;
+  string created_at = 5;
+  string title = 6;
+  string content = 7;
+  int64 price = 8;
+  string category = 9;
+  string status = 10;
+  bool seller = 11;
+  bool liked = 12;
+  int64 like_count = 13;
+  repeated ProductImageResponse images = 14;
 }
 message ProductImageResponse {
   int64 product_image_id = 1;
@@ -51,7 +102,8 @@ message ProductImageResponse {
 
 // 2. 상품 조회
 message GetProductRequest {
-  int64 product_id = 1;
+  int64 member_id = 1;
+  int64 product_id = 2;
 }
 
 // 3. 상품 수정
@@ -73,8 +125,68 @@ message DeleteImageResponse {
   int32 left_img_count = 1;
 }
 
-// 4. 상품 삭제
-message DeleteProductRequest {
+// 5. 상품 찜 / 찜 취소
+message LikeProductResponse {
+  bool likeCanceled = 1;
+}
+
+// 6. 상품 찜 목록 조회
+message GetLikedProductsRequest {
+  int64 member_id = 1;
+  int32 page = 2;
+}
+message LikedProductsResponse {
+  repeated SimpleProductResponse likedProducts = 1;
+}
+
+// 7. 상품 검색 요청
+message ProductSearchRequest {
+  int64 member_id = 1;
+  string keyword = 2;
+}
+message ProductSearchResponse {
+  repeated SimpleProductResponse productList = 1;
+}
+
+// 8. 상품 검색 기록 조회
+message ProductSearchHistoryRequest {
+  int64 member_id = 1;
+}
+
+message ProductSearchHistoryResponse {
+  repeated ProductSearchHistory productSearchHistoryList = 1;
+}
+message ProductSearchHistory {
+  int64 search_id = 1;
+  string keyword = 2;
+}
+
+// 9. 상품 검색 기록 선택 삭제
+message DeleteProductSearchHistoryRequest {
+  int64 search_id = 1;
+  int64 member_id = 2;
+}
+
+// 10. 상품 검색 기록 전체 삭제
+message DeleteAllProductSearchHistoryRequest {
+  int64 member_id = 1;
+}
+
+// 11. 상품 카테고리별 조회 요청
+message GetProductByCategoryRequest {
+  int64 member_id = 1;
+  string category = 2;
+  string sort = 3;
+  int32 page = 4;
+}
+message SimpleProductsResponse {
+  repeated SimpleProductResponse products = 1;
+}
+
+// 9. 상품 신고
+message ReportProductRequest {
   int64 member_id = 1;
   int64 product_id = 2;
+  string reason = 3;
+  string details = 4;
 }

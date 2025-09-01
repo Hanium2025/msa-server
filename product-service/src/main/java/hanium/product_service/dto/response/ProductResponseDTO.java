@@ -1,41 +1,34 @@
 package hanium.product_service.dto.response;
 
-import hanium.product_service.domain.Category;
-import hanium.product_service.domain.Product;
-import hanium.product_service.domain.Status;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ProductResponseDTO {
 
-    private Long id;
+    private Long productId;
+    private Long sellerId;
+    private String sellerNickname;
+    private String sellerProfileImg;
+    private String createdAt;
     private String title;
     private String content;
     private Long price;
-    private Long sellerId;
-    private Status status;
-    private Category category;
+    private String category;
+    private String status;
+    private boolean seller;
+    private boolean liked;
+    private Long likeCount;
     private List<ProductImageDTO> images;
 
-    public static ProductResponseDTO of(Product product, List<ProductImageDTO> images) {
-        return ProductResponseDTO.builder()
-                .id(product.getId())
-                .title(product.getTitle())
-                .content(product.getContent())
-                .price(product.getPrice())
-                .sellerId(product.getSellerId())
-                .category(product.getCategory())
-                .status(product.getStatus())
-                .images(images)
-                .build();
+    public void updateSellerProfile(ProfileResponseDTO sellerProfile) {
+        this.sellerNickname = sellerProfile.getNickname();
+        this.sellerProfileImg = sellerProfile.getProfileImageUrl();
     }
 }
-
