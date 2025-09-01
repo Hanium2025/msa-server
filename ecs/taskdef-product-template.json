@@ -1,5 +1,5 @@
 {
-  "family": "discovery-service-task",
+  "family": "product-service-task",
   "executionRoleArn": "arn:aws:iam::826331271523:role/ecsTaskExecutionRole",
   "networkMode": "awsvpc",
   "requiresCompatibilities": [
