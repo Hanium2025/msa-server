@@ -1,6 +1,7 @@
 package hanium.product_service.service.impl;
 
 import chat.Chat;
+import hanium.common.exception.CustomException;
 import hanium.product_service.domain.Chatroom;
 import hanium.product_service.domain.Message;
 import hanium.product_service.domain.MessageImage;
@@ -27,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static hanium.common.exception.ErrorCode.PRODUCT_NOT_FOUND;
 
 @Slf4j
 @Service
@@ -126,7 +129,7 @@ public class ChatServiceImpl implements ChatService {
 
             String opponentNickname = profileResponseDTO.getNickname();
             String productName = productRepository.findByIdAndDeletedAtIsNull(r.getProductId())
-                    .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다"))
+                    .orElseThrow(() -> new CustomException(PRODUCT_NOT_FOUND))
                     .getTitle();
 
             String roomName = opponentNickname + "/" + productName;
