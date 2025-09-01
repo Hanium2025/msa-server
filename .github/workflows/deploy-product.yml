@@ -69,7 +69,7 @@ jobs:
         id: register-task
         run: |
           arn=$(aws ecs register-task-definition \
-            --cli-input-json file://ecs/taskdef-discovery.json \
+            --cli-input-json file://ecs/taskdef-product.json \
             --query 'taskDefinition.taskDefinitionArn' \
             --output text)
           echo "task-definition-arn=$arn" >> $GITHUB_OUTPUT
