@@ -48,7 +48,6 @@ bootJar {
 dependencies {
     // spring
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    //implementation 'org.springframework.boot:spring-boot-starter-security'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -66,6 +65,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'com.mysql:mysql-connector-j'
     runtimeOnly 'com.h2database:h2'
+
+    // elasticsearch
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 
     // lombok
     compileOnly 'org.projectlombok:lombok'
@@ -99,15 +101,26 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
     implementation project(':common')
 
+    //prometheus
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 
-	//health-check
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-	// Grpc-Test-Support
+    //AWS S3
+    implementation "software.amazon.awssdk:s3:2.17.217"
     // Grpc-Test-Support
 //    testImplementation("io.grpc:grpc-testing")
 //    // Spring-Test-Support (Optional)
 //    testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    // test
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation 'org.mockito:mockito-core:5.12.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.12.0'
+    testImplementation 'org.mockito:mockito-inline:5.2.0'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
 }
 springBoot {
     mainClass = 'hanium.product_service.ProductServiceApplication'

@@ -2,9 +2,11 @@ package hanium.apigateway_service.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hanium.apigateway_service.dto.product.request.ProductSearchRequestDTO;
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
+import hanium.apigateway_service.dto.product.request.ReportProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
-import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
+import hanium.apigateway_service.dto.product.response.*;
 import hanium.apigateway_service.grpc.ProductGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,33 @@ public class ProductController {
 
     private final ProductGrpcClient productGrpcClient;
     private final ObjectMapper objectMapper;
+
+    // 메인 페이지
+    @GetMapping
+    public ResponseEntity<ResponseDTO<ProductMainDTO>> getProductMain(Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        ProductMainDTO result = productGrpcClient.getProductMain(memberId);
+        ResponseDTO<ProductMainDTO> response = new ResponseDTO<>(
+                result, HttpStatus.OK, "메인페이지가 조회되었습니다 - 회원 ID: " + memberId);
+        return ResponseEntity.ok(response);
+    }
+
+    // 카테고리별 조회
+    @GetMapping("/category/{category}")
+    public ResponseEntity<ResponseDTO<List<SimpleProductDTO>>> getProductByCategory(
+            Authentication authentication,
+            @PathVariable String category,
+            @RequestParam(defaultValue = "recent") String sort,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        Long memberId = (Long) authentication.getPrincipal();
+        ResponseDTO<List<SimpleProductDTO>> result = new ResponseDTO<>(
+                productGrpcClient.getProductByCategory(memberId, category.toUpperCase(), sort, page),
+                HttpStatus.OK,
+                "카테고리 [" + category + "]가 [" + sort + "]순으로 조회되었습니다."
+        );
+        return ResponseEntity.ok(result);
+    }
 
     // 상품 등록
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -53,9 +82,11 @@ public class ProductController {
 
     // 상품 조회
     @GetMapping("/{productId}")
-    public ResponseEntity<ResponseDTO<ProductResponseDTO>> getProduct(@PathVariable Long productId) {
+    public ResponseEntity<ResponseDTO<ProductResponseDTO>> getProduct(@PathVariable Long productId,
+                                                                      Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
         ResponseDTO<ProductResponseDTO> response = new ResponseDTO<>(
-                productGrpcClient.getProduct(productId), HttpStatus.OK, "해당하는 상품이 조회되었습니다.");
+                productGrpcClient.getProduct(memberId, productId), HttpStatus.OK, "해당하는 상품이 조회되었습니다.");
         return ResponseEntity.ok(response);
     }
 
@@ -82,6 +113,93 @@ public class ProductController {
         productGrpcClient.deleteProduct(productId, memberId);
         ResponseDTO<ProductResponseDTO> response = new ResponseDTO<>(
                 null, HttpStatus.OK, "상품이 삭제되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    // 상품 찜/찜 취소
+    @PostMapping("/like/{productId}")
+    public ResponseEntity<?> likeProduct(@PathVariable Long productId, Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        String message = productGrpcClient.likeProduct(memberId, productId);
+        ResponseDTO<?> response = new ResponseDTO<>(null, HttpStatus.OK, message);
+        return ResponseEntity.ok(response);
+    }
+
+    // 상품 찜 목록 조회
+    @GetMapping("/like")
+    public ResponseEntity<ResponseDTO<List<SimpleProductDTO>>> getLikeProducts(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page
+    ) {
+        Long memberId = (Long) authentication.getPrincipal();
+        List<SimpleProductDTO> result = productGrpcClient.getLikeProducts(memberId, page);
+        ResponseDTO<List<SimpleProductDTO>> response = new ResponseDTO<>(
+                result, HttpStatus.OK, "상품 찜 목록이 20개씩 조회되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    // 상품 검색
+    @GetMapping("/search/{keyword}")
+    public ResponseEntity<ResponseDTO<ProductSearchResponseDTO>> searchProduct(
+            @PathVariable ("keyword") String keyword,
+            Authentication authentication) {
+
+        Long memberId = (Long) authentication.getPrincipal();
+
+        ProductSearchRequestDTO requestDTO = ProductSearchRequestDTO.builder()
+                .keyword(keyword)
+                .build();
+
+        ProductSearchResponseDTO result = productGrpcClient.searchProduct(memberId, requestDTO);
+
+        ResponseDTO<ProductSearchResponseDTO> response = new ResponseDTO<>(
+                result, HttpStatus.OK, "상품 검색 결과입니다.");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // 상품 검색 기록 조회
+    @GetMapping("/search-history")
+    public ResponseEntity<ResponseDTO<List<ProductSearchHistoryDTO>>> searchProductHistory(
+            Authentication authentication
+    ){
+        Long memberId = (Long) authentication.getPrincipal();
+        List<ProductSearchHistoryDTO> result = productGrpcClient.searchProductHistory(memberId);
+
+        ResponseDTO<List<ProductSearchHistoryDTO>> response = new ResponseDTO<>(
+                result, HttpStatus.OK, "상품 검색 기록입니다.");
+
+        return ResponseEntity.ok(response);
+    }
+
+    // 상품 검색 기록 선택 삭제
+    @DeleteMapping("/search-history/{searchId}")
+    public ResponseEntity<?> deleteProductHistory(@PathVariable Long searchId, Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        productGrpcClient.deleteProductHistory(searchId, memberId);
+        ResponseDTO<Void> response = new ResponseDTO<>(
+                null, HttpStatus.OK, "검색 기록이 삭제되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    // 상품 검색 기록 전체 삭제
+    @DeleteMapping("/search-history")
+    public ResponseEntity<?> deleteAllProductHistory(Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        productGrpcClient.deleteAllProductHistory(memberId);
+        ResponseDTO<Void> response = new ResponseDTO<>(
+                null, HttpStatus.OK, "검색 기록이 전체 삭제되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    // 상품 신고
+    @PostMapping("/report/{productId}")
+    public ResponseEntity<ResponseDTO<?>> reportProduct(@PathVariable Long productId,
+                                                        @RequestBody ReportProductRequestDTO dto,
+                                                        Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        productGrpcClient.reportProduct(memberId, productId, dto);
+        ResponseDTO<?> response = new ResponseDTO<>(null, HttpStatus.OK, "상품 신고가 접수되었습니다.");
         return ResponseEntity.ok(response);
     }
 }

@@ -1,8 +1,10 @@
 package hanium.apigateway_service.grpc;
 
+import hanium.apigateway_service.dto.product.request.ProductSearchRequestDTO;
 import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
+import hanium.apigateway_service.dto.product.request.ReportProductRequestDTO;
 import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
-import hanium.apigateway_service.dto.product.response.ProductResponseDTO;
+import hanium.apigateway_service.dto.product.response.*;
 import hanium.apigateway_service.mapper.ProductGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
@@ -24,6 +26,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +40,31 @@ public class ProductGrpcClient {
     private String bucketName;
 
     private final S3Template s3Template;
+
+    // 메인 페이지
+    public ProductMainDTO getProductMain(Long memberId) {
+        ProductMainRequest request = ProductMainRequest.newBuilder().setMemberId(memberId).build();
+        try {
+            return ProductMainDTO.from(stub.getProductMain(request));
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 카테고리별 보기
+    public List<SimpleProductDTO> getProductByCategory(Long memberId, String category,
+                                                       String sort, int page) {
+        GetProductByCategoryRequest req =
+                ProductGrpcMapperForGateway.toGetProductByCategoryGrpc(memberId, category, sort, page);
+        try {
+            return stub.getProductByCategory(req).getProductsList()
+                    .stream()
+                    .map(SimpleProductDTO::from)
+                    .collect(Collectors.toList());
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
 
     // 상품 등록
     public ProductResponseDTO registerProduct(Long memberId,
@@ -52,8 +80,8 @@ public class ProductGrpcClient {
     }
 
     // 상품 조회
-    public ProductResponseDTO getProduct(Long productId) {
-        GetProductRequest grpcRequest = GetProductRequest.newBuilder().setProductId(productId).build();
+    public ProductResponseDTO getProduct(Long memberId, Long productId) {
+        GetProductRequest grpcRequest = ProductGrpcMapperForGateway.toGetProductGrpc(productId, memberId);
         try {
             return ProductResponseDTO.from(stub.getProduct(grpcRequest));
         } catch (StatusRuntimeException e) {
@@ -80,7 +108,7 @@ public class ProductGrpcClient {
             }
             // 새로 추가된 이미지와 수정할 상품 dto로 상품 수정
             UpdateProductRequest updateRequest =
-                    ProductGrpcMapperForGateway.toUpdateProduct2Grpc(memberId, productId, dto, s3Paths);
+                    ProductGrpcMapperForGateway.toUpdateProductGrpc(memberId, productId, dto, s3Paths);
             return ProductResponseDTO.from(stub.updateProduct(updateRequest));
 
         } catch (StatusRuntimeException e) {
@@ -90,9 +118,37 @@ public class ProductGrpcClient {
 
     // 상품 삭제
     public void deleteProduct(Long productId, Long memberId) {
-        DeleteProductRequest grpcRequest = ProductGrpcMapperForGateway.toDeleteProductGrpc(productId, memberId);
+        GetProductRequest grpcRequest = ProductGrpcMapperForGateway.toGetProductGrpc(productId, memberId);
         try {
             stub.deleteProduct(grpcRequest);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 상품 찜/찜 취소
+    public String likeProduct(Long memberId, Long productId) {
+        GetProductRequest grpcRequest = ProductGrpcMapperForGateway.toGetProductGrpc(productId, memberId);
+        try {
+            if (stub.likeProduct(grpcRequest).getLikeCanceled()) {
+                return "상품 (id=" + productId + ") 찜이 취소되었습니다.";
+            } else {
+                return "상품 (id=" + productId + ") 찜이 등록되었습니다.";
+            }
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 상품 찜 목록 조회
+    public List<SimpleProductDTO> getLikeProducts(Long memberId, int page) {
+        GetLikedProductsRequest grpcRequest =
+                GetLikedProductsRequest.newBuilder().setMemberId(memberId).setPage(page).build();
+        try {
+            return stub.getLikeProducts(grpcRequest).getLikedProductsList()
+                    .stream()
+                    .map(SimpleProductDTO::from)
+                    .collect(Collectors.toList());
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
@@ -105,7 +161,7 @@ public class ProductGrpcClient {
         }
         List<String> paths = new ArrayList<>();
         for (MultipartFile file : images) {
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            String fileName = "product_image/" + UUID.randomUUID() + "_" + file.getOriginalFilename();
             paths.add(s3Upload(file, fileName));
         }
         return paths;
@@ -130,6 +186,62 @@ public class ProductGrpcClient {
             s3Template.deleteObject(bucketName, fileName);
         } catch (S3Exception e) {
             throw new CustomException(ErrorCode.IMAGE_NOT_FOUND);
+        }
+    }
+
+    // 상품 검색
+    public ProductSearchResponseDTO searchProduct(Long memberId, ProductSearchRequestDTO dto) {
+        ProductSearchRequest grpcRequest =
+                ProductGrpcMapperForGateway.toSearchProductGrpc(memberId, dto);
+        try {
+            return ProductSearchResponseDTO.from(stub.searchProduct(grpcRequest));
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 상품 검색 기록
+    public List<ProductSearchHistoryDTO> searchProductHistory(Long memberId) {
+        ProductSearchHistoryRequest request =
+                ProductGrpcMapperForGateway.toSearchProductHistoryGrpc(memberId);
+        try {
+            return stub.productSearchHistory(request)
+                    .getProductSearchHistoryListList()
+                    .stream()
+                    .map(ProductSearchHistoryDTO::from)
+                    .collect(Collectors.toList());
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 상품 검색 기록 선택 삭제
+    public void deleteProductHistory(Long searchId, Long memberId) {
+        DeleteProductSearchHistoryRequest request = ProductGrpcMapperForGateway.toDeleteProductSearchHistoryGrpc(searchId, memberId);
+        try {
+            stub.deleteProductSearchHistory(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 상품 검색 기록 전체 삭제
+    public void deleteAllProductHistory(Long memberId) {
+        DeleteAllProductSearchHistoryRequest request = ProductGrpcMapperForGateway.toDeleteAllProductSearchHistoryGrpc(memberId);
+        try {
+            stub.deleteAllProductSearchHistory(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 상품 신고
+    public void reportProduct(Long memberId, Long productId, ReportProductRequestDTO dto) {
+        ReportProductRequest req = ProductGrpcMapperForGateway.toReportProductGrpc(memberId, productId, dto);
+        try {
+            stub.reportProduct(req);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 }

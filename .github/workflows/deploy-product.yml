@@ -1,0 +1,85 @@
+name: Product 서비스 ECS에 배포
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "product-service/**"
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: product-service
+  ECS_CLUSTER: msa-cluster
+  ECS_SERVICE: product-service-task-service-gzt0voxw
+  CONTAINER_NAME: product-service
+
+jobs:
+  Deploy-product-service:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Github Actions ci 환경에 레포지토리 코드 받아오기
+        uses: actions/checkout@v4
+
+      - name: AWS 인증
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: AWS ECR 로그인
+        run: |
+          aws ecr get-login-password | docker login --username AWS --password-stdin \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+
+      - name: JDK 21 설치
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: 프로젝트 빌드
+        run: |
+          chmod +x gradlew
+          ./gradlew :product-service:clean 
+          ./gradlew :product-service:build
+
+      - name: 빌드파일로 도커 이미지 빌드
+        run: |
+          docker build -t ${{ env.ECR_REPOSITORY }} ./product-service
+          docker tag ${{ env.ECR_REPOSITORY }}:latest \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: ECR에 도커 이미지 푸시
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: ECS 태스크 정의에 환경변수 설정
+        run: |
+          sudo apt-get update && sudo apt-get install -y gettext
+          export GIT_USERNAME=${{ secrets.GIT_USERNAME }}
+          export GIT_TOKEN=${{ secrets.GIT_TOKEN }}
+          export IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+          envsubst < ecs/taskdef-product-template.json > ecs/taskdef-product.json
+
+      - name: taskdef-product.json 존재 확인
+        run: cat ecs/taskdef-product.json
+
+      - name: 태스크 정의 등록
+        id: register-task
+        run: |
+          arn=$(aws ecs register-task-definition \
+            --cli-input-json file://ecs/taskdef-product.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+          echo "task-definition-arn=$arn" >> $GITHUB_OUTPUT
+
+      - name: 태스크 정의 ARN을 env 변수로 설정
+        run: echo "TASK_DEF_ARN=${{ steps.register-task.outputs.task-definition-arn }}" >> $GITHUB_ENV
+
+      - name: ECS 서비스 배포
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $ECS_SERVICE \
+            --task-definition $TASK_DEF_ARN

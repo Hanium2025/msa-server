@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package chat;
+
+service ChatService {
+  //채팅
+  rpc Chat(stream ChatMessage) returns (stream ChatResponseMessage);
+
+  //s3 PresignedUrls 발급
+  rpc CreatePresignedUrls(CreatePresignedUrlsRequest) returns (CreatePresignedUrlsResponse);
+
+  //s3 채팅방별 채팅 내역 조회
+  rpc getAllMessagesByChatroomId(GetAllMessagesByChatroomIdRequest) returns (GetAllMessagesByChatroomResponse);
+}
+
+message ChatMessage {
+  int64 chatroomId = 1;
+  int64 senderId = 2;
+  int64 receiverId = 3;
+  string content = 4;
+  int64 timestamp = 5;
+  MessageType type = 6;
+  repeated string imageUrls = 7;
+}
+
+message ChatResponseMessage {
+  int64 chatroomId = 1;
+  int64 senderId = 2;
+  int64 receiverId = 3;
+  string content = 4;
+  int64 timestamp = 5;
+  int64 messageId = 6;
+  MessageType type = 7;
+  repeated string imageUrls = 8;
+  string receiverNickname = 9;
+}
+
+enum MessageType{
+  TEXT = 0;
+  IMAGE = 1;
+  DIRECT_REQUEST = 3;
+  DIRECT_ACCEPT = 4;
+  PARCEL_REQUEST= 5;
+  PARCEL_ACCEPT= 6;
+  PAYMENT_REQUEST=7;
+  PAYMENT_DONE=8;
+  ADDRESS_REGISTER=9;
+  ADDRESS_REGISTER_DONE=10;
+}
+message PresignedUrl {
+  string putUrl = 1;
+  string getUrl = 2;
+  string key = 3;
+}
+
+message CreatePresignedUrlsRequest {
+  int64 chatroomId = 1;
+  int32 count = 2;   // 1~3
+  string contentType = 3;  // "image/jpeg" 등
+}
+
+message CreatePresignedUrlsResponse{
+  repeated PresignedUrl urls = 1;
+}
+
+message GetAllMessagesByChatroomIdRequest{
+  int64 chatRoomId = 1;
+}
+
+message GetAllMessagesByChatroomResponse{
+  repeated ChatResponseMessage chatResponseMessage = 1;
+}

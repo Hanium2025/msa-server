@@ -1,0 +1,58 @@
+{
+  "family": "product-service-task",
+  "executionRoleArn": "arn:aws:iam::826331271523:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "1024",
+  "memory": "3072",
+  "containerDefinitions": [
+    {
+      "name": "product-service-task",
+      "image": "${IMAGE_URI}",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8084,
+          "hostPort": 8084,
+          "protocol": "tcp"
+        },
+        {
+          "appProtocol": "grpc",
+          "containerPort": 50051,
+          "hostPort": 50051,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "SPRING_APPLICATION_NAME",
+          "value": "product-service"
+        }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8084/actuator/health || exit 1"
+        ],
+        "interval": 30,
+        "retries": 3,
+        "startPeriod": 120,
+        "timeout": 5
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/product-service-task",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
