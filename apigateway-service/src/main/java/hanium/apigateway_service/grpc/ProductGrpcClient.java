@@ -190,9 +190,9 @@ public class ProductGrpcClient {
     }
 
     // 상품 검색
-    public ProductSearchResponseDTO searchProduct(Long memberId, ProductSearchRequestDTO dto) {
+    public ProductSearchResponseDTO searchProduct(Long memberId, ProductSearchRequestDTO dto, String sort, int page) {
         ProductSearchRequest grpcRequest =
-                ProductGrpcMapperForGateway.toSearchProductGrpc(memberId, dto);
+                ProductGrpcMapperForGateway.toSearchProductGrpc(memberId, dto, sort, page);
         try {
             return ProductSearchResponseDTO.from(stub.searchProduct(grpcRequest));
         } catch (StatusRuntimeException e) {
