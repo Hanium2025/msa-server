@@ -143,6 +143,8 @@ message LikedProductsResponse {
 message ProductSearchRequest {
   int64 member_id = 1;
   string keyword = 2;
+  string sort = 3;
+  int32 page = 4;
 }
 message ProductSearchResponse {
   repeated SimpleProductResponse productList = 1;
