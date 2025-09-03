@@ -54,10 +54,13 @@ public class ProductGrpcMapperForGateway {
                 .build();
     }
 
-    public static ProductSearchRequest toSearchProductGrpc(Long memberId, ProductSearchRequestDTO dto) {
+    public static ProductSearchRequest toSearchProductGrpc(Long memberId, ProductSearchRequestDTO dto, String sort, int page) {
         return ProductSearchRequest.newBuilder()
                 .setMemberId(memberId)
                 .setKeyword(dto.getKeyword())
+                .setSort(sort)
+                .setPage(page)
+
                 .build();
     }
 

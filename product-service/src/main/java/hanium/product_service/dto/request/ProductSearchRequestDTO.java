@@ -13,11 +13,15 @@ import lombok.NoArgsConstructor;
 public class ProductSearchRequestDTO {
     private Long memberId;
     private String keyword;
+    private String sort;
+    private int page;
 
     public static ProductSearchRequestDTO from(ProductSearchRequest request) {
         return ProductSearchRequestDTO.builder()
                 .memberId(request.getMemberId())
                 .keyword(request.getKeyword())
+                .sort(request.getSort())
+                .page(request.getPage())
                 .build();
 
     }
