@@ -1,11 +1,11 @@
 package hanium.apigateway_service.grpc;
 
-import chat.Chat;
-import chat.ChatServiceGrpc;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hanium.apigateway_service.dto.chat.request.ChatMessageRequestDTO;
 import hanium.apigateway_service.dto.chat.response.ChatMessageResponseDTO;
 import hanium.apigateway_service.mapper.ChatMessageMapperForGateway;
+import hanium.common.proto.product.ProductServiceGrpc;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +15,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.util.concurrent.ConcurrentHashMap;
+import hanium.common.proto.product.*;
 
 @Slf4j
 @Service
@@ -22,8 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GrpcChatStreamClient {
 
     @GrpcClient("product-service")
-    private ChatServiceGrpc.ChatServiceStub stub;
-    private StreamObserver<Chat.ChatMessage> requestObserver;
+    private ProductServiceGrpc.ProductServiceStub stub;
+    private StreamObserver<ChatMessage> requestObserver;
 
     private final ConcurrentHashMap<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -51,7 +52,7 @@ public class GrpcChatStreamClient {
             }
         }
         log.info("gRPC Stream 전송 시도: {}: ", dto);
-        Chat.ChatMessage grpcMessage = ChatMessageMapperForGateway.toGrpc(dto);
+        ChatMessage grpcMessage = ChatMessageMapperForGateway.toGrpc(dto);
         requestObserver.onNext(grpcMessage);
         log.info("✅ gRPC onNext 호출 완료");
 
@@ -60,7 +61,7 @@ public class GrpcChatStreamClient {
     private void startStream() {
         requestObserver = stub.chat(new StreamObserver<>() {
             @Override
-            public void onNext(Chat.ChatResponseMessage msg) {
+            public void onNext(ChatResponseMessage msg) {
                 // 1) 공통 DTO 생성
                 ChatMessageResponseDTO base = ChatMessageResponseDTO.builder()
                         .messageId(msg.getMessageId())
