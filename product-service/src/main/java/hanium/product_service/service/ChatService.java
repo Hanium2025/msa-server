@@ -1,6 +1,6 @@
 package hanium.product_service.service;
 
-import chat.Chat;
+import hanium.common.proto.product.*;
 import hanium.product_service.dto.request.CreateChatroomRequestDTO;
 import hanium.product_service.dto.response.ChatMessageResponseDTO;
 import hanium.product_service.dto.response.CreateChatroomResponseDTO;
@@ -13,7 +13,7 @@ public interface ChatService{
     CreateChatroomResponseDTO createChatroom(CreateChatroomRequestDTO requestDTO);
 
     // 👇 BiDi Streaming용 메서드 추가
-    StreamObserver<Chat.ChatMessage> chat(StreamObserver<Chat.ChatResponseMessage> responseObserver);
+    StreamObserver<ChatMessage> chat(StreamObserver<ChatResponseMessage> responseObserver);
 
     //채팅방 조회
      List<GetMyChatroomResponseDTO> getMyChatrooms(Long memberId);

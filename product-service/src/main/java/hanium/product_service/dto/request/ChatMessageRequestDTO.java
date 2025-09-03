@@ -1,8 +1,6 @@
 package hanium.product_service.dto.request;
 
-
-import chat.Chat;
-import hanium.product_service.domain.Chatroom;
+import hanium.common.proto.product.ChatMessage;
 import hanium.product_service.domain.MessageType;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,7 +19,7 @@ public class ChatMessageRequestDTO {
     private List<String> imageUrls;
 
     //grpc -> dto
-    public static ChatMessageRequestDTO from(Chat.ChatMessage msg) {
+    public static ChatMessageRequestDTO from(ChatMessage msg) {
         return ChatMessageRequestDTO.builder()
                 .chatroomId(msg.getChatroomId())
                 .receiverId(msg.getReceiverId())
@@ -34,7 +32,7 @@ public class ChatMessageRequestDTO {
 
     }
 
-    private static MessageType mapType(Chat.MessageType type) {
+    private static MessageType mapType(hanium.common.proto.product.MessageType type) {
         if (type == null) {
             return MessageType.TEXT;
         }

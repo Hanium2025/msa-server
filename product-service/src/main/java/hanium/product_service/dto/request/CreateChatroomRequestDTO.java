@@ -1,6 +1,7 @@
 package hanium.product_service.dto.request;
 
-import chatroom.Chatroom;
+
+import hanium.common.proto.product.CreateChatroomRequest;
 import lombok.*;
 
 @Getter
@@ -11,7 +12,7 @@ public class CreateChatroomRequestDTO {
     private Long receiverId;
 
     //grpc -> dto
-    public static CreateChatroomRequestDTO from(Chatroom.CreateChatroomRequest request){
+    public static CreateChatroomRequestDTO from(CreateChatroomRequest request){
         return CreateChatroomRequestDTO.builder()
                 .productId(request.getProductId())
                 .senderId(request.getSenderId())

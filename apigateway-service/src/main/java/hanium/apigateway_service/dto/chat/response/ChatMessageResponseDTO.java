@@ -1,14 +1,10 @@
 package hanium.apigateway_service.dto.chat.response;
 
-import chat.Chat;
+import hanium.common.proto.product.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 
 @Getter
@@ -29,7 +25,7 @@ public class ChatMessageResponseDTO {
     private String receiverNickname; //상대방 닉네임
 
     //응답 받은 grpc 응답 값을 dto로 변환
-    public static List<ChatMessageResponseDTO> from (Chat.GetAllMessagesByChatroomResponse response){
+    public static List<ChatMessageResponseDTO> from (GetAllMessagesByChatroomResponse response){
         return response.getChatResponseMessageList().stream()
                 .map(i-> ChatMessageResponseDTO.builder()
                         .messageId(i.getMessageId())

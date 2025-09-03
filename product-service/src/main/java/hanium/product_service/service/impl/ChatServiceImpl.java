@@ -1,6 +1,6 @@
 package hanium.product_service.service.impl;
 
-import chat.Chat;
+import hanium.common.proto.product.*;
 import hanium.common.exception.CustomException;
 import hanium.product_service.domain.Chatroom;
 import hanium.product_service.domain.Message;
@@ -43,7 +43,7 @@ public class ChatServiceImpl implements ChatService {
     private final ChatRepository chatRepository;
     private final MessageImageRepository messageImageRepository;
     // userId → StreamObserver 저장
-    private final ConcurrentHashMap<Long, StreamObserver<Chat.ChatResponseMessage>> userStreamMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, StreamObserver<ChatResponseMessage>> userStreamMap = new ConcurrentHashMap<>();
 
     @Transactional
     @Override
@@ -68,11 +68,11 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public StreamObserver<Chat.ChatMessage> chat(StreamObserver<Chat.ChatResponseMessage> responseObserver) {
+    public StreamObserver<ChatMessage> chat(StreamObserver<ChatResponseMessage> responseObserver) {
         return new StreamObserver<>() {
 
             @Override
-            public void onNext(Chat.ChatMessage msg) {
+            public void onNext(ChatMessage msg) {
                 log.info("📥 product-service gRPC 수신: {}", msg);
                 // grpc -> dto
                 ChatMessageRequestDTO dto = ChatMessageRequestDTO.from(msg);
@@ -86,7 +86,7 @@ public class ChatServiceImpl implements ChatService {
                         .toEpochMilli()
                         : System.currentTimeMillis();
                 // 공통 응답 생성
-                Chat.ChatResponseMessage response = Chat.ChatResponseMessage.newBuilder()
+                ChatResponseMessage response = ChatResponseMessage.newBuilder()
                         .setChatroomId(msg.getChatroomId())
                         .setSenderId(msg.getSenderId())
                         .setReceiverId(msg.getReceiverId())

@@ -1,7 +1,10 @@
 package hanium.product_service.service.impl;
 
-import chat.Chat;
+import hanium.common.proto.product.*;
+import hanium.common.proto.product.MessageType;
 import hanium.product_service.domain.*;
+
+import hanium.product_service.domain.Product;
 import hanium.product_service.dto.request.ChatMessageRequestDTO;
 import hanium.product_service.dto.request.CreateChatroomRequestDTO;
 import hanium.product_service.dto.response.ChatMessageResponseDTO;
@@ -31,6 +34,8 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
+import static hanium.product_service.domain.MessageType.IMAGE;
+import static hanium.product_service.domain.MessageType.TEXT;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -156,7 +161,7 @@ public class ChatServiceImplTest {
         given(m1.getSenderId()).willReturn(10L);
         given(m1.getReceiverId()).willReturn(20L);
         given(m1.getContent()).willReturn("hello");
-        given(m1.getMessageType()).willReturn(MessageType.TEXT);
+        given(m1.getMessageType()).willReturn(TEXT);
         given(m1.getCreatedAt()).willReturn(t1);
 
         given(m2.getId()).willReturn(2L);
@@ -164,7 +169,7 @@ public class ChatServiceImplTest {
         given(m2.getSenderId()).willReturn(20L);
         given(m2.getReceiverId()).willReturn(10L);
         given(m2.getContent()).willReturn("사진 보냄");
-        given(m2.getMessageType()).willReturn(MessageType.IMAGE);
+        given(m2.getMessageType()).willReturn(IMAGE);
         given(m2.getCreatedAt()).willReturn(t2);
 
         given(chatRepository.findAllByChatroomIdOrderByCreatedAtAsc(chatroomId))
@@ -306,16 +311,16 @@ public class ChatServiceImplTest {
     void chat_onNext() {
 
         @SuppressWarnings("unchecked")
-        StreamObserver<Chat.ChatResponseMessage> responseObserver = mock(StreamObserver.class);
+        StreamObserver<ChatResponseMessage> responseObserver = mock(StreamObserver.class);
 
-        StreamObserver<Chat.ChatMessage> serverObserver = sut.chat(responseObserver);
+        StreamObserver<ChatMessage> serverObserver = sut.chat(responseObserver);
 
-        Chat.ChatMessage msg = Chat.ChatMessage.newBuilder()
+        ChatMessage msg = ChatMessage.newBuilder()
                 .setChatroomId(999L)
                 .setContent("안녕하세요")
                 .setSenderId(1L)
                 .setReceiverId(2L)
-                .setType(Chat.MessageType.TEXT)
+                .setType(MessageType.TEXT)
                 .addAllImageUrls(List.of())
                 .build();
 
@@ -329,16 +334,16 @@ public class ChatServiceImplTest {
         serverObserver.onNext(msg);
 
         //then
-        ArgumentCaptor<Chat.ChatResponseMessage> resCap = ArgumentCaptor.forClass(Chat.ChatResponseMessage.class);
+        ArgumentCaptor<ChatResponseMessage> resCap = ArgumentCaptor.forClass(ChatResponseMessage.class);
         then(responseObserver).should().onNext(resCap.capture());
 
-        Chat.ChatResponseMessage responseMessage = resCap.getValue();
+        ChatResponseMessage responseMessage = resCap.getValue();
         assertThat(responseMessage.getMessageId()).isEqualTo(123L);
         assertThat(responseMessage.getSenderId()).isEqualTo(1L);
         assertThat(responseMessage.getReceiverId()).isEqualTo(2L);
         assertThat(responseMessage.getChatroomId()).isEqualTo(999L);
         assertThat(responseMessage.getContent()).isEqualTo("안녕하세요");
-        assertThat(responseMessage.getType()).isEqualTo(Chat.MessageType.TEXT);
+        assertThat(responseMessage.getType()).isEqualTo(MessageType.TEXT);
 
 
         serverObserver.onCompleted();

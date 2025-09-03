@@ -1,6 +1,6 @@
 package hanium.product_service.dto.response;
 
-import chatroom.Chatroom;
+import hanium.common.proto.product.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +24,7 @@ public class GetMyChatroomResponseDTO {
     private String opponentProfileUrl; //상대방 프로필 아이디
     private String opponentNickname; //상대방 프로필 닉네임
 
-    public static GetMyChatroomResponseDTO from(Chatroom.ChatroomSummary summary) {
+    public static GetMyChatroomResponseDTO from(ChatroomSummary summary) {
         return GetMyChatroomResponseDTO.builder()
                 .chatroomId(summary.getChatroomId())
                 .roomName(summary.getRoomName())
