@@ -15,9 +15,12 @@ import hanium.product_service.repository.projection.ProductWithFirstImage;
 import hanium.product_service.service.ProductSearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,7 +67,18 @@ public class ProductSearchServiceImpl implements ProductSearchService {
         List<Long> ids = documents.stream()
                 .map(ProductDocument::getId)
                 .toList();
-        List<ProductWithFirstImage> products = productRepository.findProductWithFirstImageByIds(ids);
+        List<ProductWithFirstImage> products;
+        Pageable pageable = PageRequest.of(dto.getPage(), 20);
+
+        if(dto.getSort().equals("recent")) {
+            log.info("✅ 키워드 검색 [{}] 최신순 조회 호출", dto.getKeyword());
+            products = productRepository.findProductByIdsAndSortByRecent(ids,pageable);
+        } else if (dto.getSort().equals("like")) {
+            log.info("✅ 키워드 검색 [{}] 인기순 조회 호출", dto.getKeyword());
+            products = productRepository.findProductByIdsAndSortByLike(ids,pageable);
+        } else {
+            throw new CustomException(ErrorCode.UNKNOWN_SORT);
+        }
 
         return ProductSearchResponseDTO.from(products.stream().map(SimpleProductDTO::from).toList());
     }
