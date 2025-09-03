@@ -70,10 +70,6 @@ public class ProductSearchServiceImpl implements ProductSearchService {
         List<ProductWithFirstImage> products;
         Pageable pageable = PageRequest.of(dto.getPage(), 20);
 
-//        if (ids.isEmpty()) {
-//            return ProductSearchResponseDTO.from(Collections.EMPTY_LIST);
-//        }
-
         if(dto.getSort().equals("recent")) {
             log.info("✅ 키워드 검색 [{}] 최신순 조회 호출", dto.getKeyword());
             products = productRepository.findProductByIdsAndSortByRecent(ids,pageable);
