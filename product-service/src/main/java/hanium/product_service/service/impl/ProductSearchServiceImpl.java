@@ -3,7 +3,6 @@ package hanium.product_service.service.impl;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import hanium.product_service.domain.ProductSearch;
-import hanium.product_service.dto.request.GetProductByCategoryRequestDTO;
 import hanium.product_service.dto.request.ProductSearchRequestDTO;
 import hanium.product_service.dto.response.ProductSearchHistoryDTO;
 import hanium.product_service.dto.response.ProductSearchResponseDTO;
@@ -21,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -72,9 +70,9 @@ public class ProductSearchServiceImpl implements ProductSearchService {
         List<ProductWithFirstImage> products;
         Pageable pageable = PageRequest.of(dto.getPage(), 20);
 
-        if (ids.isEmpty()) {
-            return ProductSearchResponseDTO.from(Collections.EMPTY_LIST);
-        }
+//        if (ids.isEmpty()) {
+//            return ProductSearchResponseDTO.from(Collections.EMPTY_LIST);
+//        }
 
         if(dto.getSort().equals("recent")) {
             log.info("✅ 키워드 검색 [{}] 최신순 조회 호출", dto.getKeyword());
