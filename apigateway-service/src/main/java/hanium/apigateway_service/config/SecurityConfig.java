@@ -32,7 +32,8 @@ public class SecurityConfig {
                                 "/health/**",       // 나머지 서비스 헬스 체크
                                 "/health-check",    // apigateway 헬스체크
                                 "/actuator/**",
-                                "/ws/**"
+                                "/ws/**",
+                                "/wss/**"
                         ).permitAll() // 인증 없이 허용
                         .anyRequest().authenticated())
                 .addFilterBefore(exceptionHandlerFilter, AbstractPreAuthenticatedProcessingFilter.class)
