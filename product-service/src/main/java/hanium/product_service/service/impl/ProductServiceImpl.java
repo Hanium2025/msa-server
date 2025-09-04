@@ -299,4 +299,19 @@ public class ProductServiceImpl implements ProductService {
                 .imageUrl(imageUrl)
                 .build();
     }
+
+
+    /**
+     * 상품 id로 상품의 판매 상태를 알아냅니다.
+     * @param productId 조회된 상품 아이디
+     * @return 상품 정보 dto
+     */
+    @Override
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
+    public String getProductStatusById(Long productId) {
+        log.info("✅ Product id={} 상품 판매 상태 불러오는 중...", productId);
+        String status = productReadRepository.findStatusById(productId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PRODUCT_NOT_FOUND));
+        return status;
+    }
 }

@@ -33,6 +33,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     private final ChatService chatService;
     private final PresignService presign;
     private final ProfileGrpcClient profileGrpcClient;
+    private final TradeService tradeService;
 
     // 메인페이지 조회
     @Override
@@ -313,5 +314,31 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
 
         responseObserver.onNext(resp.build());
         responseObserver.onCompleted();
+    }
+
+    // 직거래 요청
+    @Override
+    public void directTrade(TradeRequest request, StreamObserver<Empty> responseObserver) {
+        Long chatroomId = request.getChatroomId();
+        Long buyerId = request.getMemberId(); //요청한 사람이 구매자.
+        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomId(chatroomId,buyerId);
+
+        Long productId = tradeInfoDTO.getProductId();
+
+        //해당 상품 거래 상태 확인
+        String status = productService.getProductStatusById(productId);
+
+        if ("SELLING".equals(status)) {//판매중이라면 Trade 생성
+            tradeService.directTrade(chatroomId,tradeInfoDTO);
+        }
+
+        responseObserver.onNext(Empty.getDefaultInstance());
+        responseObserver.onCompleted();
+    }
+
+    // 택배 거래 요청
+    @Override
+    public void parcelTrade(TradeRequest request, StreamObserver<Empty> responseObserver) {
+        super.parcelTrade(request, responseObserver);
     }
 }
