@@ -41,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
 
         //  WebSocket 경로 예외 처리
-        if (uri.startsWith("/ws")) {
+        if (uri.startsWith("/wss")) {
             log.info("✅ WebSocket 경로 필터 패스됨: {}", uri);
             filterChain.doFilter(request, response);
             log.info("✅ 필터 pass됨");
