@@ -64,7 +64,10 @@ service ProductService {
   rpc GetMyChatrooms(ListMyChatroomsRequest)returns (ListMyChatroomsResponse);
 
   // 17. 직거래 요청
-  rpc DirectTrade(TradeRequest) returns (Empty);
+  rpc DirectTrade(TradeRequest) returns (TradeResponse);
+
+  // 18. 직거래 수락
+  rpc AcceptDirectTrade(TradeRequest) returns (TradeResponse);
 
   // 18. 택배거래 요청
   rpc ParcelTrade(TradeRequest) returns (Empty);
@@ -310,5 +313,9 @@ message ListMyChatroomsResponse {
 message TradeRequest{
   int64 chatroomId = 1;
   int64 memberId = 2;
+}
+// 17,18 거래 응답
+message TradeResponse{
+  int64  opponentId =1;
 }
 
