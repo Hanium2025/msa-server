@@ -3,9 +3,9 @@ package hanium.apigateway_service.grpc;
 import hanium.apigateway_service.mapper.TradeGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
-import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.ProductServiceGrpc;
 import hanium.common.proto.product.TradeRequest;
+import hanium.common.proto.product.TradeResponse;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,15 +21,26 @@ public class TradeGrpcClient {
     private ProductServiceGrpc.ProductServiceBlockingStub stub;
     private final TradeGrpcMapperForGateway tradeGrpcMapperForGateway;
 
-    // 직거래
-    public void DirectTrade(Long chatroomId, Long memberId) {
+    // 직거래 요청
+    public TradeResponse DirectTrade(Long chatroomId, Long memberId) {
         TradeRequest request = tradeGrpcMapperForGateway.toTradeRequestGrpc(chatroomId, memberId);
         try {
-            stub.directTrade(request);
+            return stub.directTrade(request);
         } catch (StatusRuntimeException e) {
             throw new CustomException(ErrorCode.CHATROOM_ID_NOT_FOUND);
         }
     }
+
+    // 직거래 수락
+    public TradeResponse AcceptDirectTrade(Long chatroomId, Long memberId) {
+        TradeRequest request = tradeGrpcMapperForGateway.toTradeRequestGrpc(chatroomId, memberId);
+        try {
+            return stub.acceptDirectTrade(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(ErrorCode.CHATROOM_ID_NOT_FOUND);
+        }
+    }
+
 
     // 택배 거래
     public void ParcelTrade(Long chatroomId, Long memberId) {
