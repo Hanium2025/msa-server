@@ -1,8 +1,15 @@
 package hanium.apigateway_service.controller;
 
+import hanium.apigateway_service.grpc.ChatGrpcClient;
+import hanium.apigateway_service.grpc.GrpcChatStreamClient;
 import hanium.apigateway_service.grpc.TradeGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
+import hanium.common.exception.CustomException;
+import hanium.common.exception.ErrorCode;
+import hanium.common.proto.common.CustomError;
+import hanium.common.proto.product.TradeResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -14,18 +21,45 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/trade")
+@Slf4j
 public class TradeController {
 
     public final TradeGrpcClient tradeGrpcClient;
+    public final GrpcChatStreamClient grpcChatStreamClient;
 
     //직거래 거래 요청
     @PostMapping("/direct-request/chatroom/{chatroomId}")
-    public ResponseEntity<?> requestDirectTrade(@PathVariable Long chatroomId, Authentication authentication) {
+    public ResponseEntity<ResponseDTO<Long>> requestDirectTrade(@PathVariable Long chatroomId, Authentication authentication) {
         Long memberId = (Long) authentication.getPrincipal();
-        tradeGrpcClient.DirectTrade(chatroomId, memberId);
-        ResponseDTO<Void> response = new ResponseDTO<>(
-                null, HttpStatus.OK, "직거래 요청을 성공했습니다.");
+        TradeResponse tradeResponse = tradeGrpcClient.DirectTrade(chatroomId, memberId);
+        Long sellerId = tradeResponse.getOpponentId();
+
+        //Trade만들고 상대방 아이디 가져오기
+        try {
+            grpcChatStreamClient.sendDirectRequest(chatroomId, memberId, sellerId);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.FAIL_DIRECT_REQUEST_CHAT);
+        }
+        ResponseDTO<Long> response = new ResponseDTO<>(
+                sellerId, HttpStatus.OK, "직거래 요청을 성공했습니다.");
         return ResponseEntity.ok(response);
+    }
+
+    //직거래 거래 수락
+    @PostMapping("/direct-accept/chatroom/{chatroomId}")
+    public ResponseEntity<ResponseDTO<Long>> acceptDirectTrade(@PathVariable Long chatroomId, Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        TradeResponse tradeResponse = tradeGrpcClient.AcceptDirectTrade(chatroomId, memberId);
+        Long buyerId = tradeResponse.getOpponentId();
+        try {
+            grpcChatStreamClient.sendDirectAccept(chatroomId, memberId, buyerId);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.FAIL_DIRECT_ACCEPT_CHAT);
+        }
+        ResponseDTO<Long> response = new ResponseDTO<>(
+                buyerId, HttpStatus.OK, "직거래 요청 수락을 성공했습니다.");
+        return ResponseEntity.ok(response);
+
     }
 
 
