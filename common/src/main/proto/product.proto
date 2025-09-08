@@ -45,8 +45,11 @@ service ProductService {
   // 11. 상품 카테고리별 보기
   rpc GetProductByCategory(GetProductByCategoryRequest) returns (SimpleProductsResponse);
 
-  // 9. 상품 신고
+  // 12. 상품 신고
   rpc ReportProduct(ReportProductRequest) returns (Empty);
+
+  // 13. 거래 평가
+  rpc TradeReview(TradeReviewRequest) returns (Empty);
 
   //채팅
   rpc Chat(stream ChatMessage) returns (stream ChatResponseMessage);
@@ -197,12 +200,20 @@ message SimpleProductsResponse {
   repeated SimpleProductResponse products = 1;
 }
 
-// 9. 상품 신고
+// 12. 상품 신고
 message ReportProductRequest {
   int64 member_id = 1;
   int64 product_id = 2;
   string reason = 3;
   string details = 4;
+}
+
+// 13. 거래 평가
+message TradeReviewRequest {
+  int64 trade_id = 1;
+  int64 member_id = 2;
+  double rating = 3;
+  string comment = 4;
 }
 
 message ChatMessage {
