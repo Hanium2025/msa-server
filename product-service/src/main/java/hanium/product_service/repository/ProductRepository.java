@@ -2,6 +2,7 @@ package hanium.product_service.repository;
 
 import hanium.product_service.domain.Category;
 import hanium.product_service.domain.Product;
+import hanium.product_service.domain.Status;
 import hanium.product_service.repository.projection.ProductIdCategory;
 import hanium.product_service.repository.projection.ProductWithFirstImage;
 import org.springframework.data.domain.Pageable;
@@ -215,4 +216,28 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("ids") List<Long> ids,
             Pageable pageable
     );
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        update Product p 
+        set p.status =
+            case
+                when p.status = hanium.product_service.domain.Status.SELLING
+                    then hanium.product_service.domain.Status.IN_PROGRESS
+                when p.status = hanium.product_service.domain.Status.IN_PROGRESS
+                    then hanium.product_service.domain.Status.SOLD_OUT
+                else p.status
+                end,
+                p.updatedAt = CURRENT TIMESTAMP
+         where p.id = :productId
+         and p.status in(
+          hanium.product_service.domain.Status.SELLING,
+                         hanium.product_service.domain.Status.IN_PROGRESS
+         ) 
+"""
+    )
+    int updateProductStatusById(@Param("productId")Long productId);
+
+
+
 }
