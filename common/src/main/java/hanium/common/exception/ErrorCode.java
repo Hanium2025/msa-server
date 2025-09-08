@@ -47,6 +47,10 @@ public enum ErrorCode {
     NOT_IMAGE(400, "타입이 이미지가 아닙니다."),
     ELASTICSEARCH_ERROR(500, "검색 중 오류가 발생했습니다."),
     SEARCH_NOT_FOUND(404, "해당하는 검색 기록을 찾을 수 없습니다."),
+    CHAT_STREAM_NOT_AVAILABLE(404,"채팅방 스트림을 사용할 수 없습니다."),
+    FAIL_DIRECT_REQUEST_CHAT(404, "직거래 요청 메시지 수신 실패"),
+    FAIL_DIRECT_ACCEPT_CHAT(404,"직거래 요청 수락 메시지 수신 실패"),
+    INVALID_PRODUCT_STATUS_TRANSITION(404, "상품 거래 상태 수정이 불가능합니다."),
     ;
 
     private final int code;
