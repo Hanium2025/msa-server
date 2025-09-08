@@ -4,6 +4,7 @@ import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.*;
+import hanium.product_service.domain.Trade;
 import hanium.product_service.dto.request.*;
 import hanium.product_service.dto.response.*;
 import hanium.product_service.mapper.ChatGrpcMapper;
@@ -316,23 +317,47 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         responseObserver.onCompleted();
     }
 
+
     // 직거래 요청
     @Override
-    public void directTrade(TradeRequest request, StreamObserver<Empty> responseObserver) {
+    public void directTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
         Long chatroomId = request.getChatroomId();
-        Long buyerId = request.getMemberId(); //요청한 사람이 구매자.
-        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomId(chatroomId,buyerId);
-
+        Long buyerId = request.getMemberId(); //요청한 사람이 구매자
+        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomId(chatroomId, buyerId);
+        TradeResponse tradeResponse = TradeResponse.newBuilder().setOpponentId(tradeInfoDTO.getSellerId()).build();
         Long productId = tradeInfoDTO.getProductId();
 
         //해당 상품 거래 상태 확인
         String status = productService.getProductStatusById(productId);
 
         if ("SELLING".equals(status)) {//판매중이라면 Trade 생성
-            tradeService.directTrade(chatroomId,tradeInfoDTO);
+            tradeService.directTrade(chatroomId, tradeInfoDTO);
         }
 
-        responseObserver.onNext(Empty.getDefaultInstance());
+        responseObserver.onNext(tradeResponse);
+        responseObserver.onCompleted();
+    }
+
+    //직거래 수락
+    @Override
+    public void acceptDirectTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
+        Long chatroomId = request.getChatroomId();
+        Long sellerId = request.getMemberId(); //수락하는 사람은 판매자
+        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomId(chatroomId, sellerId);
+        TradeResponse tradeResponse = TradeResponse.newBuilder().setOpponentId(tradeInfoDTO.getBuyerId()).build();
+
+        Long productId = tradeInfoDTO.getProductId();
+
+        //해당 상품 거래 상태 확인
+        String status = productService.getProductStatusById(productId);
+        if ("SELLING".equals(status)) {
+            //trade상태를 업데이트 시키고
+            tradeService.acceptDirectTrade(chatroomId);
+            //상품 상태를 판매중으로 바꾸기
+            productService.updateProductStatusById(productId);
+
+        }
+        responseObserver.onNext(tradeResponse);
         responseObserver.onCompleted();
     }
 
