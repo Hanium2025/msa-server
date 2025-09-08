@@ -22,19 +22,28 @@ public class TradeServiceImpl implements TradeService {
 
     @Transactional
     @Override
-    public void directTrade(Long chatroomId,TradeInfoDTO tradeInfoDTO) {
-       // 판매 처리
+    public void directTrade(Long chatroomId, TradeInfoDTO tradeInfoDTO) {
+        // 판매 처리
 
         Product productRef = em.getReference(Product.class, tradeInfoDTO.getProductId());
         Chatroom chatroomRef = em.getReference(Chatroom.class, chatroomId);
-       Trade trade = Trade.builder()
-               .buyerId(tradeInfoDTO.getBuyerId())
-               .sellerId(tradeInfoDTO.getSellerId())
-               .product(productRef)
-               .type(TradeType.DIRECT)
-               .tradeStatus(TradeStatus.REQUESTED)
-               .chatroom(chatroomRef)
-        .build();
+
+        Trade trade = Trade.builder()
+                .buyerId(tradeInfoDTO.getBuyerId())
+                .sellerId(tradeInfoDTO.getSellerId())
+                .product(productRef)
+                .type(TradeType.DIRECT)
+                .tradeStatus(TradeStatus.REQUESTED)
+                .chatroom(chatroomRef)
+                .build();
         tradeRepository.save(trade);
+    }
+
+    @Transactional
+    @Override
+    public int acceptDirectTrade(Long chatroomId) {
+        return tradeRepository.updateStatus(chatroomId, TradeStatus.ACCEPTED);
+
+
     }
 }

@@ -25,4 +25,6 @@ public interface ChatService{
 
     //채팅방별 상품 아이디와 판매자 아이디 조회
     TradeInfoDTO getTradeInfoByChatroomId(Long chatroomId, Long buyerId);
+
+
 }

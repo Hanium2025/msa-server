@@ -29,4 +29,6 @@ public interface ProductService {
     int deleteProductImage(DeleteImageRequestDTO dto);
 
     String getProductStatusById(Long productId);
+
+    void updateProductStatusById(Long productId);
 }
