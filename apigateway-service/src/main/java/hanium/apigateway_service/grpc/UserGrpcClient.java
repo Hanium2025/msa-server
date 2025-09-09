@@ -2,7 +2,10 @@ package hanium.apigateway_service.grpc;
 
 import hanium.apigateway_service.dto.user.request.LoginRequestDTO;
 import hanium.apigateway_service.dto.user.request.SignUpRequestDTO;
+import hanium.apigateway_service.dto.user.request.UpdateProfileRequestDTO;
 import hanium.apigateway_service.dto.user.request.VerifySmsRequestDTO;
+import hanium.apigateway_service.dto.user.response.PresignedUrlResponseDTO;
+import hanium.apigateway_service.dto.user.response.ProfileResponseDTO;
 import hanium.apigateway_service.mapper.UserGrpcMapperForGateway;
 import hanium.apigateway_service.security.JwtUtil;
 import hanium.common.exception.CustomException;
@@ -126,6 +129,27 @@ public class UserGrpcClient {
                 .setCode(code).setProvider(provider).build();
         try {
             return stub.socialLogin(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 프로필사진 수정용 Presigned url 발급
+    public PresignedUrlResponseDTO getPresignedUrl(Long memberId, String contentType) {
+        GetPresignedUrlRequest request = GetPresignedUrlRequest.newBuilder()
+                .setMemberId(memberId).setContentType(contentType).build();
+        try {
+            return PresignedUrlResponseDTO.from(stub.getPresignedUrl(request));
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 프로필 수정
+    public ProfileResponseDTO updateProfile(Long memberId, UpdateProfileRequestDTO dto) {
+        UpdateProfileRequest request = UserGrpcMapperForGateway.toUpdateProfileGrpc(memberId, dto);
+        try {
+            return ProfileResponseDTO.from(stub.updateProfile(request));
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }

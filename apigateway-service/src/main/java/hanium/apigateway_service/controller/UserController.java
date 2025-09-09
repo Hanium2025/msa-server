@@ -1,13 +1,7 @@
 package hanium.apigateway_service.controller;
 
-import hanium.apigateway_service.dto.user.request.LoginRequestDTO;
-import hanium.apigateway_service.dto.user.request.SignUpRequestDTO;
-import hanium.apigateway_service.dto.user.request.SmsRequestDTO;
-import hanium.apigateway_service.dto.user.request.VerifySmsRequestDTO;
-import hanium.apigateway_service.dto.user.response.MemberResponseDTO;
-import hanium.apigateway_service.dto.user.response.NaverConfigResponseDTO;
-import hanium.apigateway_service.dto.user.response.SignUpResponseDTO;
-import hanium.apigateway_service.dto.user.response.TokenResponseDTO;
+import hanium.apigateway_service.dto.user.request.*;
+import hanium.apigateway_service.dto.user.response.*;
 import hanium.apigateway_service.grpc.UserGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import hanium.apigateway_service.security.JwtUtil;
@@ -21,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -148,6 +143,30 @@ public class UserController {
         TokenResponseDTO responseDTO = TokenResponseDTO.from(userGrpcClient.socialLogin(code, "naver"));
         ResponseDTO<TokenResponseDTO> result = new ResponseDTO<>(
                 responseDTO, HttpStatus.OK, "네이버 로그인에 성공했습니다."
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    // 프로필사진 수정용 Presigned url 발급
+    @GetMapping("/presigned-url")
+    public ResponseEntity<ResponseDTO<PresignedUrlResponseDTO>> getPresignedUrl(Authentication authentication,
+                                                                                @RequestParam String contentType) {
+        Long memberId = (Long) authentication.getPrincipal();
+        PresignedUrlResponseDTO dto = userGrpcClient.getPresignedUrl(memberId, contentType);
+        ResponseDTO<PresignedUrlResponseDTO> result = new ResponseDTO<>(
+                dto, HttpStatus.OK, "Presigned URL이 발급되었습니다."
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    // 프로필 수정
+    @PutMapping("profile")
+    public ResponseEntity<ResponseDTO<ProfileResponseDTO>> updateProfile(Authentication authentication,
+                                                                         @RequestBody UpdateProfileRequestDTO dto) {
+        Long memberId = (Long) authentication.getPrincipal();
+        ProfileResponseDTO responseDTO = userGrpcClient.updateProfile(memberId, dto);
+        ResponseDTO<ProfileResponseDTO> result = new ResponseDTO<>(
+                responseDTO, HttpStatus.OK, "프로필이 수정되었습니다."
         );
         return ResponseEntity.ok(result);
     }

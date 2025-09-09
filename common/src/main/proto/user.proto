@@ -41,6 +41,12 @@ service UserService {
 
   // 10. 프로필 조회
   rpc GetProfile(GetProfileRequest) returns (ProfileResponse);
+
+  // 11. (프로필 업로드용) s3 presigned url 발급
+  rpc GetPresignedUrl(GetPresignedUrlRequest) returns (PresignedUrlResponse);
+
+  // 12. 프로필 업데이트
+  rpc UpdateProfile(UpdateProfileRequest) returns (ProfileResponse);
 }
 
 // 1. 회원가입
@@ -148,4 +154,21 @@ message GetProfileRequest {
 message ProfileResponse {
   string nickname = 1;
   string profile_img = 2;
+}
+
+// 11. (프로필 업로드용) s3 presigned url 발급
+message GetPresignedUrlRequest {
+  int64 member_id = 1;
+  string content_type = 2;
+}
+message PresignedUrlResponse {
+  string presigned_url = 1;
+  string image_path = 2;
+}
+
+// 12. 프로필 수정
+message UpdateProfileRequest {
+  int64 member_id = 1;
+  string nickname = 2;
+  string image_url = 3;
 }

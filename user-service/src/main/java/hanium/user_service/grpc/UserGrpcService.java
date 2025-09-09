@@ -6,10 +6,7 @@ import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.common.Empty;
 import hanium.common.proto.user.*;
 import hanium.user_service.domain.Member;
-import hanium.user_service.dto.request.GetNicknameRequestDTO;
-import hanium.user_service.dto.request.LoginRequestDTO;
-import hanium.user_service.dto.request.SignUpRequestDTO;
-import hanium.user_service.dto.request.VerifySmsDTO;
+import hanium.user_service.dto.request.*;
 import hanium.user_service.dto.response.*;
 import hanium.user_service.mapper.MemberGrpcMapper;
 import hanium.user_service.service.*;
@@ -196,6 +193,30 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
                             profileService.getProfileByMemberId(request.getMemberId())
                     )
             );
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 프로필사진 수정용 presigned url
+    @Override
+    public void getPresignedUrl(GetPresignedUrlRequest request, StreamObserver<PresignedUrlResponse> responseObserver) {
+        try {
+            PresignedUrlResponseDTO dto =
+                    profileService.getPresignedUrl(GetPresignedUrlRequestDTO.from(request));
+            responseObserver.onNext(MemberGrpcMapper.toPresignedUrlResponse(dto));
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    @Override
+    public void updateProfile(UpdateProfileRequest request, StreamObserver<ProfileResponse> responseObserver) {
+        try {
+            ProfileResponseDTO dto = profileService.updateProfile(request);
+            responseObserver.onNext(MemberGrpcMapper.toProfileResponse(dto));
             responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));

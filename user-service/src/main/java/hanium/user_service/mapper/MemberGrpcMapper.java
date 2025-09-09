@@ -71,4 +71,12 @@ public class MemberGrpcMapper {
                 .setProfileImg(dto.getProfileImg())
                 .build();
     }
+
+    // 프로필사진 변경용 presigned url 응답
+    public static PresignedUrlResponse toPresignedUrlResponse(PresignedUrlResponseDTO dto) {
+        return PresignedUrlResponse.newBuilder()
+                .setPresignedUrl(dto.presignedUrl())
+                .setImagePath(dto.actualImagePath())
+                .build();
+    }
 }
