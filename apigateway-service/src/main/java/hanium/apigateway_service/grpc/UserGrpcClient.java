@@ -5,6 +5,7 @@ import hanium.apigateway_service.dto.user.request.SignUpRequestDTO;
 import hanium.apigateway_service.dto.user.request.UpdateProfileRequestDTO;
 import hanium.apigateway_service.dto.user.request.VerifySmsRequestDTO;
 import hanium.apigateway_service.dto.user.response.PresignedUrlResponseDTO;
+import hanium.apigateway_service.dto.user.response.ProfileDetailResponseDTO;
 import hanium.apigateway_service.dto.user.response.ProfileResponseDTO;
 import hanium.apigateway_service.mapper.UserGrpcMapperForGateway;
 import hanium.apigateway_service.security.JwtUtil;
@@ -150,6 +151,16 @@ public class UserGrpcClient {
         UpdateProfileRequest request = UserGrpcMapperForGateway.toUpdateProfileGrpc(memberId, dto);
         try {
             return ProfileResponseDTO.from(stub.updateProfile(request));
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 내 프로필 조회
+    public ProfileDetailResponseDTO getDetailProfile(Long memberId) {
+        GetProfileRequest request = GetProfileRequest.newBuilder().setMemberId(memberId).build();
+        try {
+            return ProfileDetailResponseDTO.from(stub.getDetailProfile(request));
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }

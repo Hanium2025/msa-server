@@ -79,4 +79,17 @@ public class MemberGrpcMapper {
                 .setImagePath(dto.actualImagePath())
                 .build();
     }
+
+    // 프로필 상세 조회
+    public static ProfileDetailResponse toProfileDetailResponse(ProfileDetailResponseDTO dto) {
+        return ProfileDetailResponse.newBuilder()
+                .setMemberId(dto.memberId())
+                .setNickname(dto.nickname())
+                .setImageUrl(dto.imageUrl())
+                .setScore(dto.score())
+                .addAllMainCategory(dto.mainCategory())
+                .setAgreeMarketing(dto.agreeMarketing())
+                .setAgree3RdParty(dto.agree3rdParty())
+                .build();
+    }
 }

@@ -170,4 +170,15 @@ public class UserController {
         );
         return ResponseEntity.ok(result);
     }
+
+    // (마이페이지) 프로필 상세 조회
+    @GetMapping("my-profile")
+    public ResponseEntity<ResponseDTO<ProfileDetailResponseDTO>> getMyProfile(Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        ProfileDetailResponseDTO responseDTO = userGrpcClient.getDetailProfile(memberId);
+        ResponseDTO<ProfileDetailResponseDTO> result = new ResponseDTO<>(
+                responseDTO, HttpStatus.OK, "나의 프로필이 조회되었습니다."
+        );
+        return ResponseEntity.ok(result);
+    }
 }

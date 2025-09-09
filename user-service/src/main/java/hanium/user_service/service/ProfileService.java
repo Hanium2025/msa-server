@@ -5,6 +5,7 @@ import hanium.user_service.dto.request.GetNicknameRequestDTO;
 import hanium.user_service.dto.request.GetPresignedUrlRequestDTO;
 import hanium.user_service.dto.response.GetNicknameResponseDTO;
 import hanium.user_service.dto.response.PresignedUrlResponseDTO;
+import hanium.user_service.dto.response.ProfileDetailResponseDTO;
 import hanium.user_service.dto.response.ProfileResponseDTO;
 
 public interface ProfileService {
@@ -16,4 +17,6 @@ public interface ProfileService {
     PresignedUrlResponseDTO getPresignedUrl(GetPresignedUrlRequestDTO dto);
 
     ProfileResponseDTO updateProfile(UpdateProfileRequest request);
+
+    ProfileDetailResponseDTO getProfileDetailByMemberId(Long memberId);
 }
