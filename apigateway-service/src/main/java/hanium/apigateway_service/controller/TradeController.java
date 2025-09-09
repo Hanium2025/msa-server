@@ -1,12 +1,10 @@
 package hanium.apigateway_service.controller;
 
-import hanium.apigateway_service.grpc.ChatGrpcClient;
 import hanium.apigateway_service.grpc.GrpcChatStreamClient;
 import hanium.apigateway_service.grpc.TradeGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
-import hanium.common.proto.common.CustomError;
 import hanium.common.proto.product.TradeResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,12 +63,51 @@ public class TradeController {
 
     //택배 거래 요청
     @PostMapping("/parcel-request/chatroom/{chatroomId}")
-    public ResponseEntity<?> requestParcelTrade(@PathVariable Long chatroomId, Authentication authentication) {
-        Long memberId = (Long) authentication.getPrincipal();
-        tradeGrpcClient.ParcelTrade(chatroomId, memberId);
-        ResponseDTO<Void> response = new ResponseDTO<>(
-                null, HttpStatus.OK, "택배 거래 요청을 성공했습니다.");
+    public ResponseEntity<ResponseDTO<Long>> requestParcelTrade(@PathVariable Long chatroomId, Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+        final Long memberId;
+        try {
+            memberId = (Long) authentication.getPrincipal();
+        } catch (ClassCastException | NullPointerException e) {
+            Object p = (authentication != null ? authentication.getPrincipal() : null);
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+        log.info("chatroomId={}, memberId={}", chatroomId, memberId);
+
+        TradeResponse tradeResponse = tradeGrpcClient.ParcelTrade(chatroomId, memberId);
+        Long sellerId = tradeResponse.getOpponentId();
+        //Trade만들고 상대방 아이디 가져오기
+        try {
+            grpcChatStreamClient.sendParcelRequest(chatroomId, memberId, sellerId);
+        } catch (Exception e) {
+            log.error("택배거래 요청 실패");
+            throw new CustomException(ErrorCode.FAIL_DIRECT_REQUEST_CHAT);
+        }
+        ResponseDTO<Long> response = new ResponseDTO<>(
+                sellerId, HttpStatus.OK, "택배 거래 요청을 성공했습니다.");
         return ResponseEntity.ok(response);
     }
 
+
+    //택배거래 거래 수락
+    @PostMapping("/parcel-accept/chatroom/{chatroomId}")
+    public ResponseEntity<ResponseDTO<Long>> acceptParcelTrade(@PathVariable Long chatroomId, Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        TradeResponse tradeResponse = tradeGrpcClient.AcceptParcelTrade(chatroomId, memberId);
+
+        Long buyerId = tradeResponse.getOpponentId();
+
+        try {
+            grpcChatStreamClient.sendParcelAccept(chatroomId, memberId, buyerId);
+        } catch (Exception e) {
+            log.error("");
+            throw new CustomException(ErrorCode.FAIL_DIRECT_ACCEPT_CHAT);
+        }
+        ResponseDTO<Long> response = new ResponseDTO<>(
+                buyerId, HttpStatus.OK, "택배 거래 수락을 성공했습니다.");
+        return ResponseEntity.ok(response);
+    }
 }

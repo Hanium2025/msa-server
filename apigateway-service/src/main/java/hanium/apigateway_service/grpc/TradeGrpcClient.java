@@ -43,10 +43,20 @@ public class TradeGrpcClient {
 
 
     // 택배 거래
-    public void ParcelTrade(Long chatroomId, Long memberId) {
+    public TradeResponse ParcelTrade(Long chatroomId, Long memberId) {
+        log.info("택배 거래 요청");
         TradeRequest request = tradeGrpcMapperForGateway.toTradeRequestGrpc(chatroomId, memberId);
         try {
-            stub.parcelTrade(request);
+            return stub.parcelTrade(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(ErrorCode.CHATROOM_ID_NOT_FOUND);
+        }
+    }
+    // 택배 거래 수락
+    public TradeResponse AcceptParcelTrade(Long chatroomId, Long memberId) {
+        TradeRequest request = tradeGrpcMapperForGateway.toTradeRequestGrpc(chatroomId, memberId);
+        try {
+            return stub.acceptParcelTrade(request);
         } catch (StatusRuntimeException e) {
             throw new CustomException(ErrorCode.CHATROOM_ID_NOT_FOUND);
         }

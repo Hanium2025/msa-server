@@ -9,4 +9,6 @@ import org.springframework.stereotype.Service;
 public interface TradeService {
     void directTrade(Long chatroomId, TradeInfoDTO tradeInfoDTO);
     int acceptDirectTrade(Long chatroomId);
+
+    void parcelTrade(Long chatroomId, TradeInfoDTO tradeInfoDTO);
 }

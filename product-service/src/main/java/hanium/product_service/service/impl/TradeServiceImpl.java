@@ -20,6 +20,7 @@ public class TradeServiceImpl implements TradeService {
 
     private final TradeRepository tradeRepository;
 
+    //직거래 요청
     @Transactional
     @Override
     public void directTrade(Long chatroomId, TradeInfoDTO tradeInfoDTO) {
@@ -39,11 +40,27 @@ public class TradeServiceImpl implements TradeService {
         tradeRepository.save(trade);
     }
 
+    //거래 수락
     @Transactional
     @Override
     public int acceptDirectTrade(Long chatroomId) {
         return tradeRepository.updateStatus(chatroomId, TradeStatus.ACCEPTED);
+    }
 
-
+    //택배 거래 요청
+    @Transactional
+    @Override
+    public void parcelTrade(Long chatroomId, TradeInfoDTO tradeInfoDTO) {
+        Product productRef = em.getReference(Product.class, tradeInfoDTO.getProductId());
+        Chatroom chatroomRef = em.getReference(Chatroom.class, chatroomId);
+        Trade trade = Trade.builder()
+                .buyerId(tradeInfoDTO.getBuyerId())
+                .sellerId(tradeInfoDTO.getSellerId())
+                .product(productRef)
+                .type(TradeType.PARCEL)
+                .tradeStatus(TradeStatus.REQUESTED)
+                .chatroom(chatroomRef)
+                .build();
+        tradeRepository.save(trade);
     }
 }
