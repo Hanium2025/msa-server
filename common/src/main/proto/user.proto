@@ -50,6 +50,10 @@ service UserService {
 
   // 13. 프로필 상세 조회
   rpc GetDetailProfile(GetProfileRequest) returns (ProfileDetailResponse);
+
+  // 14. 마케팅/제3자 동의 토글
+  rpc ToggleMarketing(GetProfileRequest) returns (SendSmsResponse);
+  rpc ToggleThirdParty(GetProfileRequest) returns (SendSmsResponse);
 }
 
 // 1. 회원가입

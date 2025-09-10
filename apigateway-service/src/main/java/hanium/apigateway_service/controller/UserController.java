@@ -160,7 +160,7 @@ public class UserController {
     }
 
     // 프로필 수정
-    @PutMapping("my-profile")
+    @PutMapping("/my-profile")
     public ResponseEntity<ResponseDTO<ProfileResponseDTO>> updateProfile(Authentication authentication,
                                                                          @RequestBody UpdateProfileRequestDTO dto) {
         Long memberId = (Long) authentication.getPrincipal();
@@ -172,13 +172,31 @@ public class UserController {
     }
 
     // (마이페이지) 프로필 상세 조회
-    @GetMapping("my-profile")
+    @GetMapping("/my-profile")
     public ResponseEntity<ResponseDTO<ProfileDetailResponseDTO>> getMyProfile(Authentication authentication) {
         Long memberId = (Long) authentication.getPrincipal();
         ProfileDetailResponseDTO responseDTO = userGrpcClient.getDetailProfile(memberId);
         ResponseDTO<ProfileDetailResponseDTO> result = new ResponseDTO<>(
                 responseDTO, HttpStatus.OK, "나의 프로필이 조회되었습니다."
         );
+        return ResponseEntity.ok(result);
+    }
+
+    // (마이페이지) 마케팅 동의 토글
+    @PostMapping("/my-profile/marketing")
+    public ResponseEntity<?> toggleAgreeMarketing(Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        String message = userGrpcClient.toggleAgreeMarketing(memberId);
+        ResponseDTO<?> result = new ResponseDTO<>(null, HttpStatus.OK, message);
+        return ResponseEntity.ok(result);
+    }
+
+    // (마이페이지) 제3자 동의 토글
+    @PostMapping("/my-profile/third-party")
+    public ResponseEntity<?> toggleAgreeThirdParty(Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        String message = userGrpcClient.toggleAgreeThirdParty(memberId);
+        ResponseDTO<?> result = new ResponseDTO<>(null, HttpStatus.OK, message);
         return ResponseEntity.ok(result);
     }
 }

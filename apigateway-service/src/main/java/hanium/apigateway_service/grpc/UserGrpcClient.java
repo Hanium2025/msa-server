@@ -165,4 +165,24 @@ public class UserGrpcClient {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
+
+    // 마이페이지 마케팅 동의 토글
+    public String toggleAgreeMarketing(Long memberId) {
+        GetProfileRequest request = GetProfileRequest.newBuilder().setMemberId(memberId).build();
+        try {
+            return stub.toggleMarketing(request).getMessage();
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 마이페이지 제3자 동의 토글
+    public String toggleAgreeThirdParty(Long memberId) {
+        GetProfileRequest request = GetProfileRequest.newBuilder().setMemberId(memberId).build();
+        try {
+            return stub.toggleThirdParty(request).getMessage();
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
 }

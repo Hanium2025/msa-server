@@ -235,4 +235,28 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
         }
     }
+
+    // 마이페이지 마케팅 동의 토글
+    @Override
+    public void toggleMarketing(GetProfileRequest request, StreamObserver<SendSmsResponse> responseObserver) {
+        try {
+            String message = memberService.toggleAgreeMarketing(request.getMemberId());
+            responseObserver.onNext(SendSmsResponse.newBuilder().setMessage(message).build());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 마이페이지 제3자 동의 토글
+    @Override
+    public void toggleThirdParty(GetProfileRequest request, StreamObserver<SendSmsResponse> responseObserver) {
+        try {
+            String message = memberService.toggleAgreeThirdParty(request.getMemberId());
+            responseObserver.onNext(SendSmsResponse.newBuilder().setMessage(message).build());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
 }
