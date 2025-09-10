@@ -160,7 +160,7 @@ public class UserController {
     }
 
     // 프로필 수정
-    @PutMapping("profile")
+    @PutMapping("my-profile")
     public ResponseEntity<ResponseDTO<ProfileResponseDTO>> updateProfile(Authentication authentication,
                                                                          @RequestBody UpdateProfileRequestDTO dto) {
         Long memberId = (Long) authentication.getPrincipal();

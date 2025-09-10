@@ -21,7 +21,7 @@ public record ProfileDetailResponseDTO(
                 .nickname(response.getNickname())
                 .imageUrl(response.getImageUrl())
                 .score(response.getScore())
-                .mainCategory(response.getMainCategoryList())
+                .mainCategory(response.getMainCategoryList().stream().toList())
                 .agreeMarketing(response.getAgreeMarketing())
                 .agree3rdParty(response.getAgree3RdParty())
                 .build();
