@@ -1,6 +1,5 @@
 package hanium.product_service.repository;
 
-import hanium.product_service.domain.Product;
 import hanium.product_service.domain.TradeStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
