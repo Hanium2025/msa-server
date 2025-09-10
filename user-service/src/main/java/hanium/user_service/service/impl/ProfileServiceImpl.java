@@ -11,6 +11,7 @@ import hanium.user_service.dto.response.GetNicknameResponseDTO;
 import hanium.user_service.dto.response.PresignedUrlResponseDTO;
 import hanium.user_service.dto.response.ProfileDetailResponseDTO;
 import hanium.user_service.dto.response.ProfileResponseDTO;
+import hanium.user_service.grpc.ProductUserGrpcClient;
 import hanium.user_service.repository.ProfileRepository;
 import hanium.user_service.service.ProfileService;
 import hanium.user_service.util.S3Util;
@@ -19,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -29,6 +30,7 @@ import java.util.List;
 public class ProfileServiceImpl implements ProfileService {
 
     private final ProfileRepository profileRepository;
+    private final ProductUserGrpcClient productUserGrpcClient;
     private final S3Util s3Util;
 
     @Override
@@ -74,17 +76,31 @@ public class ProfileServiceImpl implements ProfileService {
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
         Member member = profile.getMember();
 
-        // todo: 주요 활동 카테고리 로직 추가
-        List<String> mainCategory = new ArrayList<>();
-
         return ProfileDetailResponseDTO.builder()
                 .memberId(memberId)
                 .nickname(profile.getNickname())
                 .imageUrl(profile.getImageUrl())
                 .score(profile.getScore())
-                .mainCategory(mainCategory)
+                .mainCategory(calculateMainCategory(profile))
                 .agreeMarketing(member.isAgreeMarketing())
                 .agree3rdParty(member.isAgreeThirdParty())
                 .build();
+    }
+
+    private List<String> calculateMainCategory(Profile profile) {
+        // TTL 설정으로 너무 자주 계산되는 것을 방지
+        if ((profile.getMainCategory() == null || profile.getMainCategoryTTL() == null)
+                || LocalDateTime.now().isAfter(profile.getMainCategoryTTL())) {
+            List<String> mainCategory =
+                    productUserGrpcClient.getMainCategories(profile.getMember().getId());
+            if (!mainCategory.isEmpty()) {
+                LocalDateTime ttl = LocalDateTime.now().plusWeeks(1);
+                profile.updateMainCategory(mainCategory, ttl);
+                return mainCategory;
+            } else {
+                return List.of();
+            }
+        }
+        return profile.getMainCategory();
     }
 }

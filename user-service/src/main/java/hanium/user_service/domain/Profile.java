@@ -6,6 +6,9 @@ import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.SQLDelete;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Entity
 @Getter
 @Builder
@@ -31,6 +34,12 @@ public class Profile extends BaseEntity {
     @Column
     private Long score;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    List<String> mainCategory;
+
+    @Column(name = "main_category_ttl")
+    LocalDateTime mainCategoryTTL;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false, unique = true)
     private Member member;
@@ -38,5 +47,10 @@ public class Profile extends BaseEntity {
     public void update(String nickname, String imageUrl) {
         this.nickname = nickname;
         this.imageUrl = imageUrl;
+    }
+
+    public void updateMainCategory(List<String> mainCategory, LocalDateTime mainCategoryTTL) {
+        this.mainCategory = mainCategory;
+        this.mainCategoryTTL = mainCategoryTTL;
     }
 }
