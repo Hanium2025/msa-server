@@ -4,6 +4,7 @@ import hanium.product_service.domain.Category;
 import hanium.product_service.domain.Product;
 import hanium.product_service.repository.projection.ProductIdCategory;
 import hanium.product_service.repository.projection.ProductWithFirstImage;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -163,12 +164,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                     order by p.created_at desc, p.id desc
                     """,
             countQuery = """
-                         select count(*)
-                         from product p
-                         where p.id in :ids
-                         and p.deleted_at is null
-
-                         """,
+                    select count(*)
+                    from product p
+                    where p.id in :ids
+                    and p.deleted_at is null
+                    
+                    """,
             nativeQuery = true)
     List<ProductWithFirstImage> findProductByIdsAndSortByRecent(
             @Param("ids") List<Long> ids,
@@ -204,15 +205,35 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                     order by coalesce(lc.like_count, 0) desc, p.id desc
                     """,
             countQuery = """
-                         select count(*)
-                         from product p
-                         where p.id in :ids
-                         and p.deleted_at is null
-                         and p.created_at >= NOW() - interval 1 year
-                         """,
+                    select count(*)
+                    from product p
+                    where p.id in :ids
+                    and p.deleted_at is null
+                    and p.created_at >= NOW() - interval 1 year
+                    """,
             nativeQuery = true)
     List<ProductWithFirstImage> findProductByIdsAndSortByLike(
             @Param("ids") List<Long> ids,
             Pageable pageable
     );
+
+    // memberId로 product 조회
+    @Query(
+            value = """
+                    select p.category
+                    from Product p
+                    where p.sellerId = :memberId
+                    and p.deletedAt is null
+                    group by p.category
+                    order by count(p) desc
+                    """,
+            countQuery = """
+                    select count(distinct p.category)
+                    from Product p
+                    where p.sellerId = :memberId
+                    and p.deletedAt is null
+                    """
+    )
+    Page<Category> findProductBySellerId(@Param("memberId") Long memberId,
+                                         Pageable pageable);
 }
