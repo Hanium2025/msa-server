@@ -84,4 +84,13 @@ public class ProductReadRepository {
 
         return Optional.of(response);
     }
+
+    // 상품 판매 상태 확인
+    public Optional<String> findStatusById(Long productId){
+        String status = em.createQuery("select p.status from Product p where p.id = :productId")
+                .setParameter("productId",productId)
+                .getSingleResult().toString();
+
+        return Optional.of(status);
+    }
 }

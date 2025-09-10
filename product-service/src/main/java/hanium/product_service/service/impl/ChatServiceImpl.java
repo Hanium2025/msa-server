@@ -8,15 +8,9 @@ import hanium.product_service.domain.MessageImage;
 import hanium.product_service.domain.MessageType;
 import hanium.product_service.dto.request.ChatMessageRequestDTO;
 import hanium.product_service.dto.request.CreateChatroomRequestDTO;
-import hanium.product_service.dto.response.ChatMessageResponseDTO;
-import hanium.product_service.dto.response.CreateChatroomResponseDTO;
-import hanium.product_service.dto.response.GetMyChatroomResponseDTO;
-import hanium.product_service.dto.response.ProfileResponseDTO;
+import hanium.product_service.dto.response.*;
 import hanium.product_service.grpc.ProfileGrpcClient;
-import hanium.product_service.repository.ChatRepository;
-import hanium.product_service.repository.ChatroomRepository;
-import hanium.product_service.repository.MessageImageRepository;
-import hanium.product_service.repository.ProductRepository;
+import hanium.product_service.repository.*;
 import hanium.product_service.service.ChatMessageTxService;
 import hanium.product_service.service.ChatService;
 import io.grpc.stub.StreamObserver;
@@ -42,6 +36,7 @@ public class ChatServiceImpl implements ChatService {
     private final ChatMessageTxService chatMessageTxService;
     private final ChatRepository chatRepository;
     private final MessageImageRepository messageImageRepository;
+    private final ChatroomTradeInfoRepository chatroomTradeInfoRepository;
     // userId → StreamObserver 저장
     private final ConcurrentHashMap<Long, StreamObserver<ChatResponseMessage>> userStreamMap = new ConcurrentHashMap<>();
 
@@ -210,10 +205,13 @@ public class ChatServiceImpl implements ChatService {
                     .build();
 
             dtos.add(dto);
-
         }
-
         return dtos;
     }
+
+    public TradeInfoDTO getTradeInfoByChatroomId(Long chatroomId,Long buyerId){
+        TradeInfoDTO tradeInfoDTO = chatroomTradeInfoRepository.findTradeInfoByChatroomId(chatroomId,buyerId);
+        return tradeInfoDTO;
+    };
 
 }

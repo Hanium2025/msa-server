@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hanium.apigateway_service.dto.chat.request.ChatMessageRequestDTO;
 import hanium.apigateway_service.dto.chat.response.ChatMessageResponseDTO;
 import hanium.apigateway_service.mapper.ChatMessageMapperForGateway;
+import hanium.common.exception.CustomException;
+import hanium.common.exception.ErrorCode;
 import hanium.common.proto.product.ProductServiceGrpc;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +35,7 @@ public class GrpcChatStreamClient {
     public void registerSession(String userId, WebSocketSession session) {
         sessionMap.put(userId, session);
         log.info("Session등록 userID : {} ", userId);
-        if (requestObserver == null) startStream();
+        if (requestObserver == null) ensureStream();
     }
 
     // 사용자 세션 제거
@@ -44,18 +46,24 @@ public class GrpcChatStreamClient {
     // 클라이언트로부터 받은 메시지를 gRPC로 전송
     public void sendMessage(ChatMessageRequestDTO dto) {
 
-        if (requestObserver == null) {
-            startStream();
-            if (requestObserver == null) {
-                log.warn("gRPC stream not ready");
-                return;
-            }
-        }
+        ensureStream();
         log.info("gRPC Stream 전송 시도: {}: ", dto);
         ChatMessage grpcMessage = ChatMessageMapperForGateway.toGrpc(dto);
         requestObserver.onNext(grpcMessage);
         log.info("✅ gRPC onNext 호출 완료");
 
+    }
+    private void ensureStream(){
+        if(requestObserver != null)
+            return;
+        synchronized (this){
+            if(requestObserver == null){
+                startStream();
+            }
+            if(requestObserver == null){
+                throw new CustomException(ErrorCode.CHAT_STREAM_NOT_AVAILABLE);
+            }
+        }
     }
 
     private void startStream() {
@@ -96,6 +104,9 @@ public class GrpcChatStreamClient {
                 }
             }
 
+            //public void sendDirectRequest(Long chatroomId, Long requesterId){}
+
+
             @Override
             public void onError(Throwable t) {
                 log.error("gRPC 오류 발생", t);
@@ -112,4 +123,73 @@ public class GrpcChatStreamClient {
             }
         });
     }
+
+
+    public void sendDirectRequest(Long chatroomId, Long requestId, Long receiverId ){
+        ensureStream();
+
+        ChatMessage grpcMessage = ChatMessage.newBuilder()
+                .setChatroomId(chatroomId)
+                .setSenderId(requestId)
+                .setReceiverId(receiverId)
+                .setType(MessageType.DIRECT_REQUEST)
+                .setContent("직거래 요청이 들어왔습니다.")
+                .build();
+
+        requestObserver.onNext(grpcMessage);
+        log.info("직거래 요청 onNext 완료: room={},from={},to={}", chatroomId,requestId,receiverId);
+
+
+    }
+
+    public void sendDirectAccept(Long chatroomId, Long requestId, Long receiverId ){
+        ensureStream();
+
+        ChatMessage grpcMessage = ChatMessage.newBuilder()
+                .setChatroomId(chatroomId)
+                .setSenderId(requestId)
+                .setReceiverId(receiverId)
+                .setType(MessageType.DIRECT_ACCEPT)
+                .setContent("직거래 요청이 수락됐어요. 거래 평가를 위해\n 거래가 끝나면 + 버튼을 눌러 '거래완료'를 눌러주세요.")
+                .build();
+
+        requestObserver.onNext(grpcMessage);
+        log.info("직거래 수락 onNext 완료: room={},from={},to={}", chatroomId,requestId,receiverId);
+
+
+    }
+
+    public void sendParcelRequest(Long chatroomId, Long requestId, Long receiverId ){
+        ensureStream();
+
+        ChatMessage grpcMessage = ChatMessage.newBuilder()
+                .setChatroomId(chatroomId)
+                .setSenderId(requestId)
+                .setReceiverId(receiverId)
+                .setType(MessageType.PARCEL_REQUEST)
+                .setContent("택배거래 요청이 들어왔습니다.")
+                .build();
+
+        requestObserver.onNext(grpcMessage);
+        log.info("택배 거래 요청 onNext 완료: room={},from={},to={}", chatroomId,requestId,receiverId);
+
+
+    }
+    public void sendParcelAccept(Long chatroomId, Long requestId, Long receiverId ){
+        ensureStream();
+
+        ChatMessage grpcMessage = ChatMessage.newBuilder()
+                .setChatroomId(chatroomId)
+                .setSenderId(requestId)
+                .setReceiverId(receiverId)
+                .setType(MessageType.PARCEL_ACCEPT)
+                .setContent("택배 거래 요청이 수락되었습니다.")
+                .build();
+
+        requestObserver.onNext(grpcMessage);
+        log.info("택배 거래 수락 onNext 완료: room={},from={},to={}", chatroomId,requestId,receiverId);
+
+
+    }
+
 }
