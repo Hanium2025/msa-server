@@ -51,6 +51,9 @@ public enum ErrorCode {
     FAIL_DIRECT_REQUEST_CHAT(404, "직거래 요청 메시지 수신 실패"),
     FAIL_DIRECT_ACCEPT_CHAT(404,"직거래 요청 수락 메시지 수신 실패"),
     INVALID_PRODUCT_STATUS_TRANSITION(404, "상품 거래 상태 수정이 불가능합니다."),
+    TRADE_NOT_FOUND(404, "해당 거래를 찾을 수 없습니다."),
+    FORBIDDEN(403, "해당 요청에 대한 권한이 없습니다."),
+    ALREADY_REVIEWED(409, "이미 리뷰가 작성된 거래입니다."),
     ;
 
     private final int code;

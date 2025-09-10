@@ -1,5 +1,6 @@
 package hanium.product_service.repository;
 
+import hanium.product_service.domain.Product;
 import hanium.product_service.domain.TradeStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -8,8 +9,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import hanium.product_service.domain.Trade;
 
+import java.util.Optional;
+
 @Repository
 public interface TradeRepository extends JpaRepository<Trade, Long> {
+
+    Optional<Trade> findByIdAndDeletedAtIsNull(Long id);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""

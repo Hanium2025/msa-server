@@ -35,6 +35,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     private final PresignService presign;
     private final ProfileGrpcClient profileGrpcClient;
     private final TradeService tradeService;
+    private final TradeReviewService tradeReviewService;
 
     // 메인페이지 조회
     @Override
@@ -204,6 +205,19 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         try {
             ReportProductRequestDTO requestDTO = ReportProductRequestDTO.from(request);
             reportService.reportProduct(requestDTO);
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 거래 평가
+    @Override
+    public void tradeReview(TradeReviewRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            TradeReviewRequestDTO requestDTO = TradeReviewRequestDTO.from(request);
+            tradeReviewService.tradeReview(requestDTO);
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (CustomException e) {

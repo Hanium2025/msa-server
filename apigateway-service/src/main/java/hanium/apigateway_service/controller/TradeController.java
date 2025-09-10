@@ -1,22 +1,18 @@
 package hanium.apigateway_service.controller;
 
-import hanium.apigateway_service.grpc.ChatGrpcClient;
+import hanium.apigateway_service.dto.trade.request.TradeReviewRequestDTO;
 import hanium.apigateway_service.grpc.GrpcChatStreamClient;
 import hanium.apigateway_service.grpc.TradeGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
-import hanium.common.proto.common.CustomError;
 import hanium.common.proto.product.TradeResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -73,4 +69,14 @@ public class TradeController {
         return ResponseEntity.ok(response);
     }
 
+    // 거래 평가
+    @PostMapping("/review/{tradeId}")
+    public ResponseEntity<ResponseDTO<?>> requestReview(@PathVariable Long tradeId,
+                                                        Authentication authentication,
+                                                        @RequestBody TradeReviewRequestDTO dto) {
+        Long memberId = (Long) authentication.getPrincipal();
+        tradeGrpcClient.tradeReview(tradeId, memberId, dto);
+        ResponseDTO<?> response = new ResponseDTO<>(null, HttpStatus.OK, "거래 평가가 완료되었습니다.");
+        return ResponseEntity.ok(response);
+    }
 }
