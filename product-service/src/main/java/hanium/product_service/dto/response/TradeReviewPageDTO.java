@@ -1,6 +1,5 @@
 package hanium.product_service.dto.response;
 
-import hanium.product_service.domain.TradeReview;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
