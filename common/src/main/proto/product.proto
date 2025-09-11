@@ -48,7 +48,10 @@ service ProductService {
   // 12. 상품 신고
   rpc ReportProduct(ReportProductRequest) returns (Empty);
 
-  // 13. 거래 평가
+  // 13. 거래 평가 페이지 정보
+  rpc GetTradeReviewPageInfo(GetTradeReviewPageRequest) returns (GetTradeReviewPageResponse);
+
+  // 14. 거래 평가
   rpc TradeReview(TradeReviewRequest) returns (Empty);
 
   //채팅
@@ -221,7 +224,18 @@ message ReportProductRequest {
   string details = 4;
 }
 
-// 13. 거래 평가
+// 13. 거래 평가 페이지 정보 요청
+message GetTradeReviewPageRequest {
+  int64 trade_id = 1;
+  int64 member_id = 2;
+}
+
+message GetTradeReviewPageResponse {
+  string title = 1;
+  string nickname = 2;
+}
+
+// 14. 거래 평가
 message TradeReviewRequest {
   int64 trade_id = 1;
   int64 member_id = 2;
