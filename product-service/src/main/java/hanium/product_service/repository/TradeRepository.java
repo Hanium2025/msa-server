@@ -15,6 +15,9 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
 
     Optional<Trade> findByIdAndDeletedAtIsNull(Long id);
 
+    @Query("SELECT t FROM Trade t JOIN FETCH t.product WHERE t.id = :tradeId")
+    Optional<Trade> findByIdWithProduct(@Param("tradeId") Long tradeId);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
              update Trade t set t.tradeStatus= :status where t.chatroom.id = :chatroomId 

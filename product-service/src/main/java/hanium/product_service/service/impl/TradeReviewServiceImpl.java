@@ -5,6 +5,9 @@ import hanium.common.exception.ErrorCode;
 import hanium.product_service.domain.Trade;
 import hanium.product_service.domain.TradeReview;
 import hanium.product_service.dto.request.TradeReviewRequestDTO;
+import hanium.product_service.dto.response.ProfileResponseDTO;
+import hanium.product_service.dto.response.TradeReviewPageDTO;
+import hanium.product_service.grpc.ProfileGrpcClient;
 import hanium.product_service.repository.TradeRepository;
 import hanium.product_service.repository.TradeReviewRepository;
 import hanium.product_service.service.TradeReviewService;
@@ -19,23 +22,33 @@ import org.springframework.transaction.annotation.Transactional;
 public class TradeReviewServiceImpl implements TradeReviewService {
     private final TradeRepository tradeRepository;
     private final TradeReviewRepository tradeReviewRepository;
+    private final ProfileGrpcClient profileGrpcClient;
+
+    @Override
+    @Transactional(readOnly = true)
+    public TradeReviewPageDTO getTradeReviewPageInfo(Long tradeId, Long memberId){
+        Trade trade = tradeRepository.findByIdWithProduct(tradeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.TRADE_NOT_FOUND));
+
+        String title = trade.getProduct().getTitle();
+
+        ProfileResponseDTO profileResponseDTO = profileGrpcClient.getProfileByMemberId(trade.getOtherParty(memberId));
+
+        return TradeReviewPageDTO.builder()
+                .title(title)
+                .nickname(profileResponseDTO.getNickname())
+                .build();
+    }
+
 
     @Override
     @Transactional
     public void tradeReview(TradeReviewRequestDTO dto){
-        log.info("💡 요청된 tradeId: {}", dto.getTradeId());
         Trade trade = tradeRepository.findByIdAndDeletedAtIsNull(dto.getTradeId())
                 .orElseThrow(() -> new CustomException(ErrorCode.TRADE_NOT_FOUND));
 
         // 리뷰 대상자 검증
-        Long targetMemberId;
-        if (trade.getBuyerId().equals(dto.getMemberId())) {
-            targetMemberId = trade.getSellerId();
-        } else if (trade.getSellerId().equals(dto.getMemberId())) {
-            targetMemberId = trade.getBuyerId();
-        } else {
-            throw new CustomException(ErrorCode.FORBIDDEN);
-        }
+        Long targetMemberId = trade.getOtherParty(dto.getMemberId());
 
         // 중복 리뷰 방지
         boolean exists = tradeReviewRepository.existsByTradeIdAndMemberId(dto.getTradeId(), dto.getMemberId());
@@ -45,5 +58,7 @@ public class TradeReviewServiceImpl implements TradeReviewService {
 
         TradeReview tradeReview = TradeReview.of(trade, dto, targetMemberId);
         tradeReviewRepository.save(tradeReview);
+
+        log.info("✅ {} 사용자 {}와의 {} 거래 후기 작성", dto.getMemberId(), targetMemberId, dto.getTradeId());
     }
 }

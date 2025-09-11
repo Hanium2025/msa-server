@@ -1,5 +1,6 @@
 package hanium.apigateway_service.controller;
 
+import hanium.apigateway_service.dto.product.response.TradeReviewPageDTO;
 import hanium.apigateway_service.dto.trade.request.TradeReviewRequestDTO;
 import hanium.apigateway_service.grpc.GrpcChatStreamClient;
 import hanium.apigateway_service.grpc.TradeGrpcClient;
@@ -66,6 +67,16 @@ public class TradeController {
         tradeGrpcClient.ParcelTrade(chatroomId, memberId);
         ResponseDTO<Void> response = new ResponseDTO<>(
                 null, HttpStatus.OK, "택배 거래 요청을 성공했습니다.");
+        return ResponseEntity.ok(response);
+    }
+    // 거래 평가 패이지
+    @GetMapping("/review/{tradeId}")
+
+    public ResponseEntity<ResponseDTO<TradeReviewPageDTO>> requestReviewPage (@PathVariable Long tradeId,
+                                                                         Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        TradeReviewPageDTO result =  tradeGrpcClient.getTradeReviewPageInfo(tradeId, memberId);
+        ResponseDTO<TradeReviewPageDTO> response = new ResponseDTO<>(result, HttpStatus.OK, "거래 평가 페이지 정보입니다.");
         return ResponseEntity.ok(response);
     }
 

@@ -1,5 +1,6 @@
 package hanium.apigateway_service.grpc;
 
+import hanium.apigateway_service.dto.product.response.TradeReviewPageDTO;
 import hanium.apigateway_service.dto.trade.request.TradeReviewRequestDTO;
 import hanium.apigateway_service.mapper.TradeGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
@@ -49,6 +50,16 @@ public class TradeGrpcClient {
             stub.parcelTrade(request);
         } catch (StatusRuntimeException e) {
             throw new CustomException(ErrorCode.CHATROOM_ID_NOT_FOUND);
+        }
+    }
+
+    // 거래 리뷰 페이지
+    public TradeReviewPageDTO getTradeReviewPageInfo(Long tradeId, Long memberId) {
+        GetTradeReviewPageRequest request = tradeGrpcMapperForGateway.toGetTradeReviewPageRequestGrpc(tradeId, memberId);
+        try {
+            return TradeReviewPageDTO.from(stub.getTradeReviewPageInfo(request));
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 

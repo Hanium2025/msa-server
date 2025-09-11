@@ -8,6 +8,7 @@ import hanium.product_service.dto.request.*;
 import hanium.product_service.dto.response.*;
 import hanium.product_service.mapper.ChatGrpcMapper;
 import hanium.product_service.mapper.ProductGrpcMapper;
+import hanium.product_service.mapper.TradeGrpcMapper;
 import hanium.product_service.s3.PresignService;
 import hanium.product_service.service.*;
 import io.grpc.Status;
@@ -205,6 +206,19 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
             ReportProductRequestDTO requestDTO = ReportProductRequestDTO.from(request);
             reportService.reportProduct(requestDTO);
             responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 거래 평가 페이지
+    @Override
+    public void getTradeReviewPageInfo(GetTradeReviewPageRequest request, StreamObserver<GetTradeReviewPageResponse> responseObserver) {
+        try {
+            responseObserver.onNext(
+                    TradeGrpcMapper.toGetTradeReviewPageResponseGrpc(
+                            tradeReviewService.getTradeReviewPageInfo(request.getTradeId(), request.getMemberId())));
             responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));

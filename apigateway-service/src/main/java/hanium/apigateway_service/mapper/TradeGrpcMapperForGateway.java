@@ -1,6 +1,7 @@
 package hanium.apigateway_service.mapper;
 
 import hanium.apigateway_service.dto.trade.request.TradeReviewRequestDTO;
+import hanium.common.proto.product.GetTradeReviewPageRequest;
 import hanium.common.proto.product.TradeRequest;
 import hanium.common.proto.product.TradeReviewRequest;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,13 @@ public class TradeGrpcMapperForGateway {
     public TradeRequest toTradeRequestGrpc(Long chatroomId, Long memberId){
         return TradeRequest.newBuilder()
                 .setChatroomId(chatroomId)
+                .setMemberId(memberId)
+                .build();
+    }
+
+    public GetTradeReviewPageRequest toGetTradeReviewPageRequestGrpc(Long tradeId, Long memberId){
+        return GetTradeReviewPageRequest.newBuilder()
+                .setTradeId(tradeId)
                 .setMemberId(memberId)
                 .build();
     }
