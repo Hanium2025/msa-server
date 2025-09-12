@@ -22,7 +22,7 @@ public class TradeGrpcClient {
     private final TradeGrpcMapperForGateway tradeGrpcMapperForGateway;
 
     // 직거래 요청
-    public TradeResponse DirectTrade(Long chatroomId, Long memberId) {
+    public TradeResponse directTrade(Long chatroomId, Long memberId) {
         TradeRequest request = tradeGrpcMapperForGateway.toTradeRequestGrpc(chatroomId, memberId);
         try {
             return stub.directTrade(request);
@@ -32,7 +32,7 @@ public class TradeGrpcClient {
     }
 
     // 직거래 수락
-    public TradeResponse AcceptDirectTrade(Long chatroomId, Long memberId) {
+    public TradeResponse acceptDirectTrade(Long chatroomId, Long memberId) {
         TradeRequest request = tradeGrpcMapperForGateway.toTradeRequestGrpc(chatroomId, memberId);
         try {
             return stub.acceptDirectTrade(request);
@@ -43,7 +43,7 @@ public class TradeGrpcClient {
 
 
     // 택배 거래
-    public TradeResponse ParcelTrade(Long chatroomId, Long memberId) {
+    public TradeResponse parcelTrade(Long chatroomId, Long memberId) {
         log.info("택배 거래 요청");
         TradeRequest request = tradeGrpcMapperForGateway.toTradeRequestGrpc(chatroomId, memberId);
         try {
@@ -53,7 +53,7 @@ public class TradeGrpcClient {
         }
     }
     // 택배 거래 수락
-    public TradeResponse AcceptParcelTrade(Long chatroomId, Long memberId) {
+    public TradeResponse acceptParcelTrade(Long chatroomId, Long memberId) {
         TradeRequest request = tradeGrpcMapperForGateway.toTradeRequestGrpc(chatroomId, memberId);
         try {
             return stub.acceptParcelTrade(request);

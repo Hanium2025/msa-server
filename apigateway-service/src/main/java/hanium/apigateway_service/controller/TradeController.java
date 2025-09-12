@@ -29,7 +29,7 @@ public class TradeController {
     @PostMapping("/direct-request/chatroom/{chatroomId}")
     public ResponseEntity<ResponseDTO<Long>> requestDirectTrade(@PathVariable Long chatroomId, Authentication authentication) {
         Long memberId = (Long) authentication.getPrincipal();
-        TradeResponse tradeResponse = tradeGrpcClient.DirectTrade(chatroomId, memberId);
+        TradeResponse tradeResponse = tradeGrpcClient.directTrade(chatroomId, memberId);
         Long sellerId = tradeResponse.getOpponentId();
 
         //Trade만들고 상대방 아이디 가져오기
@@ -47,7 +47,7 @@ public class TradeController {
     @PostMapping("/direct-accept/chatroom/{chatroomId}")
     public ResponseEntity<ResponseDTO<Long>> acceptDirectTrade(@PathVariable Long chatroomId, Authentication authentication) {
         Long memberId = (Long) authentication.getPrincipal();
-        TradeResponse tradeResponse = tradeGrpcClient.AcceptDirectTrade(chatroomId, memberId);
+        TradeResponse tradeResponse = tradeGrpcClient.acceptDirectTrade(chatroomId, memberId);
         Long buyerId = tradeResponse.getOpponentId();
         try {
             grpcChatStreamClient.sendDirectAccept(chatroomId, memberId, buyerId);
@@ -77,7 +77,7 @@ public class TradeController {
         }
         log.info("chatroomId={}, memberId={}", chatroomId, memberId);
 
-        TradeResponse tradeResponse = tradeGrpcClient.ParcelTrade(chatroomId, memberId);
+        TradeResponse tradeResponse = tradeGrpcClient.parcelTrade(chatroomId, memberId);
         Long sellerId = tradeResponse.getOpponentId();
         //Trade만들고 상대방 아이디 가져오기
         try {
@@ -96,7 +96,7 @@ public class TradeController {
     @PostMapping("/parcel-accept/chatroom/{chatroomId}")
     public ResponseEntity<ResponseDTO<Long>> acceptParcelTrade(@PathVariable Long chatroomId, Authentication authentication) {
         Long memberId = (Long) authentication.getPrincipal();
-        TradeResponse tradeResponse = tradeGrpcClient.AcceptParcelTrade(chatroomId, memberId);
+        TradeResponse tradeResponse = tradeGrpcClient.acceptParcelTrade(chatroomId, memberId);
 
         Long buyerId = tradeResponse.getOpponentId();
 
@@ -110,4 +110,11 @@ public class TradeController {
                 buyerId, HttpStatus.OK, "택배 거래 수락을 성공했습니다.");
         return ResponseEntity.ok(response);
     }
+    //결제 요청
+//    public ResponseEntity<ResponseDTO<Long>> requestPayment(@PathVariable Long chatroomId, Authentication authentication){
+//        Long memberId = (Long) authentication.getPrincipal();
+//        return ResponseEntity.ok();
+//    }
+
+
 }
