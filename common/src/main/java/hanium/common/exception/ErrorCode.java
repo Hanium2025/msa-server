@@ -27,6 +27,7 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(404, "해당하는 Member를 찾을 수 없습니다."),
     AUTHORITY_NOT_FOUND(404, "사용자의 권한을 조회할 수 없습니다."),
     REFRESH_NOT_FOUND(404, "데이터베이스에서 Refresh 토큰을 찾을 수 없습니다."),
+    INVALID_PROFILE_IMAGE_TYPE(400, "프로필 사진은 image 형식만 등록할 수 있습니다."),
 
     // -- PRODUCT-SERVICE -- //
     ERROR_ADD_PRODUCT(500, "상품 등록 중 문제가 발생했습니다."),

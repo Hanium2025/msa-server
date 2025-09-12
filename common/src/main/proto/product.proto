@@ -70,6 +70,7 @@ service ProductService {
   // 16. 내가 참여한 채팅방 리스트 조회
   rpc GetMyChatrooms(ListMyChatroomsRequest)returns (ListMyChatroomsResponse);
 
+
   // 17. 직거래 요청
   rpc DirectTrade(TradeRequest) returns (TradeResponse);
 
@@ -78,6 +79,10 @@ service ProductService {
 
   // 18. 택배거래 요청
   rpc ParcelTrade(TradeRequest) returns (Empty);
+  
+  // 10. User-service서 주요 활동 카테고리 조회
+  rpc GetMainCategory(ProductMainRequest) returns (GetMainCategoryResponse);
+
 }
 
 message Empty {}
@@ -272,12 +277,12 @@ enum MessageType{
   IMAGE = 1;
   DIRECT_REQUEST = 3;
   DIRECT_ACCEPT = 4;
-  PARCEL_REQUEST= 5;
-  PARCEL_ACCEPT= 6;
-  PAYMENT_REQUEST=7;
-  PAYMENT_DONE=8;
-  ADDRESS_REGISTER=9;
-  ADDRESS_REGISTER_DONE=10;
+  PARCEL_REQUEST = 5;
+  PARCEL_ACCEPT = 6;
+  PAYMENT_REQUEST = 7;
+  PAYMENT_DONE = 8;
+  ADDRESS_REGISTER = 9;
+  ADDRESS_REGISTER_DONE = 10;
 }
 // 15. PresignedUrl
 message PresignedUrl {
@@ -326,8 +331,8 @@ message ChatroomSummary{
   int64 productId = 4;
   int64 opponentId = 5; //상대방 아이디
   int64 latestTime = 6;
-  string opponentProfileUrl =7;
-  string opponentNickname =8;
+  string opponentProfileUrl = 7;
+  string opponentNickname = 8;
 
 }
 // 16. 채팅방 리스트
@@ -344,4 +349,7 @@ message TradeRequest{
 message TradeResponse{
   int64  opponentId =1;
 }
-
+// 주요 활동 카테고리 조회
+message GetMainCategoryResponse {
+  repeated string category = 1;
+}
