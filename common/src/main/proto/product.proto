@@ -59,6 +59,8 @@ service ProductService {
   rpc CreateChatroom(CreateChatroomRequest) returns (CreateChatroomResponse);
   rpc GetMyChatrooms(ListMyChatroomsRequest)returns (ListMyChatroomsResponse);
 
+  // 10. User-service서 주요 활동 카테고리 조회
+  rpc GetMainCategory(ProductMainRequest) returns (GetMainCategoryResponse);
 }
 
 message Empty {}
@@ -232,12 +234,12 @@ enum MessageType{
   IMAGE = 1;
   DIRECT_REQUEST = 3;
   DIRECT_ACCEPT = 4;
-  PARCEL_REQUEST= 5;
-  PARCEL_ACCEPT= 6;
-  PAYMENT_REQUEST=7;
-  PAYMENT_DONE=8;
-  ADDRESS_REGISTER=9;
-  ADDRESS_REGISTER_DONE=10;
+  PARCEL_REQUEST = 5;
+  PARCEL_ACCEPT = 6;
+  PAYMENT_REQUEST = 7;
+  PAYMENT_DONE = 8;
+  ADDRESS_REGISTER = 9;
+  ADDRESS_REGISTER_DONE = 10;
 }
 message PresignedUrl {
   string putUrl = 1;
@@ -284,10 +286,15 @@ message ChatroomSummary{
   int64 productId = 4;
   int64 opponentId = 5; //상대방 아이디
   int64 latestTime = 6;
-  string opponentProfileUrl =7;
-  string opponentNickname =8;
+  string opponentProfileUrl = 7;
+  string opponentNickname = 8;
 
 }
 message ListMyChatroomsResponse {
   repeated ChatroomSummary items = 1;
+}
+
+// 주요 활동 카테고리 조회
+message GetMainCategoryResponse {
+  repeated string category = 1;
 }

@@ -30,6 +30,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     private final ProductLikeService likeService;
     private final ProductReportService reportService;
     private final ProductSearchService productSearchService;
+    private final ProductUserService productUserService;
     private final ChatService chatService;
     private final PresignService presign;
     private final ProfileGrpcClient profileGrpcClient;
@@ -313,5 +314,17 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
 
         responseObserver.onNext(resp.build());
         responseObserver.onCompleted();
+    }
+
+    // 프로필 > 주요 활동 카테고리 조회
+    @Override
+    public void getMainCategory(ProductMainRequest request, StreamObserver<GetMainCategoryResponse> responseObserver) {
+        try {
+            List<String> result = productUserService.getMainCategoryByMemberId(request.getMemberId());
+            responseObserver.onNext(GetMainCategoryResponse.newBuilder().addAllCategory(result).build());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
     }
 }
