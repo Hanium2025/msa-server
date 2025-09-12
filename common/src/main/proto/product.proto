@@ -82,7 +82,6 @@ service ProductService {
 
   // 18. 택배거래 수락
   rpc AcceptParcelTrade(TradeRequest) returns (TradeResponse);
-  rpc ParcelTrade(TradeRequest) returns (Empty);
 
   // 10. User-service서 주요 활동 카테고리 조회
   rpc GetMainCategory(ProductMainRequest) returns (GetMainCategoryResponse);
@@ -337,6 +336,7 @@ message ChatroomSummary{
   int64 latestTime = 6;
   string opponentProfileUrl = 7;
   string opponentNickname = 8;
+  int64 sellerId = 9;
 
 }
 // 16. 채팅방 리스트

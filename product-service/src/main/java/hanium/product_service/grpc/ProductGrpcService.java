@@ -336,6 +336,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
                             .setLatestTime(latestMillis)
                             .setOpponentProfileUrl(dto.getOpponentProfileUrl())
                             .setOpponentNickname(dto.getOpponentNickname())
+                            .setSellerId(dto.getSellerId() == null ? 0L : dto.getSellerId())
                             .build();
 
             resp.addItems(summary);
@@ -390,20 +391,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
 
     // 택배 거래 요청
     @Override
-    public void parcelTrade(TradeRequest request, StreamObserver<Empty> responseObserver) {
-        super.parcelTrade(request, responseObserver);
-    // 프로필 > 주요 활동 카테고리 조회
-    @Override
-    public void getMainCategory(ProductMainRequest request, StreamObserver<GetMainCategoryResponse> responseObserver) {
-        try {
-            List<String> result = productUserService.getMainCategoryByMemberId(request.getMemberId());
-            responseObserver.onNext(GetMainCategoryResponse.newBuilder().addAllCategory(result).build());
-            responseObserver.onCompleted();
-        } catch (CustomException e) {
-            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
-        }
     public void parcelTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
-
         Long chatroomId = request.getChatroomId();
         Long buyerId = request.getMemberId();
         TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomId(chatroomId, buyerId);
@@ -419,7 +407,6 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
 
         responseObserver.onNext(tradeResponse);
         responseObserver.onCompleted();
-
     }
 
     @Override
@@ -444,4 +431,17 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         responseObserver.onCompleted();
     }
 
+
+    // 프로필 > 주요 활동 카테고리 조회
+    @Override
+    public void getMainCategory(ProductMainRequest request, StreamObserver<GetMainCategoryResponse> responseObserver) {
+        try {
+            List<String> result = productUserService.getMainCategoryByMemberId(request.getMemberId());
+            responseObserver.onNext(GetMainCategoryResponse.newBuilder().addAllCategory(result).build());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+
+    }
 }
