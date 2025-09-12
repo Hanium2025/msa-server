@@ -8,6 +8,7 @@ import hanium.product_service.dto.request.*;
 import hanium.product_service.dto.response.*;
 import hanium.product_service.mapper.ChatGrpcMapper;
 import hanium.product_service.mapper.ProductGrpcMapper;
+import hanium.product_service.mapper.TradeGrpcMapper;
 import hanium.product_service.s3.PresignService;
 import hanium.product_service.service.*;
 import io.grpc.Status;
@@ -34,6 +35,8 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     private final ChatService chatService;
     private final PresignService presign;
     private final ProfileGrpcClient profileGrpcClient;
+    private final TradeService tradeService;
+    private final TradeReviewService tradeReviewService;
 
     // 메인페이지 조회
     @Override
@@ -210,6 +213,32 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         }
     }
 
+    // 거래 평가 페이지
+    @Override
+    public void getTradeReviewPageInfo(GetTradeReviewPageRequest request, StreamObserver<GetTradeReviewPageResponse> responseObserver) {
+        try {
+            responseObserver.onNext(
+                    TradeGrpcMapper.toGetTradeReviewPageResponseGrpc(
+                            tradeReviewService.getTradeReviewPageInfo(request.getTradeId(), request.getMemberId())));
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 거래 평가
+    @Override
+    public void tradeReview(TradeReviewRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            TradeReviewRequestDTO requestDTO = TradeReviewRequestDTO.from(request);
+            tradeReviewService.tradeReview(requestDTO);
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
     //실시간 채팅
     @Override
     public StreamObserver<ChatMessage> chat(StreamObserver<ChatResponseMessage> responseObserver) {
@@ -316,6 +345,53 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         responseObserver.onCompleted();
     }
 
+    // 직거래 요청
+    @Override
+    public void directTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
+        Long chatroomId = request.getChatroomId();
+        Long buyerId = request.getMemberId(); //요청한 사람이 구매자
+        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomId(chatroomId, buyerId);
+        TradeResponse tradeResponse = TradeResponse.newBuilder().setOpponentId(tradeInfoDTO.getSellerId()).build();
+        Long productId = tradeInfoDTO.getProductId();
+
+        //해당 상품 거래 상태 확인
+        String status = productService.getProductStatusById(productId);
+
+        if ("SELLING".equals(status)) {//판매중이라면 Trade 생성
+            tradeService.directTrade(chatroomId, tradeInfoDTO);
+        }
+
+        responseObserver.onNext(tradeResponse);
+        responseObserver.onCompleted();
+    }
+
+    //직거래 수락
+    @Override
+    public void acceptDirectTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
+        Long chatroomId = request.getChatroomId();
+        Long sellerId = request.getMemberId(); //수락하는 사람은 판매자
+        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomId(chatroomId, sellerId);
+        TradeResponse tradeResponse = TradeResponse.newBuilder().setOpponentId(tradeInfoDTO.getBuyerId()).build();
+
+        Long productId = tradeInfoDTO.getProductId();
+
+        //해당 상품 거래 상태 확인
+        String status = productService.getProductStatusById(productId);
+        if ("SELLING".equals(status)) {
+            //trade상태를 업데이트 시키고
+            tradeService.acceptDirectTrade(chatroomId);
+            //상품 상태를 판매중으로 바꾸기
+            productService.updateProductStatusById(productId);
+
+        }
+        responseObserver.onNext(tradeResponse);
+        responseObserver.onCompleted();
+    }
+
+    // 택배 거래 요청
+    @Override
+    public void parcelTrade(TradeRequest request, StreamObserver<Empty> responseObserver) {
+        super.parcelTrade(request, responseObserver);
     // 프로필 > 주요 활동 카테고리 조회
     @Override
     public void getMainCategory(ProductMainRequest request, StreamObserver<GetMainCategoryResponse> responseObserver) {

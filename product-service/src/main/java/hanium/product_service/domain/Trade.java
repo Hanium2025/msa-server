@@ -1,5 +1,7 @@
 package hanium.product_service.domain;
 
+import hanium.common.exception.CustomException;
+import hanium.common.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,7 +29,7 @@ public class Trade extends BaseEntity{
     private Long buyerId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="trade_type" ,nullable = false, length = 20)
+    @Column(name="aws configaws configuretrade_type" ,nullable = false, length = 20)
     private TradeType type;
 
     @Enumerated(EnumType.STRING)
@@ -37,6 +39,12 @@ public class Trade extends BaseEntity{
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="chatroom_id", nullable = false, unique = true) //거래당 채팅방 보장
     private Chatroom chatroom;
+
+    public Long getOtherParty(Long memberId) {
+        if (buyerId.equals(memberId)) return sellerId;
+        if (sellerId.equals(memberId)) return buyerId;
+        throw new CustomException(ErrorCode.FORBIDDEN);
+    }
 
 }
 
