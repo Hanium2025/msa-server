@@ -1,11 +1,12 @@
 package hanium.apigateway_service.grpc;
 
+import hanium.apigateway_service.dto.product.response.TradeReviewPageDTO;
+import hanium.apigateway_service.dto.trade.request.TradeReviewRequestDTO;
 import hanium.apigateway_service.mapper.TradeGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
-import hanium.common.proto.product.ProductServiceGrpc;
-import hanium.common.proto.product.TradeRequest;
-import hanium.common.proto.product.TradeResponse;
+import hanium.common.exception.GrpcUtil;
+import hanium.common.proto.product.*;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +60,26 @@ public class TradeGrpcClient {
             return stub.acceptParcelTrade(request);
         } catch (StatusRuntimeException e) {
             throw new CustomException(ErrorCode.CHATROOM_ID_NOT_FOUND);
+        }
+    }
+
+    // 거래 리뷰 페이지
+    public TradeReviewPageDTO getTradeReviewPageInfo(Long tradeId, Long memberId) {
+        GetTradeReviewPageRequest request = tradeGrpcMapperForGateway.toGetTradeReviewPageRequestGrpc(tradeId, memberId);
+        try {
+            return TradeReviewPageDTO.from(stub.getTradeReviewPageInfo(request));
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 거래 리뷰
+    public void tradeReview(Long tradeId, Long memberId, TradeReviewRequestDTO dto) {
+        TradeReviewRequest request = tradeGrpcMapperForGateway.toTradeReviewRequestGrpc(tradeId, memberId, dto);
+        try {
+            stub.tradeReview(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
 

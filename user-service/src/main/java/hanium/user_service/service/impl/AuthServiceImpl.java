@@ -54,14 +54,14 @@ public class AuthServiceImpl implements AuthService {
             Profile profile = Profile.builder()
                     .nickname(dto.getNickname())
                     .imageUrl(imageUrl)
-                    .member(member).build();
+                    .score(20L)
+                    .member(member)
+                    .build();
 
             memberRepository.save(member);
             profileRepository.save(profile);
 
-            log.info("✅ Member added: {}", member.getEmail());
-            log.info("✅ Profile added, id: {} for Member id: {}", profile.getId(), member.getId());
-            log.info("✅ Member authorities: {}", member.getAuthorities());
+            log.info("✅ [회원가입 완료] Profile id={} for Member id={}", profile.getId(), member.getId());
 
             return member;
         }

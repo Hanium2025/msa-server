@@ -4,11 +4,11 @@ import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.*;
-import hanium.product_service.domain.Trade;
 import hanium.product_service.dto.request.*;
 import hanium.product_service.dto.response.*;
 import hanium.product_service.mapper.ChatGrpcMapper;
 import hanium.product_service.mapper.ProductGrpcMapper;
+import hanium.product_service.mapper.TradeGrpcMapper;
 import hanium.product_service.s3.PresignService;
 import hanium.product_service.service.*;
 import io.grpc.Status;
@@ -31,10 +31,12 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     private final ProductLikeService likeService;
     private final ProductReportService reportService;
     private final ProductSearchService productSearchService;
+    private final ProductUserService productUserService;
     private final ChatService chatService;
     private final PresignService presign;
     private final ProfileGrpcClient profileGrpcClient;
     private final TradeService tradeService;
+    private final TradeReviewService tradeReviewService;
 
     // 메인페이지 조회
     @Override
@@ -211,6 +213,32 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         }
     }
 
+    // 거래 평가 페이지
+    @Override
+    public void getTradeReviewPageInfo(GetTradeReviewPageRequest request, StreamObserver<GetTradeReviewPageResponse> responseObserver) {
+        try {
+            responseObserver.onNext(
+                    TradeGrpcMapper.toGetTradeReviewPageResponseGrpc(
+                            tradeReviewService.getTradeReviewPageInfo(request.getTradeId(), request.getMemberId())));
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 거래 평가
+    @Override
+    public void tradeReview(TradeReviewRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            TradeReviewRequestDTO requestDTO = TradeReviewRequestDTO.from(request);
+            tradeReviewService.tradeReview(requestDTO);
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
     //실시간 채팅
     @Override
     public StreamObserver<ChatMessage> chat(StreamObserver<ChatResponseMessage> responseObserver) {
@@ -317,7 +345,6 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         responseObserver.onCompleted();
     }
 
-
     // 직거래 요청
     @Override
     public void directTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
@@ -363,6 +390,18 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
 
     // 택배 거래 요청
     @Override
+    public void parcelTrade(TradeRequest request, StreamObserver<Empty> responseObserver) {
+        super.parcelTrade(request, responseObserver);
+    // 프로필 > 주요 활동 카테고리 조회
+    @Override
+    public void getMainCategory(ProductMainRequest request, StreamObserver<GetMainCategoryResponse> responseObserver) {
+        try {
+            List<String> result = productUserService.getMainCategoryByMemberId(request.getMemberId());
+            responseObserver.onNext(GetMainCategoryResponse.newBuilder().addAllCategory(result).build());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
     public void parcelTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
 
         Long chatroomId = request.getChatroomId();

@@ -2,9 +2,11 @@ package hanium.apigateway_service.mapper;
 
 import hanium.apigateway_service.dto.user.request.LoginRequestDTO;
 import hanium.apigateway_service.dto.user.request.SignUpRequestDTO;
+import hanium.apigateway_service.dto.user.request.UpdateProfileRequestDTO;
 import hanium.apigateway_service.dto.user.request.VerifySmsRequestDTO;
 import hanium.common.proto.user.LoginRequest;
 import hanium.common.proto.user.SignUpRequest;
+import hanium.common.proto.user.UpdateProfileRequest;
 import hanium.common.proto.user.VerifySmsRequest;
 
 public class UserGrpcMapperForGateway {
@@ -35,6 +37,14 @@ public class UserGrpcMapperForGateway {
         return VerifySmsRequest.newBuilder()
                 .setPhoneNumber(dto.getPhoneNumber())
                 .setSmsCode(dto.getSmsCode())
+                .build();
+    }
+
+    public static UpdateProfileRequest toUpdateProfileGrpc(Long memberId, UpdateProfileRequestDTO dto) {
+        return UpdateProfileRequest.newBuilder()
+                .setMemberId(memberId)
+                .setNickname(dto.nickname())
+                .setImageUrl(dto.imageUrl())
                 .build();
     }
 }

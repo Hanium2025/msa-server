@@ -27,6 +27,7 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(404, "해당하는 Member를 찾을 수 없습니다."),
     AUTHORITY_NOT_FOUND(404, "사용자의 권한을 조회할 수 없습니다."),
     REFRESH_NOT_FOUND(404, "데이터베이스에서 Refresh 토큰을 찾을 수 없습니다."),
+    INVALID_PROFILE_IMAGE_TYPE(400, "프로필 사진은 image 형식만 등록할 수 있습니다."),
 
     // -- PRODUCT-SERVICE -- //
     ERROR_ADD_PRODUCT(500, "상품 등록 중 문제가 발생했습니다."),
@@ -51,6 +52,9 @@ public enum ErrorCode {
     FAIL_DIRECT_REQUEST_CHAT(404, "직거래 요청 메시지 수신 실패"),
     FAIL_DIRECT_ACCEPT_CHAT(404,"직거래 요청 수락 메시지 수신 실패"),
     INVALID_PRODUCT_STATUS_TRANSITION(404, "상품 거래 상태 수정이 불가능합니다."),
+    TRADE_NOT_FOUND(404, "해당 거래를 찾을 수 없습니다."),
+    FORBIDDEN(403, "해당 요청에 대한 권한이 없습니다."),
+    ALREADY_REVIEWED(409, "이미 리뷰가 작성된 거래입니다."),
     ;
 
     private final int code;

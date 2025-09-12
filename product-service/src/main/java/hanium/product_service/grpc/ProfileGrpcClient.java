@@ -2,12 +2,9 @@ package hanium.product_service.grpc;
 
 import hanium.common.exception.CustomException;
 import hanium.common.exception.GrpcUtil;
-import hanium.common.proto.user.GetNicknameRequest;
-import hanium.common.proto.user.GetNicknameResponse;
 import hanium.common.proto.user.GetProfileRequest;
 import hanium.common.proto.user.UserServiceGrpc;
 import hanium.product_service.dto.response.ProfileResponseDTO;
-import hanium.product_service.mapper.ProfileGrpcMapper;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

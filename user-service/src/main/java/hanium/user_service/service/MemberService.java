@@ -5,7 +5,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface MemberService extends UserDetailsService {
 
-    public Member getMemberById(Long memberId);
+    Member getMemberById(Long memberId);
 
-    public Member getMemberByEmail(String email);
+    Member getMemberByEmail(String email);
+
+    String toggleAgreeMarketing(Long memberId);
+
+    String toggleAgreeThirdParty(Long memberId);
 }
