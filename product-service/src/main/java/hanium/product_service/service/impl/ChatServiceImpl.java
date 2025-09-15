@@ -209,10 +209,11 @@ public class ChatServiceImpl implements ChatService {
         }
         return dtos;
     }
-
-    public TradeInfoDTO getTradeInfoByChatroomId(Long chatroomId,Long buyerId){
-        TradeInfoDTO tradeInfoDTO = chatroomTradeInfoRepository.findTradeInfoByChatroomId(chatroomId,buyerId);
+    //구매자 아이디로 판매자 아이디 받을 떄
+    @Override
+    public TradeInfoDTO getTradeInfoByChatroomIdAndMemberId(Long chatroomId, Long memberId) {
+        TradeInfoDTO tradeInfoDTO = chatroomTradeInfoRepository.findTradeInfoByChatroomIdAndMemberId(chatroomId,memberId);
         return tradeInfoDTO;
-    };
+    }
 
 }

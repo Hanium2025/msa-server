@@ -70,6 +70,10 @@ public class GrpcChatStreamClient {
         requestObserver = stub.chat(new StreamObserver<>() {
             @Override
             public void onNext(ChatResponseMessage msg) {
+
+                log.info("↩️ gRPC onNext: type={}, room={}, sender={}, receiver={}",
+                        msg.getType(), msg.getChatroomId(), msg.getSenderId(), msg.getReceiverId());
+
                 // 1) 공통 DTO 생성
                 ChatMessageResponseDTO base = ChatMessageResponseDTO.builder()
                         .messageId(msg.getMessageId())

@@ -7,10 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.WebSocketMessage;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.*;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -57,11 +55,43 @@ public class ChatWebSocketHandler implements WebSocketHandler {
     @Override
     public void handleMessage(@NotNull WebSocketSession session, WebSocketMessage<?> message) throws Exception {
 
+        try {
+            String payload = String.valueOf(message.getPayload());
+
+            // JSON 파싱
+            JsonNode root = objectMapper.readTree(payload);
+            String type = root.path("type").asText("");
+
+            // ✅ PING은 gRPC로 보내지 말고 바로 PONG
+            if ("PING".equalsIgnoreCase(type)) {
+                String pong = "{\"type\":\"PONG\",\"ts\":" + System.currentTimeMillis() + "}";
+                session.sendMessage(new TextMessage(pong));
+                return;
+            }
+
+            // ✅ 필수 필드 검증 (null이면 gRPC 호출 X)
+            if (!root.hasNonNull("chatroomId") ||
+                    !root.hasNonNull("senderId")   ||
+                    !root.hasNonNull("receiverId") ||
+                    !root.hasNonNull("type")) {
+                log.warn("WS ignore: missing required fields: {}", payload);
+                return;
+            }
+
+            // 정상 메시지만 gRPC로
+            ChatMessageRequestDTO dto = objectMapper.readValue(payload, ChatMessageRequestDTO.class);
+            grpcChatStreamClient.sendMessage(dto);
+
+        } catch (Exception e) {
+            log.error("WS handleMessage error", e);
+            // ❗여기서 session.close() 하지 말고 무시/로그만 — 세션을 살려둬야 1011로 안 끊깁니다.
+        }
+
         // 메시지를 JSON → DTO로 변환
-        ChatMessageRequestDTO dto = objectMapper.readValue(message.getPayload().toString(), ChatMessageRequestDTO.class);
-        log.info("📤 WebSocket 수신: {} ", dto);
-        //gRPC를 통해 product-service로 전송
-        grpcChatStreamClient.sendMessage(dto);
+//        ChatMessageRequestDTO dto = objectMapper.readValue(message.getPayload().toString(), ChatMessageRequestDTO.class);
+//        log.info("📤 WebSocket 수신: {} ", dto);
+//        //gRPC를 통해 product-service로 전송
+//        grpcChatStreamClient.sendMessage(dto);
     }
 
 
