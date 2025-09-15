@@ -22,7 +22,7 @@ public class Chatroom extends BaseEntity{
     @Column
     private Long receiverId;
 
-    @Column(length = 50)
+    @Column(length = 1000)
     private String latestContent;
 
     @Column
