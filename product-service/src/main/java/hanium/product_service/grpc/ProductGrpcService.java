@@ -392,6 +392,8 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     @Override
     public void parcelTrade(TradeRequest request, StreamObserver<Empty> responseObserver) {
         super.parcelTrade(request, responseObserver);
+    }
+
     // 프로필 > 주요 활동 카테고리 조회
     @Override
     public void getMainCategory(ProductMainRequest request, StreamObserver<GetMainCategoryResponse> responseObserver) {
