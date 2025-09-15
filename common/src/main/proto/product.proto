@@ -86,6 +86,8 @@ service ProductService {
   // 10. User-service서 주요 활동 카테고리 조회
   rpc GetMainCategory(ProductMainRequest) returns (GetMainCategoryResponse);
 
+  //현재 거래 상태 조회
+  rpc getTradeStatus(TradeRequest) returns (TradeStatusResponse);
 }
 
 message Empty {}
@@ -352,6 +354,10 @@ message TradeRequest{
 // 19, 20. 거래 응답
 message TradeResponse{
   int64  opponentId =1;
+}
+//거래 진행사항 응답
+message TradeStatusResponse{
+  string status =1;
 }
 // 주요 활동 카테고리 조회
 message GetMainCategoryResponse {

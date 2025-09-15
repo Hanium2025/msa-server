@@ -7,7 +7,9 @@ import hanium.apigateway_service.grpc.TradeGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
+import hanium.common.proto.product.ProductServiceGrpc;
 import hanium.common.proto.product.TradeResponse;
+import hanium.common.proto.product.TradeStatusResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -48,6 +50,8 @@ public class TradeController {
         Long memberId = (Long) authentication.getPrincipal();
         TradeResponse tradeResponse = tradeGrpcClient.acceptDirectTrade(chatroomId, memberId);
         Long buyerId = tradeResponse.getOpponentId();
+        log.info("판매자: {}", memberId);
+        log.info("구매자: {}", buyerId);
         try {
             grpcChatStreamClient.sendDirectAccept(chatroomId, memberId, buyerId);
         } catch (Exception e) {
@@ -57,6 +61,29 @@ public class TradeController {
                 buyerId, HttpStatus.OK, "직거래 요청 수락을 성공했습니다.");
         return ResponseEntity.ok(response);
 
+    }
+
+
+    //거래 완료버튼을 보여주기 위한 상태 응답 받아오기
+    @GetMapping("/status/chatroom/{chatroomId}")
+    public ResponseEntity<ResponseDTO<String>> getTradeStatus(@PathVariable Long chatroomId, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+        final Long memberId;
+        try {
+            memberId = (Long) authentication.getPrincipal();
+        } catch (ClassCastException | NullPointerException e) {
+            Object p = (authentication != null ? authentication.getPrincipal() : null);
+            throw new CustomException(ErrorCode.INVALID_TOKEN);
+        }
+        log.info("chatroomId={}, memberId={}", chatroomId, memberId);
+
+        TradeStatusResponse status = tradeGrpcClient.getTradeStatus(chatroomId,memberId);
+        String tradeStatus = status.getStatus();
+        ResponseDTO<String> response = new ResponseDTO<>(
+                tradeStatus, HttpStatus.OK, "현재 거래 진행사항 가져오기 성공");
+        return ResponseEntity.ok(response);
     }
 
 
@@ -109,13 +136,14 @@ public class TradeController {
                 buyerId, HttpStatus.OK, "택배 거래 수락을 성공했습니다.");
         return ResponseEntity.ok(response);
     }
+
     // 거래 평가 패이지
     @GetMapping("/review/{tradeId}")
 
-    public ResponseEntity<ResponseDTO<TradeReviewPageDTO>> requestReviewPage (@PathVariable Long tradeId,
-                                                                         Authentication authentication) {
+    public ResponseEntity<ResponseDTO<TradeReviewPageDTO>> requestReviewPage(@PathVariable Long tradeId,
+                                                                             Authentication authentication) {
         Long memberId = (Long) authentication.getPrincipal();
-        TradeReviewPageDTO result =  tradeGrpcClient.getTradeReviewPageInfo(tradeId, memberId);
+        TradeReviewPageDTO result = tradeGrpcClient.getTradeReviewPageInfo(tradeId, memberId);
         ResponseDTO<TradeReviewPageDTO> response = new ResponseDTO<>(result, HttpStatus.OK, "거래 평가 페이지 정보입니다.");
         return ResponseEntity.ok(response);
     }

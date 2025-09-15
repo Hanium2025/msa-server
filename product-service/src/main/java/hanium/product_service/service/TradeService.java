@@ -1,6 +1,7 @@
 package hanium.product_service.service;
 
 import hanium.common.proto.product.TradeRequest;
+import hanium.product_service.domain.TradeStatus;
 import hanium.product_service.dto.response.TradeInfoDTO;
 import io.grpc.stub.StreamObserver;
 import org.springframework.stereotype.Service;
@@ -11,4 +12,5 @@ public interface TradeService {
     int acceptDirectTrade(Long chatroomId);
 
     void parcelTrade(Long chatroomId, TradeInfoDTO tradeInfoDTO);
+    TradeStatus getTradeStatus(Long chatroomId, Long memberId);
 }

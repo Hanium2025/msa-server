@@ -1,5 +1,7 @@
 package hanium.product_service.service.impl;
 
+import hanium.common.exception.CustomException;
+import hanium.common.exception.ErrorCode;
 import hanium.product_service.domain.*;
 import hanium.product_service.dto.response.TradeInfoDTO;
 import hanium.product_service.repository.TradeRepository;
@@ -62,5 +64,11 @@ public class TradeServiceImpl implements TradeService {
                 .chatroom(chatroomRef)
                 .build();
         tradeRepository.save(trade);
+    }
+
+    @Override
+    public TradeStatus getTradeStatus(Long chatroomId, Long memberId) {
+        return tradeRepository.findTradeStatus(chatroomId, memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRADE));
     }
 }

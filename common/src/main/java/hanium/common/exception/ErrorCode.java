@@ -55,7 +55,9 @@ public enum ErrorCode {
     TRADE_NOT_FOUND(404, "해당 거래를 찾을 수 없습니다."),
     FORBIDDEN(403, "해당 요청에 대한 권한이 없습니다."),
     ALREADY_REVIEWED(409, "이미 리뷰가 작성된 거래입니다."),
+    NOT_FOUND_TRADE(400, "해당 거래는 없습니다."),
     ;
+
 
     private final int code;
     private final String message;

@@ -24,4 +24,11 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
              and t.tradeStatus = hanium.product_service.domain.TradeStatus.REQUESTED
             """)
     int updateStatus(@Param("chatroomId") Long chatroomId, @Param("status") TradeStatus status);
+
+    @Query("""
+            SELECT t.tradeStatus FROM Trade t WHERE t.chatroom.id = :chatroomId 
+                       and (t.buyerId = :memberId or t.sellerId = :memberId)
+            """)
+    Optional<TradeStatus> findTradeStatus(@Param("chatroomId") Long chatroomId, @Param("memberId")Long memberId);
+
 }

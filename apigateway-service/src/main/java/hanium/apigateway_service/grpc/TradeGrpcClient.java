@@ -41,6 +41,15 @@ public class TradeGrpcClient {
             throw new CustomException(ErrorCode.CHATROOM_ID_NOT_FOUND);
         }
     }
+    //거래 진행상태 조회
+    public TradeStatusResponse getTradeStatus(Long chatroomId, Long memberId){
+        TradeRequest request = tradeGrpcMapperForGateway.toTradeRequestGrpc(chatroomId, memberId);
+        try {
+            return stub.getTradeStatus(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(ErrorCode.CHATROOM_ID_NOT_FOUND);
+        }
+    }
 
 
     // 택배 거래

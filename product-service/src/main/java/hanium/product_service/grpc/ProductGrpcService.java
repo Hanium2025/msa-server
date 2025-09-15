@@ -4,6 +4,7 @@ import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.*;
+import hanium.product_service.domain.TradeStatus;
 import hanium.product_service.dto.request.*;
 import hanium.product_service.dto.response.*;
 import hanium.product_service.mapper.ChatGrpcMapper;
@@ -351,7 +352,8 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     public void directTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
         Long chatroomId = request.getChatroomId();
         Long buyerId = request.getMemberId(); //요청한 사람이 구매자
-        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomId(chatroomId, buyerId);
+        log.info("직거래 요청 chatroomId : {} , 구매자 아이디 : {}", chatroomId, buyerId);
+        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomIdAndMemberId(chatroomId, buyerId);
         TradeResponse tradeResponse = TradeResponse.newBuilder().setOpponentId(tradeInfoDTO.getSellerId()).build();
         Long productId = tradeInfoDTO.getProductId();
 
@@ -371,7 +373,9 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     public void acceptDirectTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
         Long chatroomId = request.getChatroomId();
         Long sellerId = request.getMemberId(); //수락하는 사람은 판매자
-        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomId(chatroomId, sellerId);
+        log.info("직거래 수락 chatroomId : {} , 판매자 아이디 : {}", chatroomId, sellerId);
+
+        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomIdAndMemberId(chatroomId, sellerId);
         TradeResponse tradeResponse = TradeResponse.newBuilder().setOpponentId(tradeInfoDTO.getBuyerId()).build();
 
         Long productId = tradeInfoDTO.getProductId();
@@ -389,12 +393,24 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         responseObserver.onCompleted();
     }
 
+    //거래 진행 상태 조회
+    @Override
+    public void getTradeStatus(TradeRequest request, StreamObserver<TradeStatusResponse> responseObserver) {
+        Long chatroomId = request.getChatroomId();
+        Long memberId = request.getMemberId();
+        log.info("거래 진행 조회 chatroomId : {} , 사용자 아이디 : {}", chatroomId, memberId);
+        TradeStatus status = tradeService.getTradeStatus(chatroomId, memberId);
+        TradeStatusResponse tradeStatusResponse = TradeStatusResponse.newBuilder().setStatus(status.name()).build();
+        responseObserver.onNext(tradeStatusResponse);
+        responseObserver.onCompleted();
+    }
+
     // 택배 거래 요청
     @Override
     public void parcelTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
         Long chatroomId = request.getChatroomId();
         Long buyerId = request.getMemberId();
-        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomId(chatroomId, buyerId);
+        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomIdAndMemberId(chatroomId, buyerId);
         TradeResponse tradeResponse = TradeResponse.newBuilder().setOpponentId(tradeInfoDTO.getSellerId()).build();
         Long productId = tradeInfoDTO.getProductId();
 
@@ -413,7 +429,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     public void acceptParcelTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
         Long chatroomId = request.getChatroomId();
         Long sellerId = request.getMemberId(); //수락하는 사람은 판매자
-        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomId(chatroomId, sellerId);
+        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomIdAndMemberId(chatroomId, sellerId);
         TradeResponse tradeResponse = TradeResponse.newBuilder().setOpponentId(tradeInfoDTO.getBuyerId()).build();
 
         Long productId = tradeInfoDTO.getProductId();
@@ -444,4 +460,5 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         }
 
     }
+
 }
