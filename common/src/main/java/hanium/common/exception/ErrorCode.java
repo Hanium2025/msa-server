@@ -56,6 +56,7 @@ public enum ErrorCode {
     FORBIDDEN(403, "해당 요청에 대한 권한이 없습니다."),
     ALREADY_REVIEWED(409, "이미 리뷰가 작성된 거래입니다."),
     NOT_FOUND_TRADE(400, "해당 거래는 없습니다."),
+    FAIL_TRADE_DONE_CHAT(404,"거래 완료 메시지 수신 실패"),
     ;
 
 
