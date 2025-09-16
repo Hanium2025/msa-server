@@ -7,6 +7,7 @@ import hanium.apigateway_service.grpc.TradeGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
+import hanium.common.proto.product.CompleteTradeResponse;
 import hanium.common.proto.product.ProductServiceGrpc;
 import hanium.common.proto.product.TradeResponse;
 import hanium.common.proto.product.TradeStatusResponse;
@@ -79,13 +80,32 @@ public class TradeController {
         }
         log.info("chatroomId={}, memberId={}", chatroomId, memberId);
 
-        TradeStatusResponse status = tradeGrpcClient.getTradeStatus(chatroomId,memberId);
+        TradeStatusResponse status = tradeGrpcClient.getTradeStatus(chatroomId, memberId);
         String tradeStatus = status.getStatus();
         ResponseDTO<String> response = new ResponseDTO<>(
                 tradeStatus, HttpStatus.OK, "현재 거래 진행사항 가져오기 성공");
         return ResponseEntity.ok(response);
     }
 
+    //거래 완료하기 - 누가 해도 상관없음. 고로 거래가 완료되었는지 확인 필요 -> 거래 완료 메시지 보내줘야함
+    @PostMapping("/complete/chatroom/{chatroomId}")
+    public ResponseEntity<ResponseDTO<Long>> CompleteTrade(@PathVariable Long chatroomId, Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        CompleteTradeResponse completeTradeResponse = tradeGrpcClient.completeTrade(chatroomId, memberId);
+        Long tradeId = completeTradeResponse.getTradeId();
+        Long opponentId = completeTradeResponse.getOpponentId();
+        log.info("TradeController : tradeId={}", tradeId);
+        try {
+            //거래 완료 메시지 보내주기
+            grpcChatStreamClient.sendCompleteTrade(chatroomId, memberId, opponentId);
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.FAIL_TRADE_DONE_CHAT);
+        }
+        ResponseDTO<Long> response = new ResponseDTO<>(
+                tradeId, HttpStatus.OK, "거래가 완료되었습니다.");
+        return ResponseEntity.ok(response);
+
+    }
 
     //택배 거래 요청
     @PostMapping("/parcel-request/chatroom/{chatroomId}")
@@ -158,11 +178,5 @@ public class TradeController {
         ResponseDTO<?> response = new ResponseDTO<>(null, HttpStatus.OK, "거래 평가가 완료되었습니다.");
         return ResponseEntity.ok(response);
     }
-    //결제 요청
-//    public ResponseEntity<ResponseDTO<Long>> requestPayment(@PathVariable Long chatroomId, Authentication authentication){
-//        Long memberId = (Long) authentication.getPrincipal();
-//        return ResponseEntity.ok();
-//    }
-
 
 }

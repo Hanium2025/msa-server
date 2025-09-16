@@ -163,6 +163,21 @@ public class GrpcChatStreamClient {
 
     }
 
+    public void sendCompleteTrade(Long chatroomId, Long requestId, Long receiverId ){
+        ensureStream();
+        ChatMessage grpcMessage = ChatMessage.newBuilder()
+                .setChatroomId(chatroomId)
+                .setSenderId(requestId)
+                .setReceiverId(receiverId)
+                .setType(MessageType.TRADE_COMPLETE)
+                .setContent("거래가 완료되었습니다.")
+                .build();
+        requestObserver.onNext(grpcMessage);
+        log.info("거래 완료 onNext 완료: room={},from={},to={}", chatroomId,requestId,receiverId);
+
+
+    }
+
     public void sendParcelRequest(Long chatroomId, Long requestId, Long receiverId ){
         ensureStream();
 

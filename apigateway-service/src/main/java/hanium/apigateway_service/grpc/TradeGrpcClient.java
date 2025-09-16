@@ -71,6 +71,15 @@ public class TradeGrpcClient {
             throw new CustomException(ErrorCode.CHATROOM_ID_NOT_FOUND);
         }
     }
+    //거래 완료
+    public CompleteTradeResponse completeTrade(Long chatroomId, Long memberId) {
+        TradeRequest request = tradeGrpcMapperForGateway.toTradeRequestGrpc(chatroomId, memberId);
+        try {
+            return stub.completeTrade(request);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(ErrorCode.CHATROOM_ID_NOT_FOUND);
+        }
+    }
 
     // 거래 리뷰 페이지
     public TradeReviewPageDTO getTradeReviewPageInfo(Long tradeId, Long memberId) {
@@ -91,5 +100,7 @@ public class TradeGrpcClient {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
+
+
 
 }
