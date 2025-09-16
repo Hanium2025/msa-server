@@ -475,7 +475,5 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
         }
-
     }
-
 }
