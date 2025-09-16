@@ -29,7 +29,7 @@ public class Trade extends BaseEntity{
     private Long buyerId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="aws configaws configuretrade_type" ,nullable = false, length = 20)
+    @Column(name="trade_type" ,nullable = false, length = 20)
     private TradeType type;
 
     @Enumerated(EnumType.STRING)

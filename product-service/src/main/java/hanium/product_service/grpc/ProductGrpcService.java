@@ -405,6 +405,23 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         responseObserver.onCompleted();
     }
 
+    //거래 완료 -> product status를 SOLD_OUT으로 바꿔줘야함.
+    @Override
+    public void completeTrade(TradeRequest request, StreamObserver<CompleteTradeResponse> responseObserver) {
+        Long chatroomId = request.getChatroomId();
+        Long memberId = request.getMemberId();
+
+        log.info("거래완료 Grpc Service : chatroomId = {}, memberId = {} ", chatroomId, memberId);
+        CompleteTradeInfoDTO completeTradeInfoDTO = tradeService.completeTrade(chatroomId, memberId);
+
+        Long tradeId = completeTradeInfoDTO.getTradeId();
+        Long opponentId = completeTradeInfoDTO.getOpponentId();
+        log.info("거래완료 Grpc Service : tradeId = {}, opponentId = {}", tradeId, opponentId);
+        CompleteTradeResponse completeTradeResponse = CompleteTradeResponse.newBuilder().setTradeId(tradeId).setOpponentId(opponentId).build();
+        responseObserver.onNext(completeTradeResponse);
+        responseObserver.onCompleted();
+    }
+
     // 택배 거래 요청
     @Override
     public void parcelTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {

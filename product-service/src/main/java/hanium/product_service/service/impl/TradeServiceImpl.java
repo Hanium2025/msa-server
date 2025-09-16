@@ -3,8 +3,12 @@ package hanium.product_service.service.impl;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import hanium.product_service.domain.*;
+import hanium.product_service.dto.response.CompleteTradeInfoDTO;
 import hanium.product_service.dto.response.TradeInfoDTO;
+import hanium.product_service.repository.ProductRepository;
+import hanium.product_service.repository.TradeCompleteRepository;
 import hanium.product_service.repository.TradeRepository;
+import hanium.product_service.service.ProductService;
 import hanium.product_service.service.TradeService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -17,10 +21,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Slf4j
 public class TradeServiceImpl implements TradeService {
+    private final ProductRepository productRepository;
+    private final ProductServiceImpl productServiceImpl;
     @PersistenceContext
     private EntityManager em;
 
     private final TradeRepository tradeRepository;
+    private final ProductService productService;
+    private final TradeCompleteRepository tradeCompleteRepository;
 
     //직거래 요청
     @Transactional
@@ -70,5 +78,22 @@ public class TradeServiceImpl implements TradeService {
     public TradeStatus getTradeStatus(Long chatroomId, Long memberId) {
         return tradeRepository.findTradeStatus(chatroomId, memberId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRADE));
+    }
+
+    @Override
+    public CompleteTradeInfoDTO completeTrade(Long chatroomId,Long memberId) {
+        //chatroomId로 해당 거래아이디와 상품 아이디를 찾음 -> Trade 엔티티에서 상품 아이디를 찾음
+        CompleteTradeInfoDTO completeTradeInfoDTO;
+        try {
+            completeTradeInfoDTO = tradeCompleteRepository.findTradeInfoByChatroomId(chatroomId,memberId);
+            Long productId = completeTradeInfoDTO.getProductId();
+            tradeRepository.updateStatus(chatroomId, TradeStatus.COMPLETED);
+            //해당 아이디의 상품 상태를 SOLD_OUT으로 바꿈.
+            productService.updateProductStatusById(productId);
+
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.CHATROOM_ID_NOT_FOUND);
+        }
+        return completeTradeInfoDTO;
     }
 }
