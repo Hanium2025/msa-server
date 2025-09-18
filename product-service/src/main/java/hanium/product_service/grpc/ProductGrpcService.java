@@ -38,6 +38,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     private final ProfileGrpcClient profileGrpcClient;
     private final TradeService tradeService;
     private final TradeReviewService tradeReviewService;
+    private final DeliveryService deliveryService;
 
     // 메인페이지 조회
     @Override
@@ -475,6 +476,18 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         try {
             List<String> result = productUserService.getMainCategoryByMemberId(request.getMemberId());
             responseObserver.onNext(GetMainCategoryResponse.newBuilder().addAllCategory(result).build());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    @Override
+    public void createWayBill(CreateWayBillRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            CreateWayBillRequestDTO requestDTO = CreateWayBillRequestDTO.from(request);
+            deliveryService.createWayBill(requestDTO);
+            responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
