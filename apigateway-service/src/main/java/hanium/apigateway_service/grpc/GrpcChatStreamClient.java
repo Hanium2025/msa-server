@@ -202,7 +202,7 @@ public class GrpcChatStreamClient {
                 .setSenderId(requestId)
                 .setReceiverId(receiverId)
                 .setType(MessageType.PARCEL_ACCEPT)
-                .setContent("택배 거래 요청이 수락되었습니다.")
+                .setContent("택배 거래 요청이 수락되었습니다. \n 결제가 요청되었어요.")
                 .build();
 
         requestObserver.onNext(grpcMessage);

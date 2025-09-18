@@ -434,7 +434,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         //해당 상품 거래 상태 확인
         String status = productService.getProductStatusById(productId);
 
-        if ("SELLING".equals(status)) {//판매중이라면 Trade 생성
+        if ("SELLING".equals(status)) { //판매중이라면 Trade 생성
             tradeService.parcelTrade(chatroomId, tradeInfoDTO);
         }
 
@@ -442,21 +442,25 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         responseObserver.onCompleted();
     }
 
+    //택배 수락 및 결제 요청
     @Override
     public void acceptParcelTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
         Long chatroomId = request.getChatroomId();
         Long sellerId = request.getMemberId(); //수락하는 사람은 판매자
+        log.info("Product GrpcService - sellerId : {}", sellerId);
+
         TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomIdAndMemberId(chatroomId, sellerId);
         TradeResponse tradeResponse = TradeResponse.newBuilder().setOpponentId(tradeInfoDTO.getBuyerId()).build();
 
         Long productId = tradeInfoDTO.getProductId();
+        log.info("Product GrpcService - acceptParcelTrade : ProductId: {}", productId);
 
         //해당 상품 거래 상태 확인
         String status = productService.getProductStatusById(productId);
         if ("SELLING".equals(status)) {
             //trade상태를 업데이트 시키고
-            tradeService.acceptDirectTrade(chatroomId);
-            //상품 상태를 판매중으로 바꾸기
+            tradeService.acceptParcelTrade(chatroomId);
+            //상품 상태를 거래중으로 바꾸기
             productService.updateProductStatusById(productId);
 
         }

@@ -74,6 +74,12 @@ public class TradeServiceImpl implements TradeService {
         tradeRepository.save(trade);
     }
 
+    @Transactional
+    @Override
+    public int acceptParcelTrade(Long chatroomId) {
+        return tradeRepository.updateStatus(chatroomId, TradeStatus.ACCEPTED);
+    }
+
     @Override
     public TradeStatus getTradeStatus(Long chatroomId, Long memberId) {
         return tradeRepository.findTradeStatus(chatroomId, memberId)
@@ -96,4 +102,5 @@ public class TradeServiceImpl implements TradeService {
         }
         return completeTradeInfoDTO;
     }
+
 }

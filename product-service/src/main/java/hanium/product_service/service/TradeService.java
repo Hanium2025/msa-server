@@ -14,8 +14,13 @@ public interface TradeService {
     //직거래 수락
     int acceptDirectTrade(Long chatroomId);
 
+
     //택배 거래 요청
     void parcelTrade(Long chatroomId, TradeInfoDTO tradeInfoDTO);
+
+    //택배거래 수락
+    int acceptParcelTrade(Long chatroomId);
+
     //거래 진행 상태 조회
     TradeStatus getTradeStatus(Long chatroomId, Long memberId);
 
