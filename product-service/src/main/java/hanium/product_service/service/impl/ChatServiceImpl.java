@@ -44,8 +44,8 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public CreateChatroomResponseDTO createChatroom(CreateChatroomRequestDTO requestDTO) {
         Long productId = requestDTO.getProductId();
-        Long senderId = requestDTO.getSenderId();
-        Long receiverId = requestDTO.getReceiverId();
+        Long senderId = requestDTO.getSenderId(); //구매자
+        Long receiverId = requestDTO.getReceiverId(); //판매자
         // 1. 중복 채팅방 조회
         Optional<Chatroom> existing = chatroomRepository
                 .findByProductIdAndMembers(productId, senderId, receiverId);
@@ -138,6 +138,7 @@ public class ChatServiceImpl implements ChatService {
                     .opponentId(opponentId)
                     .opponentProfileUrl(profileResponseDTO.getProfileImageUrl())
                     .opponentNickname(profileResponseDTO.getNickname())
+                    .sellerId(r.getReceiverId())
                     .build();
         }).toList();
     }
@@ -208,10 +209,11 @@ public class ChatServiceImpl implements ChatService {
         }
         return dtos;
     }
-
-    public TradeInfoDTO getTradeInfoByChatroomId(Long chatroomId,Long buyerId){
-        TradeInfoDTO tradeInfoDTO = chatroomTradeInfoRepository.findTradeInfoByChatroomId(chatroomId,buyerId);
+    //구매자 아이디로 판매자 아이디 받을 떄
+    @Override
+    public TradeInfoDTO getTradeInfoByChatroomIdAndMemberId(Long chatroomId, Long memberId) {
+        TradeInfoDTO tradeInfoDTO = chatroomTradeInfoRepository.findTradeInfoByChatroomIdAndMemberId(chatroomId,memberId);
         return tradeInfoDTO;
-    };
+    }
 
 }

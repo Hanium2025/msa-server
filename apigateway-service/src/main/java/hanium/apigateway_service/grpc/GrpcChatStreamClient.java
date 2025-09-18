@@ -70,6 +70,10 @@ public class GrpcChatStreamClient {
         requestObserver = stub.chat(new StreamObserver<>() {
             @Override
             public void onNext(ChatResponseMessage msg) {
+
+                log.info("↩️ gRPC onNext: type={}, room={}, sender={}, receiver={}",
+                        msg.getType(), msg.getChatroomId(), msg.getSenderId(), msg.getReceiverId());
+
                 // 1) 공통 DTO 생성
                 ChatMessageResponseDTO base = ChatMessageResponseDTO.builder()
                         .messageId(msg.getMessageId())
@@ -137,7 +141,7 @@ public class GrpcChatStreamClient {
                 .build();
 
         requestObserver.onNext(grpcMessage);
-        log.info("직거래 onNext 완료: room={},from={},to={}", chatroomId,requestId,receiverId);
+        log.info("직거래 요청 onNext 완료: room={},from={},to={}", chatroomId,requestId,receiverId);
 
 
     }
@@ -150,12 +154,61 @@ public class GrpcChatStreamClient {
                 .setSenderId(requestId)
                 .setReceiverId(receiverId)
                 .setType(MessageType.DIRECT_ACCEPT)
-                .setContent("직거래 요청이 수락되었습니다.")
+                .setContent("직거래 요청이 수락됐어요. 거래 평가를 위해\n 거래가 끝나면 + 버튼을 눌러 '거래완료'를 눌러주세요.")
                 .build();
 
         requestObserver.onNext(grpcMessage);
-        log.info("직거래 onNext 완료: room={},from={},to={}", chatroomId,requestId,receiverId);
+        log.info("직거래 수락 onNext 완료: room={},from={},to={}", chatroomId,requestId,receiverId);
 
 
     }
+
+    public void sendCompleteTrade(Long chatroomId, Long requestId, Long receiverId ){
+        ensureStream();
+        ChatMessage grpcMessage = ChatMessage.newBuilder()
+                .setChatroomId(chatroomId)
+                .setSenderId(requestId)
+                .setReceiverId(receiverId)
+                .setType(MessageType.TRADE_COMPLETE)
+                .setContent("거래가 완료되었습니다.")
+                .build();
+        requestObserver.onNext(grpcMessage);
+        log.info("거래 완료 onNext 완료: room={},from={},to={}", chatroomId,requestId,receiverId);
+
+
+    }
+
+    public void sendParcelRequest(Long chatroomId, Long requestId, Long receiverId ){
+        ensureStream();
+
+        ChatMessage grpcMessage = ChatMessage.newBuilder()
+                .setChatroomId(chatroomId)
+                .setSenderId(requestId)
+                .setReceiverId(receiverId)
+                .setType(MessageType.PARCEL_REQUEST)
+                .setContent("택배거래 요청이 들어왔습니다.")
+                .build();
+
+        requestObserver.onNext(grpcMessage);
+        log.info("택배 거래 요청 onNext 완료: room={},from={},to={}", chatroomId,requestId,receiverId);
+
+
+    }
+    public void sendParcelAccept(Long chatroomId, Long requestId, Long receiverId ){
+        ensureStream();
+
+        ChatMessage grpcMessage = ChatMessage.newBuilder()
+                .setChatroomId(chatroomId)
+                .setSenderId(requestId)
+                .setReceiverId(receiverId)
+                .setType(MessageType.PARCEL_ACCEPT)
+                .setContent("택배 거래 요청이 수락되었습니다. \n 결제가 요청되었어요.")
+                .build();
+
+        requestObserver.onNext(grpcMessage);
+        log.info("택배 거래 수락 onNext 완료: room={},from={},to={}", chatroomId,requestId,receiverId);
+
+
+    }
+
 }

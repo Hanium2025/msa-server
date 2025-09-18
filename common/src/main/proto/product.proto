@@ -78,11 +78,18 @@ service ProductService {
   rpc AcceptDirectTrade(TradeRequest) returns (TradeResponse);
 
   // 18. 택배거래 요청
-  rpc ParcelTrade(TradeRequest) returns (Empty);
-  
+  rpc ParcelTrade(TradeRequest) returns (TradeResponse);
+
+  // 18. 택배거래 수락
+  rpc AcceptParcelTrade(TradeRequest) returns (TradeResponse);
+  // 거래 완료
+  rpc CompleteTrade(TradeRequest) returns (CompleteTradeResponse);
+
   // 10. User-service서 주요 활동 카테고리 조회
   rpc GetMainCategory(ProductMainRequest) returns (GetMainCategoryResponse);
 
+  //현재 거래 상태 조회
+  rpc getTradeStatus(TradeRequest) returns (TradeStatusResponse);
 }
 
 message Empty {}
@@ -283,6 +290,7 @@ enum MessageType{
   PAYMENT_DONE = 8;
   ADDRESS_REGISTER = 9;
   ADDRESS_REGISTER_DONE = 10;
+  TRADE_COMPLETE = 11;
 }
 // 15. PresignedUrl
 message PresignedUrl {
@@ -333,6 +341,7 @@ message ChatroomSummary{
   int64 latestTime = 6;
   string opponentProfileUrl = 7;
   string opponentNickname = 8;
+  int64 sellerId = 9;
 
 }
 // 16. 채팅방 리스트
@@ -348,6 +357,15 @@ message TradeRequest{
 // 19, 20. 거래 응답
 message TradeResponse{
   int64  opponentId =1;
+}
+//거래 진행사항 응답
+message TradeStatusResponse{
+  string status =1;
+}
+//거래 완료 응답 -> 리뷰 작성을 위한 tradeId 반환
+message CompleteTradeResponse{
+  int64 tradeId = 1;
+  int64 opponentId = 2;
 }
 // 주요 활동 카테고리 조회
 message GetMainCategoryResponse {

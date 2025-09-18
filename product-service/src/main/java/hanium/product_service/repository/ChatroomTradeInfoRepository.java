@@ -17,19 +17,21 @@ public class ChatroomTradeInfoRepository {
     @PersistenceContext
     private EntityManager em;
 
-    public TradeInfoDTO findTradeInfoByChatroomId(Long chatroomId, Long buyerId) {
+    public TradeInfoDTO findTradeInfoByChatroomIdAndMemberId(Long chatroomId, Long memberId) {
         Chatroom chatroom = em.createQuery("""
                               select c from Chatroom c
                          where c.id = :chatroomId
                         """, Chatroom.class)
                 .setParameter("chatroomId", chatroomId)
                 .getSingleResult();
-        if (!Objects.equals(chatroom.getSenderId(), buyerId) &&
-                !Objects.equals(chatroom.getReceiverId(), buyerId)) {
-            throw new IllegalStateException("buyerId가 채팅방 참가자가 아닙니다.");
+        //보낸 사람이 구매자 받은 사람이 판매자인데
+        if (!Objects.equals(chatroom.getSenderId(), memberId) &&
+                !Objects.equals(chatroom.getReceiverId(), memberId)) {
+            throw new IllegalStateException("memberId가 채팅방 참가자가 아닙니다.");
         }
-        Long sellerId = chatroom.getSenderId().equals(buyerId)
-                ? chatroom.getReceiverId() : chatroom.getSenderId();
+
+        Long sellerId = chatroom.getReceiverId();
+        Long buyerId = chatroom.getSenderId();
 
         return TradeInfoDTO.builder()
                 .productId(chatroom.getProductId())
