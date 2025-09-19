@@ -4,6 +4,7 @@ import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.*;
+import hanium.product_service.domain.TradeStatus;
 import hanium.product_service.dto.request.*;
 import hanium.product_service.dto.response.*;
 import hanium.product_service.mapper.ChatGrpcMapper;
@@ -337,6 +338,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
                             .setLatestTime(latestMillis)
                             .setOpponentProfileUrl(dto.getOpponentProfileUrl())
                             .setOpponentNickname(dto.getOpponentNickname())
+                            .setSellerId(dto.getSellerId() == null ? 0L : dto.getSellerId())
                             .build();
 
             resp.addItems(summary);
@@ -351,7 +353,8 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     public void directTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
         Long chatroomId = request.getChatroomId();
         Long buyerId = request.getMemberId(); //요청한 사람이 구매자
-        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomId(chatroomId, buyerId);
+        log.info("직거래 요청 chatroomId : {} , 구매자 아이디 : {}", chatroomId, buyerId);
+        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomIdAndMemberId(chatroomId, buyerId);
         TradeResponse tradeResponse = TradeResponse.newBuilder().setOpponentId(tradeInfoDTO.getSellerId()).build();
         Long productId = tradeInfoDTO.getProductId();
 
@@ -371,7 +374,9 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     public void acceptDirectTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
         Long chatroomId = request.getChatroomId();
         Long sellerId = request.getMemberId(); //수락하는 사람은 판매자
-        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomId(chatroomId, sellerId);
+        log.info("직거래 수락 chatroomId : {} , 판매자 아이디 : {}", chatroomId, sellerId);
+
+        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomIdAndMemberId(chatroomId, sellerId);
         TradeResponse tradeResponse = TradeResponse.newBuilder().setOpponentId(tradeInfoDTO.getBuyerId()).build();
 
         Long productId = tradeInfoDTO.getProductId();
@@ -389,11 +394,81 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         responseObserver.onCompleted();
     }
 
+    //거래 진행 상태 조회
+    @Override
+    public void getTradeStatus(TradeRequest request, StreamObserver<TradeStatusResponse> responseObserver) {
+        Long chatroomId = request.getChatroomId();
+        Long memberId = request.getMemberId();
+        log.info("거래 진행 조회 chatroomId : {} , 사용자 아이디 : {}", chatroomId, memberId);
+        TradeStatus status = tradeService.getTradeStatus(chatroomId, memberId);
+        TradeStatusResponse tradeStatusResponse = TradeStatusResponse.newBuilder().setStatus(status.name()).build();
+        responseObserver.onNext(tradeStatusResponse);
+        responseObserver.onCompleted();
+    }
+
+    //거래 완료 -> product status를 SOLD_OUT으로 바꿔줘야함.
+    @Override
+    public void completeTrade(TradeRequest request, StreamObserver<CompleteTradeResponse> responseObserver) {
+        Long chatroomId = request.getChatroomId();
+        Long memberId = request.getMemberId();
+
+        log.info("거래완료 Grpc Service : chatroomId = {}, memberId = {} ", chatroomId, memberId);
+        CompleteTradeInfoDTO completeTradeInfoDTO = tradeService.completeTrade(chatroomId, memberId);
+
+        Long tradeId = completeTradeInfoDTO.getTradeId();
+        Long opponentId = completeTradeInfoDTO.getOpponentId();
+        log.info("거래완료 Grpc Service : tradeId = {}, opponentId = {}", tradeId, opponentId);
+        CompleteTradeResponse completeTradeResponse = CompleteTradeResponse.newBuilder().setTradeId(tradeId).setOpponentId(opponentId).build();
+        responseObserver.onNext(completeTradeResponse);
+        responseObserver.onCompleted();
+    }
+
     // 택배 거래 요청
     @Override
-    public void parcelTrade(TradeRequest request, StreamObserver<Empty> responseObserver) {
-        super.parcelTrade(request, responseObserver);
+    public void parcelTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
+        Long chatroomId = request.getChatroomId();
+        Long buyerId = request.getMemberId();
+        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomIdAndMemberId(chatroomId, buyerId);
+        TradeResponse tradeResponse = TradeResponse.newBuilder().setOpponentId(tradeInfoDTO.getSellerId()).build();
+        Long productId = tradeInfoDTO.getProductId();
+
+        //해당 상품 거래 상태 확인
+        String status = productService.getProductStatusById(productId);
+
+        if ("SELLING".equals(status)) { //판매중이라면 Trade 생성
+            tradeService.parcelTrade(chatroomId, tradeInfoDTO);
+        }
+
+        responseObserver.onNext(tradeResponse);
+        responseObserver.onCompleted();
     }
+
+    //택배 수락 및 결제 요청
+    @Override
+    public void acceptParcelTrade(TradeRequest request, StreamObserver<TradeResponse> responseObserver) {
+        Long chatroomId = request.getChatroomId();
+        Long sellerId = request.getMemberId(); //수락하는 사람은 판매자
+        log.info("Product GrpcService - sellerId : {}", sellerId);
+
+        TradeInfoDTO tradeInfoDTO = chatService.getTradeInfoByChatroomIdAndMemberId(chatroomId, sellerId);
+        TradeResponse tradeResponse = TradeResponse.newBuilder().setOpponentId(tradeInfoDTO.getBuyerId()).build();
+
+        Long productId = tradeInfoDTO.getProductId();
+        log.info("Product GrpcService - acceptParcelTrade : ProductId: {}", productId);
+
+        //해당 상품 거래 상태 확인
+        String status = productService.getProductStatusById(productId);
+        if ("SELLING".equals(status)) {
+            //trade상태를 업데이트 시키고
+            tradeService.acceptParcelTrade(chatroomId);
+            //상품 상태를 거래중으로 바꾸기
+            productService.updateProductStatusById(productId);
+
+        }
+        responseObserver.onNext(tradeResponse);
+        responseObserver.onCompleted();
+    }
+
 
     // 프로필 > 주요 활동 카테고리 조회
     @Override

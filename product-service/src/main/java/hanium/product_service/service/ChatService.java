@@ -24,7 +24,7 @@ public interface ChatService{
     List<ChatMessageResponseDTO> getAllMessageByChatroomId(Long chatroomId);
 
     //채팅방별 상품 아이디와 판매자 아이디 조회
-    TradeInfoDTO getTradeInfoByChatroomId(Long chatroomId, Long buyerId);
+    TradeInfoDTO getTradeInfoByChatroomIdAndMemberId(Long chatroomId, Long memberId);
 
 
 }

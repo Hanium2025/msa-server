@@ -59,7 +59,10 @@ public enum ErrorCode {
     PAYMENT_CANCEL_ERROR(500, "토스페이먼츠에서 결제 취소 중 오류가 발생했습니다."),
     FORBIDDEN(403, "해당 요청에 대한 권한이 없습니다."),
     ALREADY_REVIEWED(409, "이미 리뷰가 작성된 거래입니다."),
+    NOT_FOUND_TRADE(400, "해당 거래는 없습니다."),
+    FAIL_TRADE_DONE_CHAT(404,"거래 완료 메시지 수신 실패"),
     ;
+
 
     private final int code;
     private final String message;
