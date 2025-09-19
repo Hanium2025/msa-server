@@ -295,6 +295,7 @@ enum MessageType{
   PAYMENT_DONE = 8;
   ADDRESS_REGISTER = 9;
   ADDRESS_REGISTER_DONE = 10;
+  TRADE_COMPLETE = 11;
 }
 // 15. PresignedUrl
 message PresignedUrl {
@@ -345,6 +346,7 @@ message ChatroomSummary{
   int64 latestTime = 6;
   string opponentProfileUrl = 7;
   string opponentNickname = 8;
+  int64 sellerId = 9;
 
 }
 // 16. 채팅방 리스트
@@ -376,6 +378,7 @@ message GetMainCategoryResponse {
   repeated string category = 1;
 }
 
+// 21. 토스페이먼츠 결제 승인 요청
 message ConfirmPaymentRequest {
   int64 trade_id = 1;
   string payment_key = 2;
