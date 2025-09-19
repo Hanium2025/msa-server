@@ -12,8 +12,8 @@ public enum PaymentMethod {
     KAKAO("카카오페이"),
     NAVER("네이버페이"),
     MOBILE("휴대폰결제"),
+    UNKNOWN("알 수 없음"),
     ;
-
     private final String label;
 
     PaymentMethod(String label) {

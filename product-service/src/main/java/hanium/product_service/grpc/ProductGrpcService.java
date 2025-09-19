@@ -37,6 +37,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     private final ProfileGrpcClient profileGrpcClient;
     private final TradeService tradeService;
     private final TradeReviewService tradeReviewService;
+    private final TossPaymentService tossPaymentService;
 
     // 메인페이지 조회
     @Override
@@ -400,6 +401,18 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         try {
             List<String> result = productUserService.getMainCategoryByMemberId(request.getMemberId());
             responseObserver.onNext(GetMainCategoryResponse.newBuilder().addAllCategory(result).build());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 토스페이먼츠 거래 요청
+    @Override
+    public void confirmPayment(ConfirmPaymentRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            tossPaymentService.confirmPayment(ConfirmPaymentRequestDTO.from(request));
+            responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));

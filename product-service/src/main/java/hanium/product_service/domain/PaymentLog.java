@@ -3,6 +3,8 @@ package hanium.product_service.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Builder
@@ -16,13 +18,16 @@ public class PaymentLog extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trade_id", nullable = false)
-    private Trade trade; //연관된 거래
+    private Trade trade; // 연관된 거래
 
     @Column(nullable = false, unique = true)
-    private String tossOrderKey; //토스페이먼츠의 결제 식별 키
+    private String paymentKey; // 토스페이먼츠의 각 결제 식별 키
 
     @Column(nullable = false)
-    private String tossOrderId; //프론트에서 전달된 orderId
+    private String orderName;
+
+    @Column(nullable = false)
+    private String orderId; // 프론트에서 전달된 orderId
 
     @Column(nullable = false)
     private Long totalPrice;
@@ -34,4 +39,10 @@ public class PaymentLog extends BaseEntity {
     @Enumerated(value = EnumType.STRING)
     @Column(nullable = false)
     PaymentStatus paymentStatus;
+
+    @Column
+    private LocalDateTime requestedAt;
+
+    @Column
+    private LocalDateTime approvedAt;
 }

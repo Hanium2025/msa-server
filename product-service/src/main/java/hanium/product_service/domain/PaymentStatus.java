@@ -8,5 +8,5 @@ public enum PaymentStatus {
     IN_PROGRESS,
     PARTIAL_CANCELED,
     READY,
-    WAITING_FOR_DEPOSIT
+    ;
 }
