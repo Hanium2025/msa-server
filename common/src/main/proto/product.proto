@@ -79,9 +79,12 @@ service ProductService {
 
   // 18. 택배거래 요청
   rpc ParcelTrade(TradeRequest) returns (Empty);
-  
+
   // 10. User-service서 주요 활동 카테고리 조회
   rpc GetMainCategory(ProductMainRequest) returns (GetMainCategoryResponse);
+
+  // 21. 토스페이먼츠 결제 승인 요청
+  rpc ConfirmPayment(ConfirmPaymentRequest) returns (Empty);
 
 }
 
@@ -346,10 +349,18 @@ message TradeRequest{
   int64 memberId = 2;
 }
 // 19, 20. 거래 응답
-message TradeResponse{
-  int64  opponentId =1;
+message TradeResponse {
+  int64  opponentId = 1;
 }
 // 주요 활동 카테고리 조회
 message GetMainCategoryResponse {
   repeated string category = 1;
+}
+
+// 21. 토스페이먼츠 결제 승인 요청
+message ConfirmPaymentRequest {
+  int64 trade_id = 1;
+  string payment_key = 2;
+  int32 amount = 3;
+  string order_id = 4;
 }

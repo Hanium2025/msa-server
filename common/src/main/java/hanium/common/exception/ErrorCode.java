@@ -54,6 +54,9 @@ public enum ErrorCode {
     INVALID_PRODUCT_STATUS_TRANSITION(404, "상품 거래 상태 수정이 불가능합니다."),
     TRADE_NOT_FOUND(404, "해당 거래를 찾을 수 없습니다."),
     INVALID_PRICE_INFO(400, "결제 금액이 악의적으로 변경되었거나 유효하지 않습니다."),
+    PAYMENT_SERVER_ERROR(500, "토스페이먼츠에 결제 승인 요청 중 오류가 발생했습니다."),
+    PAYMENT_DB_ERROR_CANCELED(500, "결제 정보를 데이터베이스에 저장하던 중 오류 발생으로 결제가 취소되었습니다."),
+    PAYMENT_CANCEL_ERROR(500, "토스페이먼츠에서 결제 취소 중 오류가 발생했습니다."),
     FORBIDDEN(403, "해당 요청에 대한 권한이 없습니다."),
     ALREADY_REVIEWED(409, "이미 리뷰가 작성된 거래입니다."),
     ;
