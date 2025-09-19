@@ -486,10 +486,13 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     @Override
     public void confirmPayment(ConfirmPaymentRequest request, StreamObserver<Empty> responseObserver) {
         try {
+            log.info("➡️ confirmPayment grpc server ...");
             tossPaymentService.confirmPayment(ConfirmPaymentRequestDTO.from(request));
+            log.info("✅ confirmPayment grpc server: 완료됨");
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
         } catch (CustomException e) {
+            log.info("⚠️ confirmPayment grpc server: 오류 발생");
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
         }
     }

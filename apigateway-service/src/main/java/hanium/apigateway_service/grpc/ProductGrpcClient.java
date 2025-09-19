@@ -246,6 +246,7 @@ public class ProductGrpcClient {
     public void confirmPayment(ConfirmPaymentRequestDTO dto) {
         ConfirmPaymentRequest req = ProductGrpcMapperForGateway.toConfirmPaymentGrpc(dto);
         try {
+            log.info("➡️ confirmPayment grpc client ...");
             stub.confirmPayment(req);
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));

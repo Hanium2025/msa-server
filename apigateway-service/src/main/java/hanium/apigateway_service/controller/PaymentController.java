@@ -7,6 +7,7 @@ import hanium.apigateway_service.response.ResponseDTO;
 import hanium.common.exception.CustomException;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +20,7 @@ import static hanium.common.exception.ErrorCode.INVALID_PRICE_INFO;
 @RestController
 @RequestMapping("/payment")
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentController {
 
     private final ProductGrpcClient productGrpcClient;
@@ -48,6 +50,7 @@ public class PaymentController {
     // 토스에 결제 승인 요청
     @PostMapping("/confirm")
     public ResponseEntity<ResponseDTO<?>> confirmPayment(@RequestBody ConfirmPaymentRequestDTO dto) {
+        log.info("➡️ confirmPayment 컨트롤러 ...");
         productGrpcClient.confirmPayment(dto);
         return ResponseEntity.ok(new ResponseDTO<>(null, HttpStatus.OK, "결제 승인되었습니다."));
     }
