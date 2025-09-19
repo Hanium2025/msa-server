@@ -25,6 +25,11 @@ public class DeliveryServiceImpl implements DeliveryService {
     @PersistenceContext
     private EntityManager em;
 
+    /**
+     * 판매자가 송장 등록을 합니다.
+     *
+     * @param dto
+     */
     @Override
     @Transactional
     public void createWayBill(CreateWayBillRequestDTO dto){

@@ -24,6 +24,13 @@ public class TradeReviewServiceImpl implements TradeReviewService {
     private final TradeReviewRepository tradeReviewRepository;
     private final ProfileGrpcClient profileGrpcClient;
 
+    /**
+     * 거래 평가 초기 화면을 위한 거래 상품 제목과 상대방 닉네임을 가져옵니다.
+     *
+     * @param tradeId
+     * @param memberId
+     * @return TradeReviewPageDTO
+     */
     @Override
     @Transactional(readOnly = true)
     public TradeReviewPageDTO getTradeReviewPageInfo(Long tradeId, Long memberId){
@@ -40,7 +47,11 @@ public class TradeReviewServiceImpl implements TradeReviewService {
                 .build();
     }
 
-
+    /**
+     * 거래 상대에 대해 거래 평가를 진행합니다.
+     *
+     * @param dto
+     */
     @Override
     @Transactional
     public void tradeReview(TradeReviewRequestDTO dto){
