@@ -2,10 +2,7 @@ package hanium.apigateway_service.mapper;
 
 import hanium.apigateway_service.dto.trade.request.CreateWayBillRequestDTO;
 import hanium.apigateway_service.dto.trade.request.TradeReviewRequestDTO;
-import hanium.common.proto.product.CreateWayBillRequest;
-import hanium.common.proto.product.GetTradeReviewPageRequest;
-import hanium.common.proto.product.TradeRequest;
-import hanium.common.proto.product.TradeReviewRequest;
+import hanium.common.proto.product.*;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -39,6 +36,13 @@ public class TradeGrpcMapperForGateway {
                 .setMemberId(memberId)
                 .setCode(dto.getCode())
                 .setInvoiceNumber(dto.getInvoiceNo())
+                .build();
+    }
+
+    public GetDeliveryInfoRequest toGetDeliveryInfoRequestGrpc(Long tradeId, Long memberId){
+        return GetDeliveryInfoRequest.newBuilder()
+                .setTradeId(tradeId)
+                .setMemberId(memberId)
                 .build();
     }
 }

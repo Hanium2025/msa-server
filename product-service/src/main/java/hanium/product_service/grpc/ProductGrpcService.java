@@ -482,6 +482,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         }
     }
 
+    // 송장 등록
     @Override
     public void createWayBill(CreateWayBillRequest request, StreamObserver<Empty> responseObserver) {
         try {
@@ -493,4 +494,19 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
         }
     }
+
+    // 택배조회
+    @Override
+    public void getDeliveryInfo(GetDeliveryInfoRequest request, StreamObserver<GetDeliveryInfoResponse>  responseObserver) {
+        try {
+            responseObserver.onNext(
+                    TradeGrpcMapper.toGetDeliveryInfoResponseGrpc(
+                            deliveryService.getDeliveryInfo(request.getTradeId(), request.getMemberId()))
+            );
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
 }

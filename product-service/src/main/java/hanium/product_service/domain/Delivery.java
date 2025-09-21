@@ -17,7 +17,7 @@ public class Delivery extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trade_id")
     private Trade trade;
 
@@ -38,16 +38,11 @@ public class Delivery extends BaseEntity {
     @Column(name = "invoice_number")
     private String invoiceNo;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "delivery_status")
-    private DeliveryStatus status;
-
     public static Delivery of(Trade trade, CreateWayBillRequestDTO dto){
         return Delivery.builder()
                 .trade(trade)
                 .code(dto.getCode())
                 .invoiceNo(dto.getInvoiceNo())
-                .status(DeliveryStatus.PREPARING)
                 .build();
     }
 }

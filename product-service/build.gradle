@@ -115,6 +115,8 @@ dependencies {
 //    // Spring-Test-Support (Optional)
 //    testImplementation("org.springframework.boot:spring-boot-starter-test")
 
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
     // test
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
     testImplementation 'org.mockito:mockito-core:5.12.0'

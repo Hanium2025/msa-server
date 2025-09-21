@@ -1,6 +1,7 @@
 package hanium.apigateway_service.grpc;
 
 import hanium.apigateway_service.dto.trade.request.CreateWayBillRequestDTO;
+import hanium.apigateway_service.dto.trade.response.DeliveryInfoResponseDTO;
 import hanium.apigateway_service.dto.trade.response.TradeReviewPageDTO;
 import hanium.apigateway_service.dto.trade.request.TradeReviewRequestDTO;
 import hanium.apigateway_service.mapper.TradeGrpcMapperForGateway;
@@ -113,6 +114,15 @@ public class TradeGrpcClient {
 
     }
 
+    // 택배 조회
+    public DeliveryInfoResponseDTO getDeliveryInfo(Long tradeId, Long memberId){
+        GetDeliveryInfoRequest request = tradeGrpcMapperForGateway.toGetDeliveryInfoRequestGrpc(tradeId, memberId);
+        try {
+            return DeliveryInfoResponseDTO.from(stub.getDeliveryInfo(request));
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
 
 
 }
