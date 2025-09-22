@@ -10,8 +10,6 @@ import hanium.product_service.repository.DeliveryRepository;
 import hanium.product_service.repository.TradeRepository;
 import hanium.product_service.service.DeliveryService;
 import hanium.product_service.util.SweetTrackerUtil;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,9 +25,6 @@ public class DeliveryServiceImpl implements DeliveryService {
     private final TradeRepository tradeRepository;
     private final SweetTrackerUtil sweetTrackerUtil;
 
-    @PersistenceContext
-    private EntityManager em;
-
     /**
      * 판매자가 송장 등록을 합니다.
      *
@@ -38,9 +33,8 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Override
     @Transactional
     public void createWayBill(CreateWayBillRequestDTO dto){
-        tradeRepository.findByIdAndDeletedAtIsNull(dto.getTradeId())
+        Trade trade = tradeRepository.findByIdAndDeletedAtIsNull(dto.getTradeId())
                 .orElseThrow(() -> new CustomException(ErrorCode.TRADE_NOT_FOUND));
-        Trade trade = em.find(Trade.class, dto.getTradeId());
 
         // 판매자가 아닌 사람이 등록할 경우
         if(!trade.getSellerId().equals(dto.getMemberId()))
