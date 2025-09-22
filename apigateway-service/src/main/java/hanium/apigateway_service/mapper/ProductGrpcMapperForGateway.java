@@ -1,10 +1,7 @@
 package hanium.apigateway_service.mapper;
 
 
-import hanium.apigateway_service.dto.product.request.ProductSearchRequestDTO;
-import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
-import hanium.apigateway_service.dto.product.request.ReportProductRequestDTO;
-import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
+import hanium.apigateway_service.dto.product.request.*;
 import hanium.common.proto.product.*;
 
 import java.util.List;
@@ -100,6 +97,15 @@ public class ProductGrpcMapperForGateway {
                 .setProductId(productId)
                 .setReason(dto.getReason())
                 .setDetails(dto.getDetails())
+                .build();
+    }
+
+    public static ConfirmPaymentRequest toConfirmPaymentGrpc(ConfirmPaymentRequestDTO dto) {
+        return ConfirmPaymentRequest.newBuilder()
+                .setTradeId(dto.tradeId())
+                .setPaymentKey(dto.paymentKey())
+                .setAmount(dto.amount())
+                .setOrderId(dto.orderId())
                 .build();
     }
 }

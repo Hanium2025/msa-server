@@ -38,6 +38,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     private final ProfileGrpcClient profileGrpcClient;
     private final TradeService tradeService;
     private final TradeReviewService tradeReviewService;
+    private final TossPaymentService tossPaymentService;
 
     // 메인페이지 조회
     @Override
@@ -477,6 +478,21 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
             responseObserver.onNext(GetMainCategoryResponse.newBuilder().addAllCategory(result).build());
             responseObserver.onCompleted();
         } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 토스페이먼츠 거래 요청
+    @Override
+    public void confirmPayment(ConfirmPaymentRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            log.info("➡️ confirmPayment grpc server ...");
+            tossPaymentService.confirmPayment(ConfirmPaymentRequestDTO.from(request));
+            log.info("✅ confirmPayment grpc server: 완료됨");
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            log.info("⚠️ confirmPayment grpc server: 오류 발생");
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
         }
     }

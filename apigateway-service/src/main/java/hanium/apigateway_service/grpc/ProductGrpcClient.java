@@ -1,9 +1,6 @@
 package hanium.apigateway_service.grpc;
 
-import hanium.apigateway_service.dto.product.request.ProductSearchRequestDTO;
-import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
-import hanium.apigateway_service.dto.product.request.ReportProductRequestDTO;
-import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
+import hanium.apigateway_service.dto.product.request.*;
 import hanium.apigateway_service.dto.product.response.*;
 import hanium.apigateway_service.mapper.ProductGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
@@ -240,6 +237,17 @@ public class ProductGrpcClient {
         ReportProductRequest req = ProductGrpcMapperForGateway.toReportProductGrpc(memberId, productId, dto);
         try {
             stub.reportProduct(req);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 토스페이먼츠 결제 요청
+    public void confirmPayment(ConfirmPaymentRequestDTO dto) {
+        ConfirmPaymentRequest req = ProductGrpcMapperForGateway.toConfirmPaymentGrpc(dto);
+        try {
+            log.info("➡️ confirmPayment grpc client ...");
+            stub.confirmPayment(req);
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }

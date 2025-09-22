@@ -82,6 +82,7 @@ service ProductService {
 
   // 18. 택배거래 수락
   rpc AcceptParcelTrade(TradeRequest) returns (TradeResponse);
+
   // 거래 완료
   rpc CompleteTrade(TradeRequest) returns (CompleteTradeResponse);
 
@@ -90,6 +91,10 @@ service ProductService {
 
   //현재 거래 상태 조회
   rpc getTradeStatus(TradeRequest) returns (TradeStatusResponse);
+
+  // 21. 토스페이먼츠 결제 승인 요청
+  rpc ConfirmPayment(ConfirmPaymentRequest) returns (Empty);
+
 }
 
 message Empty {}
@@ -356,18 +361,27 @@ message TradeRequest{
 }
 // 19, 20. 거래 응답
 message TradeResponse{
-  int64  opponentId =1;
+  int64  opponentId = 1;
 }
 //거래 진행사항 응답
 message TradeStatusResponse{
-  string status =1;
+  string status = 1;
 }
 //거래 완료 응답 -> 리뷰 작성을 위한 tradeId 반환
 message CompleteTradeResponse{
   int64 tradeId = 1;
   int64 opponentId = 2;
 }
+
 // 주요 활동 카테고리 조회
 message GetMainCategoryResponse {
   repeated string category = 1;
+}
+
+// 21. 토스페이먼츠 결제 승인 요청
+message ConfirmPaymentRequest {
+  int64 trade_id = 1;
+  string payment_key = 2;
+  int32 amount = 3;
+  string order_id = 4;
 }
