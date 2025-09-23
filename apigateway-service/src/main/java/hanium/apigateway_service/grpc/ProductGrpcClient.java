@@ -252,4 +252,17 @@ public class ProductGrpcClient {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }
     }
+
+    // 사용자의 판매 상품 내역 조회
+    public List<SimpleProductDTO> getSellingProducts(Long memberId) {
+        ProductMainRequest req = ProductMainRequest.newBuilder().setMemberId(memberId).build();
+        try {
+            return stub.getSellingProducts(req).getProductsList()
+                    .stream()
+                    .map(SimpleProductDTO::from)
+                    .toList();
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
 }

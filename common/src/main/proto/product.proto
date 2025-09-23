@@ -102,6 +102,9 @@ service ProductService {
   // 21. 토스페이먼츠 결제 승인 요청
   rpc ConfirmPayment(ConfirmPaymentRequest) returns (Empty);
 
+  // 22. 사용자의 판매 상품 내역 조회
+  rpc GetSellingProducts(ProductMainRequest) returns (SimpleProductsResponse);
+
 }
 
 message Empty {}
