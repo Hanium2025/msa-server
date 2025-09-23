@@ -92,6 +92,13 @@ service ProductService {
   //현재 거래 상태 조회
   rpc getTradeStatus(TradeRequest) returns (TradeStatusResponse);
 
+  // 송장 등록
+  rpc CreateWayBill(CreateWayBillRequest) returns (Empty);
+
+  // 택배 조회
+  rpc GetDeliveryInfo(GetDeliveryInfoRequest) returns (GetDeliveryInfoResponse);
+
+
   // 21. 토스페이먼츠 결제 승인 요청
   rpc ConfirmPayment(ConfirmPaymentRequest) returns (Empty);
 
@@ -376,6 +383,33 @@ message CompleteTradeResponse{
 // 주요 활동 카테고리 조회
 message GetMainCategoryResponse {
   repeated string category = 1;
+}
+
+// 송장 등록
+message CreateWayBillRequest {
+  int64 trade_id = 1;
+  int64 member_id = 2;
+  string code = 3;
+  string invoice_number = 4;
+}
+
+// 택배 조회 요청
+message GetDeliveryInfoRequest {
+  int64 trade_id = 1;
+  int64 member_id = 2;
+}
+
+// 택배 조회 응답
+message GetDeliveryInfoResponse {
+  string code = 1;
+  string invoice_number = 2;
+  repeated DeliveryStatusSummary delivery_status_summary = 3;
+}
+
+message DeliveryStatusSummary{
+  string time = 1;
+  string location = 2;
+  string status = 3;
 }
 
 // 21. 토스페이먼츠 결제 승인 요청

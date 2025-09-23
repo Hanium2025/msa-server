@@ -1,4 +1,4 @@
-package hanium.apigateway_service.dto.product.response;
+package hanium.apigateway_service.dto.trade.response;
 
 import hanium.common.proto.product.GetTradeReviewPageResponse;
 import lombok.AccessLevel;

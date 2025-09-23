@@ -1,6 +1,8 @@
 package hanium.apigateway_service.controller;
 
-import hanium.apigateway_service.dto.product.response.TradeReviewPageDTO;
+import hanium.apigateway_service.dto.trade.request.CreateWayBillRequestDTO;
+import hanium.apigateway_service.dto.trade.response.DeliveryInfoResponseDTO;
+import hanium.apigateway_service.dto.trade.response.TradeReviewPageDTO;
 import hanium.apigateway_service.dto.trade.request.TradeReviewRequestDTO;
 import hanium.apigateway_service.grpc.GrpcChatStreamClient;
 import hanium.apigateway_service.grpc.TradeGrpcClient;
@@ -179,4 +181,25 @@ public class TradeController {
         return ResponseEntity.ok(response);
     }
 
+
+    // 송장등록
+    @PostMapping("/delivery/{tradeId}")
+    public ResponseEntity<ResponseDTO<?>> createWayBill(@PathVariable Long tradeId,
+                                                        Authentication authentication,
+                                                        @RequestBody CreateWayBillRequestDTO dto) {
+        Long memberId = (Long) authentication.getPrincipal();
+        tradeGrpcClient.createWayBill(tradeId, memberId, dto);
+        ResponseDTO<?> response = new ResponseDTO<>(null, HttpStatus.OK, "송장 등록이 완료되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    // 택배 조회
+    @GetMapping("/delivery/{tradeId}")
+    public ResponseEntity<ResponseDTO<DeliveryInfoResponseDTO>> getDeliveryInfo(@PathVariable Long tradeId,
+                                                                                Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        DeliveryInfoResponseDTO result = tradeGrpcClient.getDeliveryInfo(tradeId, memberId);
+        ResponseDTO<DeliveryInfoResponseDTO> response = new ResponseDTO<>(result, HttpStatus.OK, "택배 조회가 완료되었습니다.");
+        return ResponseEntity.ok(response);
+    }
 }

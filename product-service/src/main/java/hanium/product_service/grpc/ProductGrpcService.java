@@ -38,6 +38,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
     private final ProfileGrpcClient profileGrpcClient;
     private final TradeService tradeService;
     private final TradeReviewService tradeReviewService;
+    private final DeliveryService deliveryService;
     private final TossPaymentService tossPaymentService;
 
     // 메인페이지 조회
@@ -481,6 +482,34 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
         }
     }
+
+    // 송장 등록
+    @Override
+    public void createWayBill(CreateWayBillRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            CreateWayBillRequestDTO requestDTO = CreateWayBillRequestDTO.from(request);
+            deliveryService.createWayBill(requestDTO);
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // 택배조회
+    @Override
+    public void getDeliveryInfo(GetDeliveryInfoRequest request, StreamObserver<GetDeliveryInfoResponse>  responseObserver) {
+        try {
+            responseObserver.onNext(
+                    TradeGrpcMapper.toGetDeliveryInfoResponseGrpc(
+                            deliveryService.getDeliveryInfo(request.getTradeId(), request.getMemberId()))
+            );
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
 
     // 토스페이먼츠 거래 요청
     @Override
