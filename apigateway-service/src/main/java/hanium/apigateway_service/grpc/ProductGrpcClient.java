@@ -1,9 +1,6 @@
 package hanium.apigateway_service.grpc;
 
-import hanium.apigateway_service.dto.product.request.ProductSearchRequestDTO;
-import hanium.apigateway_service.dto.product.request.RegisterProductRequestDTO;
-import hanium.apigateway_service.dto.product.request.ReportProductRequestDTO;
-import hanium.apigateway_service.dto.product.request.UpdateProductRequestDTO;
+import hanium.apigateway_service.dto.product.request.*;
 import hanium.apigateway_service.dto.product.response.*;
 import hanium.apigateway_service.mapper.ProductGrpcMapperForGateway;
 import hanium.common.exception.CustomException;
@@ -190,9 +187,9 @@ public class ProductGrpcClient {
     }
 
     // 상품 검색
-    public ProductSearchResponseDTO searchProduct(Long memberId, ProductSearchRequestDTO dto) {
+    public ProductSearchResponseDTO searchProduct(Long memberId, ProductSearchRequestDTO dto, String sort, int page) {
         ProductSearchRequest grpcRequest =
-                ProductGrpcMapperForGateway.toSearchProductGrpc(memberId, dto);
+                ProductGrpcMapperForGateway.toSearchProductGrpc(memberId, dto, sort, page);
         try {
             return ProductSearchResponseDTO.from(stub.searchProduct(grpcRequest));
         } catch (StatusRuntimeException e) {
@@ -240,6 +237,30 @@ public class ProductGrpcClient {
         ReportProductRequest req = ProductGrpcMapperForGateway.toReportProductGrpc(memberId, productId, dto);
         try {
             stub.reportProduct(req);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 토스페이먼츠 결제 요청
+    public void confirmPayment(ConfirmPaymentRequestDTO dto) {
+        ConfirmPaymentRequest req = ProductGrpcMapperForGateway.toConfirmPaymentGrpc(dto);
+        try {
+            log.info("➡️ confirmPayment grpc client ...");
+            stub.confirmPayment(req);
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 사용자의 판매 상품 내역 조회
+    public List<SimpleProductDTO> getSellingProducts(Long memberId) {
+        ProductMainRequest req = ProductMainRequest.newBuilder().setMemberId(memberId).build();
+        try {
+            return stub.getSellingProducts(req).getProductsList()
+                    .stream()
+                    .map(SimpleProductDTO::from)
+                    .toList();
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }

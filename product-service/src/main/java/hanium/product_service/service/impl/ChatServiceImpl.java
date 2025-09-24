@@ -1,6 +1,6 @@
 package hanium.product_service.service.impl;
 
-import chat.Chat;
+import hanium.common.proto.product.*;
 import hanium.common.exception.CustomException;
 import hanium.product_service.domain.Chatroom;
 import hanium.product_service.domain.Message;
@@ -8,15 +8,9 @@ import hanium.product_service.domain.MessageImage;
 import hanium.product_service.domain.MessageType;
 import hanium.product_service.dto.request.ChatMessageRequestDTO;
 import hanium.product_service.dto.request.CreateChatroomRequestDTO;
-import hanium.product_service.dto.response.ChatMessageResponseDTO;
-import hanium.product_service.dto.response.CreateChatroomResponseDTO;
-import hanium.product_service.dto.response.GetMyChatroomResponseDTO;
-import hanium.product_service.dto.response.ProfileResponseDTO;
+import hanium.product_service.dto.response.*;
 import hanium.product_service.grpc.ProfileGrpcClient;
-import hanium.product_service.repository.ChatRepository;
-import hanium.product_service.repository.ChatroomRepository;
-import hanium.product_service.repository.MessageImageRepository;
-import hanium.product_service.repository.ProductRepository;
+import hanium.product_service.repository.*;
 import hanium.product_service.service.ChatMessageTxService;
 import hanium.product_service.service.ChatService;
 import io.grpc.stub.StreamObserver;
@@ -42,15 +36,16 @@ public class ChatServiceImpl implements ChatService {
     private final ChatMessageTxService chatMessageTxService;
     private final ChatRepository chatRepository;
     private final MessageImageRepository messageImageRepository;
+    private final ChatroomTradeInfoRepository chatroomTradeInfoRepository;
     // userId → StreamObserver 저장
-    private final ConcurrentHashMap<Long, StreamObserver<Chat.ChatResponseMessage>> userStreamMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, StreamObserver<ChatResponseMessage>> userStreamMap = new ConcurrentHashMap<>();
 
     @Transactional
     @Override
     public CreateChatroomResponseDTO createChatroom(CreateChatroomRequestDTO requestDTO) {
         Long productId = requestDTO.getProductId();
-        Long senderId = requestDTO.getSenderId();
-        Long receiverId = requestDTO.getReceiverId();
+        Long senderId = requestDTO.getSenderId(); //구매자
+        Long receiverId = requestDTO.getReceiverId(); //판매자
         // 1. 중복 채팅방 조회
         Optional<Chatroom> existing = chatroomRepository
                 .findByProductIdAndMembers(productId, senderId, receiverId);
@@ -68,11 +63,11 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public StreamObserver<Chat.ChatMessage> chat(StreamObserver<Chat.ChatResponseMessage> responseObserver) {
+    public StreamObserver<ChatMessage> chat(StreamObserver<ChatResponseMessage> responseObserver) {
         return new StreamObserver<>() {
 
             @Override
-            public void onNext(Chat.ChatMessage msg) {
+            public void onNext(ChatMessage msg) {
                 log.info("📥 product-service gRPC 수신: {}", msg);
                 // grpc -> dto
                 ChatMessageRequestDTO dto = ChatMessageRequestDTO.from(msg);
@@ -86,7 +81,7 @@ public class ChatServiceImpl implements ChatService {
                         .toEpochMilli()
                         : System.currentTimeMillis();
                 // 공통 응답 생성
-                Chat.ChatResponseMessage response = Chat.ChatResponseMessage.newBuilder()
+                ChatResponseMessage response = ChatResponseMessage.newBuilder()
                         .setChatroomId(msg.getChatroomId())
                         .setSenderId(msg.getSenderId())
                         .setReceiverId(msg.getReceiverId())
@@ -143,6 +138,7 @@ public class ChatServiceImpl implements ChatService {
                     .opponentId(opponentId)
                     .opponentProfileUrl(profileResponseDTO.getProfileImageUrl())
                     .opponentNickname(profileResponseDTO.getNickname())
+                    .sellerId(r.getReceiverId())
                     .build();
         }).toList();
     }
@@ -210,10 +206,14 @@ public class ChatServiceImpl implements ChatService {
                     .build();
 
             dtos.add(dto);
-
         }
-
         return dtos;
+    }
+    //구매자 아이디로 판매자 아이디 받을 떄
+    @Override
+    public TradeInfoDTO getTradeInfoByChatroomIdAndMemberId(Long chatroomId, Long memberId) {
+        TradeInfoDTO tradeInfoDTO = chatroomTradeInfoRepository.findTradeInfoByChatroomIdAndMemberId(chatroomId,memberId);
+        return tradeInfoDTO;
     }
 
 }

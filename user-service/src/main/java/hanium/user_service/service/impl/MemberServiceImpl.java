@@ -42,4 +42,30 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
     }
+
+    // 마이페이지 마케팅 동의 토글
+    @Override
+    public String toggleAgreeMarketing(Long memberId) {
+        Member member = getMemberById(memberId);
+        if (member.isAgreeMarketing()) {
+            member.updateMarketingStatus(false);
+            return "마케팅 정보 수신 동의를 해제하였습니다.";
+        } else {
+            member.updateMarketingStatus(true);
+            return "마케팅 정보 수신에 동의하였습니다.";
+        }
+    }
+
+    // 마이페이지 제3자 동의 토글
+    @Override
+    public String toggleAgreeThirdParty(Long memberId) {
+        Member member = getMemberById(memberId);
+        if (member.isAgreeThirdParty()) {
+            member.updateThirdPartyStatus(false);
+            return "개인정보 제3자 제공 동의를 해제하였습니다.";
+        } else {
+            member.updateThirdPartyStatus(true);
+            return "개인정보 제3자 제공에 동의하였습니다.";
+        }
+    }
 }

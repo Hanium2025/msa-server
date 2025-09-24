@@ -27,6 +27,7 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(404, "해당하는 Member를 찾을 수 없습니다."),
     AUTHORITY_NOT_FOUND(404, "사용자의 권한을 조회할 수 없습니다."),
     REFRESH_NOT_FOUND(404, "데이터베이스에서 Refresh 토큰을 찾을 수 없습니다."),
+    INVALID_PROFILE_IMAGE_TYPE(400, "프로필 사진은 image 형식만 등록할 수 있습니다."),
 
     // -- PRODUCT-SERVICE -- //
     ERROR_ADD_PRODUCT(500, "상품 등록 중 문제가 발생했습니다."),
@@ -47,7 +48,23 @@ public enum ErrorCode {
     NOT_IMAGE(400, "타입이 이미지가 아닙니다."),
     ELASTICSEARCH_ERROR(500, "검색 중 오류가 발생했습니다."),
     SEARCH_NOT_FOUND(404, "해당하는 검색 기록을 찾을 수 없습니다."),
+    CHAT_STREAM_NOT_AVAILABLE(404, "채팅방 스트림을 사용할 수 없습니다."),
+    FAIL_DIRECT_REQUEST_CHAT(404, "직거래 요청 메시지 수신 실패"),
+    FAIL_DIRECT_ACCEPT_CHAT(404, "직거래 요청 수락 메시지 수신 실패"),
+    INVALID_PRODUCT_STATUS_TRANSITION(404, "상품 거래 상태 수정이 불가능합니다."),
+    TRADE_NOT_FOUND(404, "해당 거래를 찾을 수 없습니다."),
+    INVALID_PRICE_INFO(400, "결제 금액이 악의적으로 변경되었거나 유효하지 않습니다."),
+    PAYMENT_SERVER_ERROR(500, "토스페이먼츠에 결제 승인 요청 중 오류가 발생했습니다."),
+    PAYMENT_DB_ERROR_CANCELED(500, "결제 정보를 데이터베이스에 저장하던 중 오류 발생으로 결제가 취소되었습니다."),
+    PAYMENT_CANCEL_ERROR(500, "토스페이먼츠에서 결제 취소 중 오류가 발생했습니다."),
+    FORBIDDEN(403, "해당 요청에 대한 권한이 없습니다."),
+    ALREADY_REVIEWED(409, "이미 리뷰가 작성된 거래입니다."),
+    NOT_FOUND_TRADE(400, "해당 거래는 없습니다."),
+    FAIL_TRADE_DONE_CHAT(404,"거래 완료 메시지 수신 실패"),
+    DELIVERY_NOT_FOUND(404, "해당 배송 정보를 찾을 수 없습니다."),
+    API_CALL_FAIL(502, "sweet-tracker api 호출을 실해하였습니다."),
     ;
+
 
     private final int code;
     private final String message;

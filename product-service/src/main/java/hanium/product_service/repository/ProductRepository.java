@@ -2,8 +2,10 @@ package hanium.product_service.repository;
 
 import hanium.product_service.domain.Category;
 import hanium.product_service.domain.Product;
+import hanium.product_service.domain.Status;
 import hanium.product_service.repository.projection.ProductIdCategory;
 import hanium.product_service.repository.projection.ProductWithFirstImage;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -147,4 +149,115 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     )
     List<ProductWithFirstImage> findProductByCategoryAndSortByLike(@Param("category") String category,
                                                                    Pageable pageable);
+
+    @Query(
+            value = """
+                    select p.id as productId, p.title as title, p.price as price, i.image_url as imageUrl
+                    from product p
+                    left join (
+                        select product_id, min(id) as min_image_id
+                        from product_image
+                        where deleted_at is null
+                        group by product_id
+                    ) min_image_table on min_image_table.product_id = p.id
+                    left join product_image i on i.id = min_image_table.min_image_id
+                    where p.id in :ids and p.deleted_at is null
+                    order by p.created_at desc, p.id desc
+                    """,
+            countQuery = """
+                    select count(*)
+                    from product p
+                    where p.id in :ids
+                    and p.deleted_at is null
+                    
+                    """,
+            nativeQuery = true)
+    List<ProductWithFirstImage> findProductByIdsAndSortByRecent(
+            @Param("ids") List<Long> ids,
+            Pageable pageable
+    );
+
+
+    @Query(
+            value = """
+                    select p.id as productId, p.title as title, p.price as price, fi.image_url as imageUrl
+                    from product p
+                    /* 상품별 ProductLike 카운트한 lc 테이블 조인 */
+                    left join (
+                        select pl.product_id, count(*) as like_count
+                        from product_like pl
+                        group by pl.product_id
+                    ) lc on lc.product_id = p.id
+                    /* fi 테이블에서 실제 가져온 상품 p에 맞는 이미지만 선택 (조인) */
+                    left join (
+                        select x.product_id, pi.image_url
+                        /* 상품별 첫 번째 ProductImage만 가져온 x 테이블로 */
+                        /* pi 테이블에서 첫 번째 이미지 url만 선택 -> fi 테이블 */
+                        from (
+                            select product_id, MIN(id) AS first_image
+                            from product_image
+                            group by product_id
+                        ) x
+                        join product_image pi
+                          on pi.id = x.first_image
+                    ) fi on fi.product_id = p.id
+                    where p.id in :ids and p.deleted_at is null
+                      and p.created_at >= NOW() - interval 1 year
+                    order by coalesce(lc.like_count, 0) desc, p.id desc
+                    """,
+            countQuery = """
+                    select count(*)
+                    from product p
+                    where p.id in :ids
+                    and p.deleted_at is null
+                    and p.created_at >= NOW() - interval 1 year
+                    """,
+            nativeQuery = true)
+    List<ProductWithFirstImage> findProductByIdsAndSortByLike(
+            @Param("ids") List<Long> ids,
+            Pageable pageable
+    );
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        update Product p 
+        set p.status =
+            case
+                when p.status = hanium.product_service.domain.Status.SELLING
+                    then hanium.product_service.domain.Status.IN_PROGRESS
+                when p.status = hanium.product_service.domain.Status.IN_PROGRESS
+                    then hanium.product_service.domain.Status.SOLD_OUT
+                else p.status
+                end,
+                p.updatedAt = CURRENT TIMESTAMP
+         where p.id = :productId
+         and p.status in(
+          hanium.product_service.domain.Status.SELLING,
+                         hanium.product_service.domain.Status.IN_PROGRESS
+         ) 
+"""
+    )
+    int updateProductStatusById(@Param("productId")Long productId);
+
+
+
+    // memberId로 product 조회
+    @Query(
+            value = """
+                    select p.category
+                    from Product p
+                    where p.sellerId = :memberId
+                    and p.deletedAt is null
+                    group by p.category
+                    order by count(p) desc
+                    """,
+            countQuery = """
+                    select count(distinct p.category)
+                    from Product p
+                    where p.sellerId = :memberId
+                    and p.deletedAt is null
+                    """
+    )
+    Page<Category> findProductBySellerId(@Param("memberId") Long memberId,
+                                         Pageable pageable);
 }

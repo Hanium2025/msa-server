@@ -142,7 +142,10 @@ public class ProductController {
     @GetMapping("/search/{keyword}")
     public ResponseEntity<ResponseDTO<ProductSearchResponseDTO>> searchProduct(
             @PathVariable ("keyword") String keyword,
-            Authentication authentication) {
+            Authentication authentication,
+            @RequestParam(defaultValue = "recent") String sort,
+            @RequestParam(defaultValue = "0") int page
+    ) {
 
         Long memberId = (Long) authentication.getPrincipal();
 
@@ -150,10 +153,11 @@ public class ProductController {
                 .keyword(keyword)
                 .build();
 
-        ProductSearchResponseDTO result = productGrpcClient.searchProduct(memberId, requestDTO);
+        ProductSearchResponseDTO result = productGrpcClient.searchProduct(memberId, requestDTO, sort, page);
 
         ResponseDTO<ProductSearchResponseDTO> response = new ResponseDTO<>(
-                result, HttpStatus.OK, "상품 검색 결과입니다.");
+                result, HttpStatus.OK,
+                "[" + requestDTO.getKeyword() + "]를 [" + sort + "]순으로 검색하였습니다.");
 
         return ResponseEntity.ok(response);
     }

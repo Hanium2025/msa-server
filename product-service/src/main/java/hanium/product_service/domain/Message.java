@@ -20,7 +20,7 @@ public class Message extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(length = 1000)
     private String content;
 
     @ManyToOne(fetch= FetchType.LAZY)

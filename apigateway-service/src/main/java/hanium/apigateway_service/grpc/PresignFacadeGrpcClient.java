@@ -1,8 +1,8 @@
 package hanium.apigateway_service.grpc;
 
-import chat.Chat;
-import chat.ChatServiceGrpc;
+import hanium.common.proto.product.*;
 import hanium.apigateway_service.dto.chat.response.PresignedUrlDTO;
+import hanium.common.proto.product.ProductServiceGrpc;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
@@ -14,10 +14,10 @@ import java.util.List;
 public class PresignFacadeGrpcClient {
 
     @GrpcClient("product-service")
-    private ChatServiceGrpc.ChatServiceBlockingStub stub;
+    private ProductServiceGrpc.ProductServiceBlockingStub stub;
 
     public List<PresignedUrlDTO> create(Long chatroomId,int count, String contentType){
-        var req = Chat.CreatePresignedUrlsRequest.newBuilder()
+        var req = CreatePresignedUrlsRequest.newBuilder()
                 .setChatroomId(chatroomId)
                 .setCount(count)
                 .setContentType(contentType)

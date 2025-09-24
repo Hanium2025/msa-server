@@ -1,10 +1,10 @@
 package hanium.apigateway_service.dto.chat.response;
 
-import chatroom.Chatroom;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import hanium.common.proto.product.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -24,8 +24,9 @@ public class GetMyChatroomResponseDTO {
     private Long opponentId; //상대방 아이디
     private String opponentProfileUrl; //상대방 프로필 아이디
     private String opponentNickname; //상대방 프로필 닉네임
+    private Long sellerId; //판매자 아이디
 
-    public static List<GetMyChatroomResponseDTO> from(Chatroom.ListMyChatroomsResponse response) {
+    public static List<GetMyChatroomResponseDTO> from(ListMyChatroomsResponse response) {
         return response.getItemsList().stream()
                 .map(i -> GetMyChatroomResponseDTO.builder()
                         .chatroomId(i.getChatroomId())
@@ -43,6 +44,7 @@ public class GetMyChatroomResponseDTO {
                         .opponentId(i.getOpponentId())
                         .opponentProfileUrl(i.getOpponentProfileUrl())
                         .opponentNickname(i.getOpponentNickname())
+                        .sellerId(i.getSellerId())
                         .build())
                 .toList();
     }

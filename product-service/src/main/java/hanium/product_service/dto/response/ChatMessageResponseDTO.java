@@ -1,6 +1,6 @@
 package hanium.product_service.dto.response;
 
-import chat.Chat;
+import hanium.common.proto.product.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +24,7 @@ public class ChatMessageResponseDTO {
     private List<String> imageUrls; //0~3개의 이미지 URL
 
     //응답 받은 grpc 응답 값을 dto로 변환
-    public static List<ChatMessageResponseDTO> from(Chat.GetAllMessagesByChatroomResponse response) {
+    public static List<ChatMessageResponseDTO> from(GetAllMessagesByChatroomResponse response) {
         return response.getChatResponseMessageList().stream()
                 .map(i -> ChatMessageResponseDTO.builder()
                         .messageId(i.getMessageId())

@@ -32,7 +32,7 @@ public class Product extends BaseEntity {
     @Column
     private Long price;
 
-    @Column
+    @Column(name = "seller_id")
     private Long sellerId;
 
     @Enumerated(EnumType.STRING)
