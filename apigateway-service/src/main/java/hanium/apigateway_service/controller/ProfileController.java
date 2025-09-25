@@ -86,4 +86,14 @@ public class ProfileController {
                 new ResponseDTO<>(result, HttpStatus.OK, "내 판매내역이 조회되었습니다.");
         return ResponseEntity.ok(response);
     }
+
+    // 내 구매내역 조회
+    @GetMapping("/trade/buy")
+    public ResponseEntity<ResponseDTO<List<SimpleProductDTO>>> getBuyingProducts(Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        List<SimpleProductDTO> result = productGrpcClient.getBuyingProducts(memberId);
+        ResponseDTO<List<SimpleProductDTO>> response =
+                new ResponseDTO<>(result, HttpStatus.OK, "내 구매내역이 조회되었습니다.");
+        return ResponseEntity.ok(response);
+    }
 }
