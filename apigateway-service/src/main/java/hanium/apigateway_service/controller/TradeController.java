@@ -4,6 +4,7 @@ import hanium.apigateway_service.dto.trade.request.CreateWayBillRequestDTO;
 import hanium.apigateway_service.dto.trade.response.DeliveryInfoResponseDTO;
 import hanium.apigateway_service.dto.trade.response.TradeReviewPageDTO;
 import hanium.apigateway_service.dto.trade.request.TradeReviewRequestDTO;
+import hanium.apigateway_service.dto.trade.response.TradeStatusResponseDTO;
 import hanium.apigateway_service.grpc.GrpcChatStreamClient;
 import hanium.apigateway_service.grpc.TradeGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
@@ -69,7 +70,7 @@ public class TradeController {
 
     //거래 완료버튼을 보여주기 위한 상태 응답 받아오기
     @GetMapping("/status/chatroom/{chatroomId}")
-    public ResponseEntity<ResponseDTO<String>> getTradeStatus(@PathVariable Long chatroomId, Authentication authentication) {
+    public ResponseEntity<ResponseDTO<TradeStatusResponseDTO>> getTradeStatus(@PathVariable Long chatroomId, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new CustomException(ErrorCode.INVALID_TOKEN);
         }
@@ -84,8 +85,11 @@ public class TradeController {
 
         TradeStatusResponse status = tradeGrpcClient.getTradeStatus(chatroomId, memberId);
         String tradeStatus = status.getStatus();
-        ResponseDTO<String> response = new ResponseDTO<>(
-                tradeStatus, HttpStatus.OK, "현재 거래 진행사항 가져오기 성공");
+        Long tradeId = status.getTradeId();
+        log.info("tradeStatus={}, tradeId={}", tradeStatus, tradeId);
+        TradeStatusResponseDTO tradeStatusResponseDTO = TradeStatusResponseDTO.from(status);
+        ResponseDTO<TradeStatusResponseDTO> response = new ResponseDTO<>(
+                tradeStatusResponseDTO, HttpStatus.OK, "현재 거래 진행사항 가져오기 성공");
         return ResponseEntity.ok(response);
     }
 

@@ -4,6 +4,7 @@ import hanium.common.proto.product.TradeRequest;
 import hanium.product_service.domain.TradeStatus;
 import hanium.product_service.dto.response.CompleteTradeInfoDTO;
 import hanium.product_service.dto.response.TradeInfoDTO;
+import hanium.product_service.dto.response.TradeStatusDTO;
 import io.grpc.stub.StreamObserver;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +22,8 @@ public interface TradeService {
     //택배거래 수락
     int acceptParcelTrade(Long chatroomId);
 
-    //거래 진행 상태 조회
-    TradeStatus getTradeStatus(Long chatroomId, Long memberId);
+    //거래 진행 상태 조회(거래 아이디도 같이 조회)
+    TradeStatusDTO getTradeStatus(Long chatroomId, Long memberId);
 
     //거래 완료
     CompleteTradeInfoDTO completeTrade(Long chatroomId, Long memberId);
