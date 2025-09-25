@@ -12,4 +12,5 @@ public enum MessageType {
     ADDRESS_REGISTER, //배송지 등록
     ADDRESS_REGISTER_DONE,
     TRADE_COMPLETE,
+
 }

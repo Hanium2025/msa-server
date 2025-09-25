@@ -10,6 +10,7 @@ import java.util.List;
 @Getter
 @Builder
 public class ChatMessageRequestDTO {
+
     private long chatroomId;
     private Long senderId;
     private Long receiverId;
