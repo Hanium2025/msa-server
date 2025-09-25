@@ -46,7 +46,7 @@ public class ChatMessageRequestDTO {
             case PAYMENT_DONE -> MessageType.PAYMENT_DONE;
             case ADDRESS_REGISTER -> MessageType.ADDRESS_REGISTER;
             case ADDRESS_REGISTER_DONE -> MessageType.ADDRESS_REGISTER_DONE;
-
+            case TRADE_COMPLETE -> MessageType.TRADE_COMPLETE;
             default -> MessageType.TEXT;
         };
     }

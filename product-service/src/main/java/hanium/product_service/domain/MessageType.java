@@ -11,4 +11,5 @@ public enum MessageType {
     PAYMENT_DONE, //결제 완료
     ADDRESS_REGISTER, //배송지 등록
     ADDRESS_REGISTER_DONE,
+    TRADE_COMPLETE,
 }
