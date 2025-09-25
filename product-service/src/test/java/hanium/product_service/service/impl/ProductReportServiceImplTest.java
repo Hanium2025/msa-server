@@ -3,6 +3,7 @@ package hanium.product_service.service.impl;
 import hanium.product_service.domain.Product;
 import hanium.product_service.domain.ProductReport;
 import hanium.product_service.dto.request.ReportProductRequestDTO;
+import hanium.product_service.grpc.ProfileGrpcClient;
 import hanium.product_service.repository.ProductReportRepository;
 import hanium.product_service.repository.ProductRepository;
 import jakarta.persistence.EntityManager;
@@ -30,6 +31,8 @@ class ProductReportServiceImplTest {
     private ProductRepository productRepository;
     @Mock
     private ProductReportRepository reportRepository;
+    @Mock
+    private ProfileGrpcClient profileGrpcClient;
     @Mock
     private EntityManager em;
     @InjectMocks

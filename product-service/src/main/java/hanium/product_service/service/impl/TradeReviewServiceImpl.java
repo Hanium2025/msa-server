@@ -33,7 +33,7 @@ public class TradeReviewServiceImpl implements TradeReviewService {
      */
     @Override
     @Transactional(readOnly = true)
-    public TradeReviewPageDTO getTradeReviewPageInfo(Long tradeId, Long memberId){
+    public TradeReviewPageDTO getTradeReviewPageInfo(Long tradeId, Long memberId) {
         Trade trade = tradeRepository.findByIdWithProduct(tradeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.TRADE_NOT_FOUND));
 
@@ -54,7 +54,7 @@ public class TradeReviewServiceImpl implements TradeReviewService {
      */
     @Override
     @Transactional
-    public void tradeReview(TradeReviewRequestDTO dto){
+    public void tradeReview(TradeReviewRequestDTO dto) {
         Trade trade = tradeRepository.findByIdAndDeletedAtIsNull(dto.getTradeId())
                 .orElseThrow(() -> new CustomException(ErrorCode.TRADE_NOT_FOUND));
 
@@ -71,5 +71,7 @@ public class TradeReviewServiceImpl implements TradeReviewService {
         tradeReviewRepository.save(tradeReview);
 
         log.info("✅ {} 사용자 {}와의 {} 거래 후기 작성", dto.getMemberId(), targetMemberId, dto.getTradeId());
+
+        profileGrpcClient.updateReliabilityScoreByReview(targetMemberId, (int) Math.ceil(dto.getRating()));
     }
 }
