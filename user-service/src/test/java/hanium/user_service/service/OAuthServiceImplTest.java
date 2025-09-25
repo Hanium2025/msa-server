@@ -1,5 +1,6 @@
 package hanium.user_service.service;
 
+import hanium.user_service.config.AwsConfig;
 import hanium.user_service.domain.*;
 import hanium.user_service.dto.response.KakaoUserResponseDTO;
 import hanium.user_service.dto.response.NaverUserResponseDTO;
@@ -41,6 +42,8 @@ class OAuthServiceImplTest {
     @Mock
     RefreshTokenRepository refreshRepository;
     @Mock
+    AwsConfig awsConfig;
+    @Mock
     JwtUtil jwtUtil;
 
     @InjectMocks
@@ -58,6 +61,8 @@ class OAuthServiceImplTest {
         given(kakaoAccount.getEmail()).willReturn("kakao@example.com");
         given(kakaoProfile.getNickName()).willReturn("카카오 닉네임");
         given(kakaoProfile.getProfileImageUrl()).willReturn("img/kakao.png");
+        given(kakaoProfile.getIsDefaultImage()).willReturn("false");
+        given(awsConfig.getDomain()).willReturn("domain");
 
         given(memberRepository.save(any(Member.class)))
                 .willAnswer(inv -> inv.getArgument(0));
@@ -102,6 +107,7 @@ class OAuthServiceImplTest {
         given(naverUser.getMobile()).willReturn("010-1234-5678");
         given(naverUser.getNickname()).willReturn("네이버 닉네임");
         given(naverUser.getProfileImage()).willReturn("img/naver.png");
+        given(awsConfig.getDomain()).willReturn("domain");
 
         given(memberRepository.save(any(Member.class)))
                 .willAnswer(inv -> inv.getArgument(0));
