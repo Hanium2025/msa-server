@@ -2,7 +2,6 @@ package hanium.product_service.repository;
 
 import hanium.product_service.domain.Category;
 import hanium.product_service.domain.Product;
-import hanium.product_service.domain.Status;
 import hanium.product_service.repository.projection.ProductIdCategory;
 import hanium.product_service.repository.projection.ProductWithFirstImage;
 import org.springframework.data.domain.Page;
@@ -220,28 +219,26 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
-        update Product p 
-        set p.status =
-            case
-                when p.status = hanium.product_service.domain.Status.SELLING
-                    then hanium.product_service.domain.Status.IN_PROGRESS
-                when p.status = hanium.product_service.domain.Status.IN_PROGRESS
-                    then hanium.product_service.domain.Status.SOLD_OUT
-                else p.status
-                end,
-                p.updatedAt = CURRENT TIMESTAMP
-         where p.id = :productId
-         and p.status in(
-          hanium.product_service.domain.Status.SELLING,
-                         hanium.product_service.domain.Status.IN_PROGRESS
-         ) 
-"""
+                    update Product p
+                    set p.status =
+                        case
+                            when p.status = hanium.product_service.domain.Status.SELLING
+                                then hanium.product_service.domain.Status.IN_PROGRESS
+                            when p.status = hanium.product_service.domain.Status.IN_PROGRESS
+                                then hanium.product_service.domain.Status.SOLD_OUT
+                            else p.status
+                            end,
+                            p.updatedAt = CURRENT TIMESTAMP
+                     where p.id = :productId
+                     and p.status in(
+                      hanium.product_service.domain.Status.SELLING,
+                                     hanium.product_service.domain.Status.IN_PROGRESS
+                     )
+            """
     )
-    int updateProductStatusById(@Param("productId")Long productId);
+    int updateProductStatusById(@Param("productId") Long productId);
 
-
-
-    // memberId로 product 조회
+    // memberId로 product category 조회
     @Query(
             value = """
                     select p.category
@@ -258,6 +255,52 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                     and p.deletedAt is null
                     """
     )
-    Page<Category> findProductBySellerId(@Param("memberId") Long memberId,
-                                         Pageable pageable);
+    Page<Category> findProductCategoryBySellerId(@Param("memberId") Long memberId, Pageable pageable);
+
+    // memberId로 product 조회
+    @Query(
+            value = """
+                    select p.id as productId, p.title as title, p.price as price, pi.image_url as imageUrl
+                    from product p
+                    left join (
+                        select pi1.product_id, pi2.image_url
+                        from (
+                            select product_id, min(id) as first_image_id
+                            from product_image
+                            group by product_id
+                        ) pi1
+                        join product_image pi2
+                          on pi2.id = pi1.first_image_id
+                    ) pi on pi.product_id = p.id
+                    where p.seller_id = :memberId
+                    order by p.id desc
+                    """,
+            nativeQuery = true)
+    Page<ProductWithFirstImage> findProductBySellerId(@Param("memberId") Long memberId, Pageable pageable);
+
+    @Query(
+            value = """
+                    select
+                        p.id as productId,
+                        p.title as title,
+                        p.price as price,
+                        (
+                            select pi.image_url
+                            from product_image pi
+                            where pi.product_id = p.id
+                            order by pi.id
+                            limit 1
+                        ) as imageUrl
+                    from product p
+                    where exists (
+                        select 1
+                        from trade t
+                        where t.product_id = p.id
+                          and t.buyer_id = :memberId
+                          and t.trade_status = 'COMPLETED'
+                    )
+                    order by p.id desc
+                    """,
+            nativeQuery = true)
+    Page<ProductWithFirstImage> findProductByBuyerId(Long memberId, Pageable pageable);
 }

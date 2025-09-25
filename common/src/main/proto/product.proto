@@ -105,6 +105,8 @@ service ProductService {
   // 22. 사용자의 판매 상품 내역 조회
   rpc GetSellingProducts(ProductMainRequest) returns (SimpleProductsResponse);
 
+  // 23. 사용자의 구매 상품 내역 조회
+  rpc GetBuyingProducts(ProductMainRequest) returns (SimpleProductsResponse);
 }
 
 message Empty {}
