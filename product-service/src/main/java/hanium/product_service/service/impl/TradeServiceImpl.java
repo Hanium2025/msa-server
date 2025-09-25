@@ -5,9 +5,11 @@ import hanium.common.exception.ErrorCode;
 import hanium.product_service.domain.*;
 import hanium.product_service.dto.response.CompleteTradeInfoDTO;
 import hanium.product_service.dto.response.TradeInfoDTO;
+import hanium.product_service.dto.response.TradeStatusDTO;
 import hanium.product_service.repository.ProductRepository;
 import hanium.product_service.repository.TradeCompleteRepository;
 import hanium.product_service.repository.TradeRepository;
+import hanium.product_service.repository.TradeStatusRepository;
 import hanium.product_service.service.ProductService;
 import hanium.product_service.service.TradeService;
 import jakarta.persistence.EntityManager;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Service;
 public class TradeServiceImpl implements TradeService {
     private final ProductRepository productRepository;
     private final ProductServiceImpl productServiceImpl;
+    private final TradeStatusRepository tradeStatusRepository;
     @PersistenceContext
     private EntityManager em;
 
@@ -81,9 +84,8 @@ public class TradeServiceImpl implements TradeService {
     }
 
     @Override
-    public TradeStatus getTradeStatus(Long chatroomId, Long memberId) {
-        return tradeRepository.findTradeStatus(chatroomId, memberId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_TRADE));
+    public TradeStatusDTO getTradeStatus(Long chatroomId, Long memberId) {
+        return tradeStatusRepository.findTradeStatusByChatroomId(chatroomId, memberId);
     }
 
     @Override
