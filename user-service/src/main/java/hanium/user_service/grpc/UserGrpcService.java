@@ -259,4 +259,16 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
         }
     }
+
+    // 거래 평가 시 신뢰도 업데이트
+    @Override
+    public void updateScore(UpdateScoreRequest request, StreamObserver<Empty> responseObserver) {
+        try {
+            profileService.updateScore(request);
+            responseObserver.onNext(Empty.getDefaultInstance());
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
 }

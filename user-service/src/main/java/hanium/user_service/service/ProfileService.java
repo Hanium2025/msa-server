@@ -1,6 +1,7 @@
 package hanium.user_service.service;
 
 import hanium.common.proto.user.UpdateProfileRequest;
+import hanium.common.proto.user.UpdateScoreRequest;
 import hanium.user_service.dto.request.GetNicknameRequestDTO;
 import hanium.user_service.dto.request.GetPresignedUrlRequestDTO;
 import hanium.user_service.dto.response.GetNicknameResponseDTO;
@@ -19,4 +20,6 @@ public interface ProfileService {
     ProfileResponseDTO updateProfile(UpdateProfileRequest request);
 
     ProfileDetailResponseDTO getProfileDetailByMemberId(Long memberId);
+
+    void updateScore(UpdateScoreRequest request);
 }
