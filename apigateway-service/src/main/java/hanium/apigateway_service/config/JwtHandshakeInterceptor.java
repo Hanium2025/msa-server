@@ -21,42 +21,57 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
     private final JwtUtil jwtUtil;
 
     @Override
-    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
-                                   WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
+    public boolean beforeHandshake(
+            ServerHttpRequest request,
+            ServerHttpResponse response,
+            WebSocketHandler wsHandler,
+            Map<String, Object> attributes) {
 
-        if (request instanceof org.springframework.http.server.ServletServerHttpRequest servletRequest) {
-            HttpServletRequest httpRequest = servletRequest.getServletRequest();
-            String authHeader = httpRequest.getHeader(HttpHeaders.AUTHORIZATION);
-            String token;
+        String token = null;
 
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                token = authHeader.substring(7);
-                log.info("WebSocket JWT header 인증 시도: {}", token);
-            } else {
-                // WebSocket query string 방식 (wss://...?token=xxx) 지원
-                token = httpRequest.getParameter("token");
-                log.info("WebSocket JWT parameter 인증 시도: {}", token);
-            }
+        // 1) Authorization 헤더 시도 (브라우저는 안 붙음)
+        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+            log.info("WS JWT header 인증 시도: {}", token);
+        }
 
-            if (token != null) {
-                try {
-                    if (jwtUtil.isTokenValid(token)) {
-                        Long userId = jwtUtil.extractId(token);
-                        log.info("userId: {}", userId);
-                        attributes.put("userId", userId);
-                        return true;
-                    } else {
-                        throw new CustomException(ErrorCode.INVALID_TOKEN);
+        // 2) 쿼리스트링 시도 (브라우저 WebSocket 기본 방식)
+        if (token == null) {
+            String query = request.getURI().getQuery(); // e.g. token=xxx&roomId=1
+            if (query != null) {
+                for (String kvp : query.split("&")) {
+                    String[] kv = kvp.split("=", 2);
+                    if (kv.length == 2 && "token".equals(kv[0])) {
+                        token = kv[1];
+                        break;
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                }
+            }
+            log.info("WS JWT query 인증 시도: {}", token);
+        }
+
+        if (token != null) {
+            try {
+                if (jwtUtil.isTokenValid(token)) {
+                    Long userId = jwtUtil.extractId(token);
+                    log.info("WS 인증 성공 userId={}", userId);
+                    attributes.put("userId", userId);
+                    return true;
+                } else {
+                    log.warn(" WS 토큰 검증 실패");
                     return false;
                 }
+            } catch (Exception e) {
+                log.error("WS JWT 처리 중 오류", e);
+                return false;
             }
         }
 
+        log.warn(" WS 토큰이 없음");
         return false;
     }
+
 
     @Override
     public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
