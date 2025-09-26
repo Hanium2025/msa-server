@@ -23,7 +23,8 @@ public class TradeStatusRepository {
                 .getSingleResult();
         Long tradeId = trade.getId();
         String status = trade.getTradeStatus().toString();
-        return TradeStatusDTO.builder().tradeId(tradeId).status(status).build();
+        Long productId = trade.getProduct().getId();
+        return TradeStatusDTO.builder().tradeId(tradeId).status(status).productId(productId).build();
 
     }
 }

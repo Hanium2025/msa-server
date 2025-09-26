@@ -11,4 +11,5 @@ import lombok.Getter;
 public class TradeStatusDTO {
     private Long tradeId;
     private String status;
+    private Long productId;
 }
