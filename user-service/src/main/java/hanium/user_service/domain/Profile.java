@@ -53,4 +53,11 @@ public class Profile extends BaseEntity {
         this.mainCategory = mainCategory;
         this.mainCategoryTTL = mainCategoryTTL;
     }
+
+    public void addScore(Long score) {
+        this.score += score;
+        if (this.score < 0) {
+            this.score = 0L;
+        }
+    }
 }

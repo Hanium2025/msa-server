@@ -3,6 +3,7 @@ package hanium.user_service.service.impl;
 import hanium.common.exception.CustomException;
 import hanium.common.exception.ErrorCode;
 import hanium.common.proto.user.UpdateProfileRequest;
+import hanium.common.proto.user.UpdateScoreRequest;
 import hanium.user_service.domain.Member;
 import hanium.user_service.domain.Profile;
 import hanium.user_service.dto.request.GetNicknameRequestDTO;
@@ -102,5 +103,13 @@ public class ProfileServiceImpl implements ProfileService {
             }
         }
         return profile.getMainCategory();
+    }
+
+    // 신뢰도 점수 업데이트
+    @Override
+    public void updateScore(UpdateScoreRequest request) {
+        Profile profile = profileRepository.findByMemberIdAndDeletedAtIsNull(request.getMemberId())
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        profile.addScore((long) request.getAmount());
     }
 }
