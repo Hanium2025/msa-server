@@ -13,11 +13,13 @@ import lombok.Getter;
 public class TradeStatusResponseDTO {
     private Long tradeId;
     private String status;
+    private Long productId;
 
     public static TradeStatusResponseDTO from(TradeStatusResponse response) {
         return TradeStatusResponseDTO.builder()
                 .status(response.getStatus())
                 .tradeId(response.getTradeId())
+                .productId(response.getProductId())
                 .build();
     }
 }

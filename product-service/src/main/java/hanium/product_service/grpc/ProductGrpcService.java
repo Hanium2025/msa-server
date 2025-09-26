@@ -402,7 +402,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         Long memberId = request.getMemberId();
         log.info("거래 진행 조회 chatroomId : {} , 사용자 아이디 : {}", chatroomId, memberId);
         TradeStatusDTO status = tradeService.getTradeStatus(chatroomId, memberId);
-        TradeStatusResponse tradeStatusResponse = TradeStatusResponse.newBuilder().setStatus(status.getStatus()).setTradeId(status.getTradeId()).build();
+        TradeStatusResponse tradeStatusResponse = TradeStatusResponse.newBuilder().setStatus(status.getStatus()).setTradeId(status.getTradeId()).setProductId(status.getProductId()).build();
         responseObserver.onNext(tradeStatusResponse);
         responseObserver.onCompleted();
     }

@@ -11,6 +11,7 @@ import hanium.apigateway_service.grpc.ChatroomGrpcClient;
 import hanium.apigateway_service.grpc.PresignFacadeGrpcClient;
 import hanium.apigateway_service.response.ResponseDTO;
 import hanium.common.exception.CustomException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class ChatController {
 
     //채팅방 생성
     @PostMapping("/create")
-    public ResponseEntity<ResponseDTO<CreateChatroomResponseDTO>> createChatroom(@RequestBody CreateChatroomRequestDTO createChatroomDTO, Authentication authentication) {
+    public ResponseEntity<ResponseDTO<CreateChatroomResponseDTO>> createChatroom(@Valid @RequestBody CreateChatroomRequestDTO createChatroomDTO, Authentication authentication) {
         Long memberId = (Long) authentication.getPrincipal();
         CreateChatroomRequestDTO requestDTO = CreateChatroomRequestDTO.builder()
                 .productId(createChatroomDTO.getProductId())

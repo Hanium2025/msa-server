@@ -86,7 +86,8 @@ public class TradeController {
         TradeStatusResponse status = tradeGrpcClient.getTradeStatus(chatroomId, memberId);
         String tradeStatus = status.getStatus();
         Long tradeId = status.getTradeId();
-        log.info("tradeStatus={}, tradeId={}", tradeStatus, tradeId);
+        Long productId = status.getProductId();
+        log.info("tradeStatus={}, tradeId={}, productId = {}", tradeStatus, tradeId,productId);
         TradeStatusResponseDTO tradeStatusResponseDTO = TradeStatusResponseDTO.from(status);
         ResponseDTO<TradeStatusResponseDTO> response = new ResponseDTO<>(
                 tradeStatusResponseDTO, HttpStatus.OK, "현재 거래 진행사항 가져오기 성공");
