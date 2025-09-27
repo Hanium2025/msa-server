@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -89,20 +88,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     private List<String> calculateMainCategory(Profile profile) {
-        // TTL 설정으로 너무 자주 계산되는 것을 방지
-        if ((profile.getMainCategory() == null || profile.getMainCategoryTTL() == null)
-                || LocalDateTime.now().isAfter(profile.getMainCategoryTTL())) {
-            List<String> mainCategory =
-                    productUserGrpcClient.getMainCategories(profile.getMember().getId());
-            if (!mainCategory.isEmpty()) {
-                LocalDateTime ttl = LocalDateTime.now().plusWeeks(1);
-                profile.updateMainCategory(mainCategory, ttl);
-                return mainCategory;
-            } else {
-                return List.of();
-            }
-        }
-        return profile.getMainCategory();
+        return productUserGrpcClient.getMainCategories(profile.getMember().getId());
     }
 
     // 신뢰도 점수 업데이트
