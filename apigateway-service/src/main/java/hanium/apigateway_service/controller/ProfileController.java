@@ -2,6 +2,7 @@ package hanium.apigateway_service.controller;
 
 import hanium.apigateway_service.dto.product.response.SimpleProductDTO;
 import hanium.apigateway_service.dto.user.request.UpdateProfileRequestDTO;
+import hanium.apigateway_service.dto.user.response.OtherProfileResponseDTO;
 import hanium.apigateway_service.dto.user.response.PresignedUrlResponseDTO;
 import hanium.apigateway_service.dto.user.response.ProfileDetailResponseDTO;
 import hanium.apigateway_service.dto.user.response.ProfileResponseDTO;
@@ -55,6 +56,18 @@ public class ProfileController {
         ProfileDetailResponseDTO responseDTO = userGrpcClient.getDetailProfile(memberId);
         ResponseDTO<ProfileDetailResponseDTO> result = new ResponseDTO<>(
                 responseDTO, HttpStatus.OK, "나의 프로필이 조회되었습니다."
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    // 상대 프로필 상세 조회
+    @GetMapping("/{memberId}")
+    public ResponseEntity<ResponseDTO<OtherProfileResponseDTO>> getOtherProfile(Authentication authentication,
+                                                                                @PathVariable Long memberId) {
+        Long myId = (Long) authentication.getPrincipal();
+        OtherProfileResponseDTO dto = userGrpcClient.getOtherProfile(myId, memberId);
+        ResponseDTO<OtherProfileResponseDTO> result = new ResponseDTO<>(
+                dto, HttpStatus.OK, "ID=" + memberId + "의 프로필이 조회되었습니다."
         );
         return ResponseEntity.ok(result);
     }
