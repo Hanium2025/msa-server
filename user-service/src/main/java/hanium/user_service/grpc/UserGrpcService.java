@@ -271,4 +271,16 @@ public class UserGrpcService extends UserServiceGrpc.UserServiceImplBase {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
         }
     }
+
+    // 타 사용자 프로필 조회
+    @Override
+    public void getOtherProfile(GetProfileRequest request, StreamObserver<GetOtherProfileResponse> responseObserver) {
+        try {
+            OtherProfileResponseDTO dto = profileService.getOtherProfile(request.getMemberId());
+            responseObserver.onNext(MemberGrpcMapper.toOtherProfileResponse(dto));
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
 }

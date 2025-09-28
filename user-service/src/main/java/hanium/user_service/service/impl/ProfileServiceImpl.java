@@ -8,10 +8,7 @@ import hanium.user_service.domain.Member;
 import hanium.user_service.domain.Profile;
 import hanium.user_service.dto.request.GetNicknameRequestDTO;
 import hanium.user_service.dto.request.GetPresignedUrlRequestDTO;
-import hanium.user_service.dto.response.GetNicknameResponseDTO;
-import hanium.user_service.dto.response.PresignedUrlResponseDTO;
-import hanium.user_service.dto.response.ProfileDetailResponseDTO;
-import hanium.user_service.dto.response.ProfileResponseDTO;
+import hanium.user_service.dto.response.*;
 import hanium.user_service.grpc.ProductUserGrpcClient;
 import hanium.user_service.repository.ProfileRepository;
 import hanium.user_service.service.ProfileService;
@@ -97,5 +94,22 @@ public class ProfileServiceImpl implements ProfileService {
         Profile profile = profileRepository.findByMemberIdAndDeletedAtIsNull(request.getMemberId())
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
         profile.addScore((long) request.getAmount());
+    }
+
+    // 타 사용자 프로필 조회
+    @Override
+    public OtherProfileResponseDTO getOtherProfile(Long memberId) {
+        Profile profile = profileRepository.findByMemberIdAndDeletedAtIsNull(memberId)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        List<SimpleProductDTO> sellingProducts = productUserGrpcClient.getSellingProducts(memberId);
+
+        return OtherProfileResponseDTO.builder()
+                .memberId(memberId)
+                .nickname(profile.getNickname())
+                .imageUrl(profile.getImageUrl())
+                .score(profile.getScore())
+                .mainCategory(calculateMainCategory(profile))
+                .products(sellingProducts)
+                .build();
     }
 }
