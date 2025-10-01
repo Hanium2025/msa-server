@@ -38,13 +38,13 @@ public interface ProductLikeRepository extends JpaRepository<ProductLike, Long> 
                         from ProductImage allImages
                         where allImages.product = likedProduct
                    )
+                   and singleImage.deletedAt is null
             where productLike.memberId = :memberId
+              and likedProduct.deletedAt is null
             order by productLike.id desc
             """)
     List<ProductWithFirstImage> findLikedProductsWithFirstImage(@Param("memberId") Long memberId,
                                                                 Pageable pageable);
 
     boolean existsByProductIdAndMemberId(Long productId, Long memberId);
-
-    Long countByProductId(@Param("productId") Long productId);
 }
