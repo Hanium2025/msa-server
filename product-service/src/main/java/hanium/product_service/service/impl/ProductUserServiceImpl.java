@@ -13,7 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,19 +26,8 @@ public class ProductUserServiceImpl implements ProductUserService {
     // memberId별 판매 상품 기반한 주요 활동 카테고리 최대 2개 반환
     @Override
     public List<String> getMainCategoryByMemberId(Long memberId) {
-        Pageable pageable = PageRequest.of(0, 100);
-        Page<Category> productList = productRepository.findProductCategoryBySellerId(memberId, pageable);
-        List<String> result = new ArrayList<>();
-        for (Category item : productList) {
-            String label = item.getLabel();
-            if (!result.contains(label)) {
-                result.add(label);
-            }
-            if (result.size() == 2) {
-                return result;
-            }
-        }
-        return result;
+        List<Category> productList = productRepository.findProductCategoryBySellerId(memberId);
+        return productList.stream().map(Category::getLabel).toList();
     }
 
     // memberId가 sellerId인 상품 목록 반환

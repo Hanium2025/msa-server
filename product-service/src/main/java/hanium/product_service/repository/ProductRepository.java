@@ -242,20 +242,15 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query(
             value = """
                     select p.category
-                    from Product p
-                    where p.sellerId = :memberId
-                    and p.deletedAt is null
+                    from product p
+                    where p.seller_id = :memberId
                     group by p.category
-                    order by count(p) desc
+                    order by count(*) desc
+                    limit 2
                     """,
-            countQuery = """
-                    select count(distinct p.category)
-                    from Product p
-                    where p.sellerId = :memberId
-                    and p.deletedAt is null
-                    """
+            nativeQuery = true
     )
-    Page<Category> findProductCategoryBySellerId(@Param("memberId") Long memberId, Pageable pageable);
+    List<Category> findProductCategoryBySellerId(@Param("memberId") Long memberId);
 
     // memberId로 product 조회
     @Query(

@@ -4,6 +4,7 @@ import hanium.common.exception.CustomException;
 import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.product.ProductMainRequest;
 import hanium.common.proto.product.ProductServiceGrpc;
+import hanium.user_service.dto.response.SimpleProductDTO;
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,20 @@ public class ProductUserGrpcClient {
         try {
             ProductMainRequest request = ProductMainRequest.newBuilder().setMemberId(memberId).build();
             return stub.getMainCategory(request).getCategoryList().stream().toList();
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 상대 프로필 > 판매 사품 조회
+    public List<SimpleProductDTO> getSellingProducts(Long memberId) {
+        try {
+            ProductMainRequest request = ProductMainRequest.newBuilder().setMemberId(memberId).build();
+            return stub.getSellingProducts(request)
+                    .getProductsList()
+                    .stream()
+                    .map(SimpleProductDTO::from)
+                    .toList();
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }

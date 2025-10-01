@@ -28,6 +28,7 @@ public enum ErrorCode {
     AUTHORITY_NOT_FOUND(404, "사용자의 권한을 조회할 수 없습니다."),
     REFRESH_NOT_FOUND(404, "데이터베이스에서 Refresh 토큰을 찾을 수 없습니다."),
     INVALID_PROFILE_IMAGE_TYPE(400, "프로필 사진은 image 형식만 등록할 수 있습니다."),
+    OTHER_PROFILE_ERROR(400, "내 프로필은 '상대 프로필 조회' API로 조회할 수 없습니다."),
 
     // -- PRODUCT-SERVICE -- //
     ERROR_ADD_PRODUCT(500, "상품 등록 중 문제가 발생했습니다."),
@@ -60,7 +61,7 @@ public enum ErrorCode {
     FORBIDDEN(403, "해당 요청에 대한 권한이 없습니다."),
     ALREADY_REVIEWED(409, "이미 리뷰가 작성된 거래입니다."),
     NOT_FOUND_TRADE(400, "해당 거래는 없습니다."),
-    FAIL_TRADE_DONE_CHAT(404,"거래 완료 메시지 수신 실패"),
+    FAIL_TRADE_DONE_CHAT(404, "거래 완료 메시지 수신 실패"),
     DELIVERY_NOT_FOUND(404, "해당 배송 정보를 찾을 수 없습니다."),
     API_CALL_FAIL(502, "sweet-tracker api 호출을 실해하였습니다."),
     ;
