@@ -262,12 +262,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                         from (
                             select product_id, min(id) as first_image_id
                             from product_image
+                            where deleted_at is null
                             group by product_id
                         ) pi1
                         join product_image pi2
                           on pi2.id = pi1.first_image_id
                     ) pi on pi.product_id = p.id
                     where p.seller_id = :memberId
+                      and p.deleted_at is null
                     order by p.id desc
                     """,
             nativeQuery = true)
@@ -294,6 +296,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                           and t.buyer_id = :memberId
                           and t.trade_status = 'COMPLETED'
                     )
+                      and p.deleted_at is null
                     order by p.id desc
                     """,
             nativeQuery = true)
