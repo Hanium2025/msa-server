@@ -43,7 +43,7 @@ public class ChatServiceImpl implements ChatService {
     // userId → StreamObserver 저장
     private final ConcurrentHashMap<Long, StreamObserver<ChatResponseMessage>> userStreamMap = new ConcurrentHashMap<>();
     private final PlatformTransactionManager txm;
-
+    private final ChatroomUpsertDao chatroomUpsertDao;
     // 읽기 전용 템플릿
     private TransactionTemplate readTx() {
         TransactionTemplate t = new TransactionTemplate(txm);
@@ -59,41 +59,50 @@ public class ChatServiceImpl implements ChatService {
         return t;
     }
 
-    @Override
-    public CreateChatroomResponseDTO createChatroom(CreateChatroomRequestDTO requestDTO) {
-        Long productId = requestDTO.getProductId();
-        Long senderId = requestDTO.getSenderId(); //구매자
-        Long receiverId = requestDTO.getReceiverId(); //판매자
-
-        // 1) 빠른 중복 채팅방 조회 (읽기 전용 트랜잭션)
-        Chatroom existing = readTx().execute(st ->
-                chatroomRepository.findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId).orElse(null)
-        );
-        if (existing != null) return new CreateChatroomResponseDTO(existing.getId(), "기존 채팅방입니다");
-
-        // 2) 새 트랜잭션으로 '삽입 시도'
-        Long createdId = null;
-        try {
-            createdId = newTx().execute(st ->
-                    chatroomRepository.saveAndFlush(Chatroom.from(requestDTO)).getId()
-            );
-        } catch (DataIntegrityViolationException e) {
-            // 경합에서 진 경우: 이 트랜잭션만 롤백되고 바깥에는 영향 없음
-        }
-
-        if (createdId != null) {
-            return new CreateChatroomResponseDTO(createdId, "채팅방 생성 성공");
-        }
-
-
-        // 3) 패자 경로: 또 다른 깨끗한 컨텍스트에서 재조회
-        Chatroom winner = readTx().execute(st ->
-                chatroomRepository.findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId)
-                        .orElseThrow(() -> new IllegalStateException("동시성 경합 후에도 행이 없음"))
-        );
-        return new CreateChatroomResponseDTO(winner.getId(), "기존 채팅방입니다");
-    }
-
+//    @Override
+//    public CreateChatroomResponseDTO createChatroom(CreateChatroomRequestDTO requestDTO) {
+//        Long productId = requestDTO.getProductId();
+//        Long senderId = requestDTO.getSenderId(); //구매자
+//        Long receiverId = requestDTO.getReceiverId(); //판매자
+//
+//        // 1) 빠른 중복 채팅방 조회 (읽기 전용 트랜잭션)
+//        Chatroom existing = readTx().execute(st ->
+//                chatroomRepository.findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId).orElse(null)
+//        );
+//        if (existing != null) return new CreateChatroomResponseDTO(existing.getId(), "기존 채팅방입니다");
+//
+//        // 2) 새 트랜잭션으로 '삽입 시도'
+//        Long createdId = null;
+//        try {
+//            createdId = newTx().execute(st ->
+//                    chatroomRepository.saveAndFlush(Chatroom.from(requestDTO)).getId()
+//            );
+//        } catch (DataIntegrityViolationException e) {
+//            // 경합에서 진 경우: 이 트랜잭션만 롤백되고 바깥에는 영향 없음
+//        }
+//
+//        if (createdId != null) {
+//            return new CreateChatroomResponseDTO(createdId, "채팅방 생성 성공");
+//        }
+//
+//
+//        // 3) 패자 경로: 또 다른 깨끗한 컨텍스트에서 재조회
+//        Chatroom winner = readTx().execute(st ->
+//                chatroomRepository.findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId)
+//                        .orElseThrow(() -> new IllegalStateException("동시성 경합 후에도 행이 없음"))
+//        );
+//        return new CreateChatroomResponseDTO(winner.getId(), "기존 채팅방입니다");
+//    }
+@Override
+@Transactional
+public CreateChatroomResponseDTO createChatroom(CreateChatroomRequestDTO dto) {
+    long id = chatroomUpsertDao.upsertAndGetId(
+            dto.getProductId(),
+            dto.getSenderId(),   // 구매자
+            dto.getReceiverId()  // 판매자
+    );
+    return new CreateChatroomResponseDTO(id, "채팅방 생성 성공"); // 멱등 결과
+}
     @Override
     public StreamObserver<ChatMessage> chat(StreamObserver<ChatResponseMessage> responseObserver) {
         return new StreamObserver<>() {
