@@ -14,11 +14,18 @@ import hanium.product_service.repository.*;
 import hanium.product_service.service.ChatMessageTxService;
 import hanium.product_service.service.ChatService;
 import io.grpc.stub.StreamObserver;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,27 +46,56 @@ public class ChatServiceImpl implements ChatService {
     private final ChatroomTradeInfoRepository chatroomTradeInfoRepository;
     // userId → StreamObserver 저장
     private final ConcurrentHashMap<Long, StreamObserver<ChatResponseMessage>> userStreamMap = new ConcurrentHashMap<>();
+    private final PlatformTransactionManager txm;
 
-    @Transactional
+    // 읽기 전용 템플릿
+    private TransactionTemplate readTx() {
+        TransactionTemplate t = new TransactionTemplate(txm);
+        t.setReadOnly(true);
+        t.setPropagationBehavior(TransactionDefinition.PROPAGATION_SUPPORTS);
+        return t;
+    }
+
+    // 새 트랜잭션 템플릿 (삽입 시도)
+    private TransactionTemplate newTx() {
+        TransactionTemplate t = new TransactionTemplate(txm);
+        t.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        return t;
+    }
+
     @Override
     public CreateChatroomResponseDTO createChatroom(CreateChatroomRequestDTO requestDTO) {
         Long productId = requestDTO.getProductId();
         Long senderId = requestDTO.getSenderId(); //구매자
         Long receiverId = requestDTO.getReceiverId(); //판매자
-        // 1. 중복 채팅방 조회
-        Optional<Chatroom> existing = chatroomRepository
-                .findByProductIdAndMembers(productId, senderId, receiverId);
 
-        if (existing.isPresent()) {
-            return new CreateChatroomResponseDTO(existing.get().getId(), "기존 채팅방입니다");
+        // 1) 빠른 중복 채팅방 조회 (읽기 전용 트랜잭션)
+        Chatroom existing = readTx().execute(st ->
+                chatroomRepository.findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId).orElse(null)
+        );
+        if (existing != null) return new CreateChatroomResponseDTO(existing.getId(), "기존 채팅방입니다");
+
+        // 2) 새 트랜잭션으로 '삽입 시도'
+        Long createdId = null;
+        try {
+            createdId = newTx().execute(st ->
+                    chatroomRepository.saveAndFlush(Chatroom.from(requestDTO)).getId()
+            );
+        } catch (DataIntegrityViolationException e) {
+            // 경합에서 진 경우: 이 트랜잭션만 롤백되고 바깥에는 영향 없음
         }
 
-        // 5. 채팅방 저장
-        Chatroom chatroom = Chatroom.from(requestDTO);
-        // 중복 채팅방 검사
+        if (createdId != null) {
+            return new CreateChatroomResponseDTO(createdId, "채팅방 생성 성공");
+        }
 
-        Chatroom saved = chatroomRepository.save(chatroom);
-        return new CreateChatroomResponseDTO(saved.getId(), "채팅방 생성 성공");
+
+        // 3) 패자 경로: 또 다른 깨끗한 컨텍스트에서 재조회
+        Chatroom winner = readTx().execute(st ->
+                chatroomRepository.findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId)
+                        .orElseThrow(() -> new IllegalStateException("동시성 경합 후에도 행이 없음"))
+        );
+        return new CreateChatroomResponseDTO(winner.getId(), "기존 채팅방입니다");
     }
 
     @Override
@@ -209,10 +245,11 @@ public class ChatServiceImpl implements ChatService {
         }
         return dtos;
     }
+
     //구매자 아이디로 판매자 아이디 받을 떄
     @Override
     public TradeInfoDTO getTradeInfoByChatroomIdAndMemberId(Long chatroomId, Long memberId) {
-        TradeInfoDTO tradeInfoDTO = chatroomTradeInfoRepository.findTradeInfoByChatroomIdAndMemberId(chatroomId,memberId);
+        TradeInfoDTO tradeInfoDTO = chatroomTradeInfoRepository.findTradeInfoByChatroomIdAndMemberId(chatroomId, memberId);
         return tradeInfoDTO;
     }
 
