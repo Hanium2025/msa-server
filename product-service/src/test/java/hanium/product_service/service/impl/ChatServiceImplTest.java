@@ -12,12 +12,9 @@ import hanium.product_service.dto.response.CreateChatroomResponseDTO;
 import hanium.product_service.dto.response.GetMyChatroomResponseDTO;
 import hanium.product_service.dto.response.ProfileResponseDTO;
 import hanium.product_service.grpc.ProfileGrpcClient;
-import hanium.product_service.repository.ChatRepository;
-import hanium.product_service.repository.ChatroomRepository;
-import hanium.product_service.repository.MessageImageRepository;
+import hanium.product_service.repository.*;
 
 
-import hanium.product_service.repository.ProductRepository;
 import hanium.product_service.service.ChatMessageTxService;
 import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,80 +65,42 @@ public class ChatServiceImplTest {
     @InjectMocks
     ChatServiceImpl sut; //테스트 대상
 
+    @Mock ChatroomUpsertDao chatroomUpsertDao;
 
     @Test
-    @DisplayName("createChatroom: 중복 채팅방 존재 -> 새로 생성하지 않고 기존 방 ID 반환")
-    void createChatroom_existingRoom_returnExistingRoom() {
-        //given
-        Long productId = 10L, senderId = 1L, receiverId = 2L;
+    @DisplayName("createChatroom: UPSERT로 id 반환(멱등 엔드포인트)")
+    void createChatroom_upsert_returnsId() {
+        long productId = 10L, senderId = 1L, receiverId = 2L;
+        var req = CreateChatroomRequestDTO.builder()
+                .productId(productId).senderId(senderId).receiverId(receiverId).build();
 
-        CreateChatroomRequestDTO req = CreateChatroomRequestDTO.builder()
-                .productId(productId)
-                .receiverId(receiverId)
-                .senderId(senderId).build();
+        given(chatroomUpsertDao.upsertAndGetId(productId, senderId, receiverId)).willReturn(777L);
 
-        Chatroom existing = Chatroom.builder().productId(productId).receiverId(receiverId).senderId(senderId).build();
+        var res = sut.createChatroom(req);
 
-        given(chatroomRepository.findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId))
-                .willReturn(Optional.of(existing));
-
-        //when
-        CreateChatroomResponseDTO res = sut.createChatroom(req);
-
-        //then
-        then(chatroomRepository).should().findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId);
-        then(chatroomRepository).should(never()).saveAndFlush(any(Chatroom.class));
-        assertThat(res.getChatroomId()).isEqualTo(existing.getId());
-        assertThat(res.getMessage()).isEqualTo("기존 채팅방입니다");
+        assertThat(res.getChatroomId()).isEqualTo(777L);
+        assertThat(res.getMessage()).isNotBlank(); // 메시지는 고정 문구여도 OK
+        verify(chatroomUpsertDao).upsertAndGetId(productId, senderId, receiverId);
+        verifyNoInteractions(chatroomRepository); // 선택
     }
 
     @Test
-    @DisplayName("createChatroom : 중복 채팅방 없음 -> 새로 생성하고 id 반환")
-    void createChatroom_noExistingRoom_createNewRoom() {
+    @DisplayName("createChatroom: 같은 키로 2번 호출해도 동일 ID 반환(멱등)")
+    void createChatroom_doubleCall_sameId() {
+        long productId = 10L, senderId = 1L, receiverId = 2L;
+        var req = CreateChatroomRequestDTO.builder()
+                .productId(productId).senderId(senderId).receiverId(receiverId).build();
 
-        Long productId = 10L, senderId = 1L, receiverId = 2L;
-        var req = CreateChatroomRequestDTO.builder().productId(productId).senderId(senderId)
-                .receiverId(receiverId).build();
-        //given
-        given(chatroomRepository.findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId))
-                .willReturn(Optional.empty());
+        given(chatroomUpsertDao.upsertAndGetId(productId, senderId, receiverId)).willReturn(777L);
 
-        // save에 들어가는 실제 파라미터 캡쳐
-        ArgumentCaptor<Chatroom> captor = ArgumentCaptor.forClass(Chatroom.class);
+        var r1 = sut.createChatroom(req);
+        var r2 = sut.createChatroom(req);
 
-        //저장 결과
-        given(chatroomRepository.saveAndFlush(any(Chatroom.class)))
-                .willAnswer(invocation -> {
-                    Chatroom c = invocation.getArgument(0); // 실제로 save()에 들어온 객체
-                    return Chatroom.builder()
-                            .id(999L) // DB에서 채번된 것처럼 ID 넣기
-                            .productId(c.getProductId())
-                            .senderId(c.getSenderId())
-                            .receiverId(c.getReceiverId())
-                            .latestContentTime(c.getLatestContentTime())
-                            .build();
-                });
-
-        //when
-        CreateChatroomResponseDTO responseDTO = sut.createChatroom(req);
-
-
-        //then
-        assertThat(responseDTO.getChatroomId()).isEqualTo(999L);
-        assertThat(responseDTO.getMessage()).isEqualTo("채팅방 생성 성공");
-
-        then(chatroomRepository).should().findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId);
-        then(chatroomRepository).should().saveAndFlush(captor.capture());
-
-        Chatroom saved = captor.getValue();
-
-        assertThat(saved.getProductId()).isEqualTo(productId);
-        assertThat(saved.getSenderId()).isEqualTo(senderId);
-        assertThat(saved.getReceiverId()).isEqualTo(receiverId);
-
-        assertThat(responseDTO.getChatroomId()).isEqualTo(999L);
-        assertThat(responseDTO.getMessage()).isEqualTo("채팅방 생성 성공");
+        assertThat(r1.getChatroomId()).isEqualTo(777L);
+        assertThat(r2.getChatroomId()).isEqualTo(777L);
+        verify(chatroomUpsertDao, times(2)).upsertAndGetId(productId, senderId, receiverId);
     }
+
 
     @Test
     @DisplayName("getAllMessageByChatroomId : 특정 채팅방의 모든 메시지 조회")
@@ -357,34 +316,6 @@ public class ChatServiceImplTest {
     }
 
 
-    @DisplayName("동일 키 동시 호출 시 1건만 생성, 나머지는 기존 방 반환")
-    @Test
-    void createChatroom_concurrent_uniqueCollision_returnsExisting(){
-
-        Long productId = 10L;
-        Long a = 1L;
-        Long b = 2L;
-
-        var request = CreateChatroomRequestDTO.builder().productId(productId).senderId(a).receiverId(b).build();
-
-        //최초엔 없음 -> 첫 save 성공, 이후는 findBy.. 에서 존재 응답
-        //동시 생성 경쟁 -> UNIQUE 충돌 -> 한 건만 insert, 나머지는 재조회로 기존 방 반환
-        given(chatroomRepository.findByProductIdAndSenderIdAndReceiverId(productId,a,b))
-                .willReturn(Optional.empty()) //첫 쓰레드
-                .willReturn(Optional.of(Chatroom.builder().id(777L).productId(productId).senderId(a).receiverId(b).build()));
-
-
-        given(chatroomRepository.saveAndFlush(any(Chatroom.class)))
-                .willAnswer(inv -> Chatroom.builder().id(777L).productId(productId).senderId(a).receiverId(b).build());
-
-
-        var result1 =sut.createChatroom(request);
-        var result2 = sut.createChatroom(request);
-
-        assertThat(result1.getChatroomId()).isEqualTo(777L);
-        assertThat(result2.getChatroomId()).isEqualTo(777L);
-
-    }
 
 
 }
