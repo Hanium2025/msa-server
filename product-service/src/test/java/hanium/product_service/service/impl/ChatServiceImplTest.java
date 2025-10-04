@@ -20,6 +20,7 @@ import hanium.product_service.repository.MessageImageRepository;
 import hanium.product_service.repository.ProductRepository;
 import hanium.product_service.service.ChatMessageTxService;
 import io.grpc.stub.StreamObserver;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +29,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.PlatformTransactionManager;
+
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -40,8 +43,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.*;
 
 
 //단위 테스트 : Mock으로 외부 다 막고, 서비스 로직만 빠르게 검증
@@ -62,7 +64,7 @@ public class ChatServiceImplTest {
     ProfileGrpcClient profileGrpcClient;
     @Mock
     ProductRepository productRepository;
-
+    @Mock PlatformTransactionManager txm;
     @InjectMocks
     ChatServiceImpl sut; //테스트 대상
 
@@ -80,15 +82,15 @@ public class ChatServiceImplTest {
 
         Chatroom existing = Chatroom.builder().productId(productId).receiverId(receiverId).senderId(senderId).build();
 
-        given(chatroomRepository.findByProductIdAndMembers(productId, senderId, receiverId))
+        given(chatroomRepository.findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId))
                 .willReturn(Optional.of(existing));
 
         //when
         CreateChatroomResponseDTO res = sut.createChatroom(req);
 
         //then
-        then(chatroomRepository).should().findByProductIdAndMembers(productId, senderId, receiverId);
-        then(chatroomRepository).should(never()).save(any(Chatroom.class));
+        then(chatroomRepository).should().findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId);
+        then(chatroomRepository).should(never()).saveAndFlush(any(Chatroom.class));
         assertThat(res.getChatroomId()).isEqualTo(existing.getId());
         assertThat(res.getMessage()).isEqualTo("기존 채팅방입니다");
     }
@@ -96,18 +98,19 @@ public class ChatServiceImplTest {
     @Test
     @DisplayName("createChatroom : 중복 채팅방 없음 -> 새로 생성하고 id 반환")
     void createChatroom_noExistingRoom_createNewRoom() {
+
         Long productId = 10L, senderId = 1L, receiverId = 2L;
         var req = CreateChatroomRequestDTO.builder().productId(productId).senderId(senderId)
                 .receiverId(receiverId).build();
         //given
-        given(chatroomRepository.findByProductIdAndMembers(productId, senderId, receiverId))
+        given(chatroomRepository.findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId))
                 .willReturn(Optional.empty());
 
         // save에 들어가는 실제 파라미터 캡쳐
         ArgumentCaptor<Chatroom> captor = ArgumentCaptor.forClass(Chatroom.class);
 
         //저장 결과
-        given(chatroomRepository.save(any(Chatroom.class)))
+        given(chatroomRepository.saveAndFlush(any(Chatroom.class)))
                 .willAnswer(invocation -> {
                     Chatroom c = invocation.getArgument(0); // 실제로 save()에 들어온 객체
                     return Chatroom.builder()
@@ -127,8 +130,8 @@ public class ChatServiceImplTest {
         assertThat(responseDTO.getChatroomId()).isEqualTo(999L);
         assertThat(responseDTO.getMessage()).isEqualTo("채팅방 생성 성공");
 
-        then(chatroomRepository).should().findByProductIdAndMembers(productId, senderId, receiverId);
-        then(chatroomRepository).should().save(captor.capture());
+        then(chatroomRepository).should().findByProductIdAndSenderIdAndReceiverId(productId, senderId, receiverId);
+        then(chatroomRepository).should().saveAndFlush(captor.capture());
 
         Chatroom saved = captor.getValue();
 
@@ -350,6 +353,36 @@ public class ChatServiceImplTest {
         then(responseObserver).should().onCompleted();
         ;
 
+
+    }
+
+
+    @DisplayName("동일 키 동시 호출 시 1건만 생성, 나머지는 기존 방 반환")
+    @Test
+    void createChatroom_concurrent_uniqueCollision_returnsExisting(){
+
+        Long productId = 10L;
+        Long a = 1L;
+        Long b = 2L;
+
+        var request = CreateChatroomRequestDTO.builder().productId(productId).senderId(a).receiverId(b).build();
+
+        //최초엔 없음 -> 첫 save 성공, 이후는 findBy.. 에서 존재 응답
+        //동시 생성 경쟁 -> UNIQUE 충돌 -> 한 건만 insert, 나머지는 재조회로 기존 방 반환
+        given(chatroomRepository.findByProductIdAndSenderIdAndReceiverId(productId,a,b))
+                .willReturn(Optional.empty()) //첫 쓰레드
+                .willReturn(Optional.of(Chatroom.builder().id(777L).productId(productId).senderId(a).receiverId(b).build()));
+
+
+        given(chatroomRepository.saveAndFlush(any(Chatroom.class)))
+                .willAnswer(inv -> Chatroom.builder().id(777L).productId(productId).senderId(a).receiverId(b).build());
+
+
+        var result1 =sut.createChatroom(request);
+        var result2 = sut.createChatroom(request);
+
+        assertThat(result1.getChatroomId()).isEqualTo(777L);
+        assertThat(result2.getChatroomId()).isEqualTo(777L);
 
     }
 
