@@ -1,6 +1,8 @@
 package hanium.product_service.service.impl;
 
 import hanium.product_service.dto.request.CreateChatroomRequestDTO;
+import hanium.product_service.elasticsearch.ProductSearchElasticRepository;
+import hanium.product_service.elasticsearch.ProductSearchIndexer;
 import hanium.product_service.grpc.ProductGrpcService;
 import hanium.product_service.repository.ChatroomRepository;
 import hanium.product_service.util.SweetTrackerUtil;
@@ -28,7 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 //grpc 서버는 띄우지 X
 @SpringBootTest(properties = {
         "spring.autoconfigure.exclude=net.devh.boot.grpc.server.autoconfigure.GrpcServerMetricAutoConfiguration",
-        "grpc.server.port=-1"
+        "grpc.server.port=-1",
+
 })
 @Testcontainers
 @ActiveProfiles("test")
@@ -51,6 +54,10 @@ public class ChatServiceConcurrencyTest {
 
     @MockBean
     TossPaymentServiceImpl  tossPaymentServiceImpl;
+    @MockBean
+    ProductSearchIndexer productSearchIndexer;
+    @MockBean
+    ProductSearchElasticRepository productSearchElasticRepository;
 
     @RepeatedTest(value = 2, name = "{displayName} {currentRepetition}/{totalRepetitions}")
     @DisplayName("동시에 같은 키로 2번 생성 시도해도 1행만 생성되고 같은 방 ID 반환")
