@@ -7,6 +7,13 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(
+        name="chatroom",
+        uniqueConstraints = @UniqueConstraint(
+                name="ux_chatroom_tuple",
+                columnNames = {"product_id","sender_id","receiver_id"}
+        )
+)
 @Getter
 @Builder
 @NoArgsConstructor
@@ -27,11 +34,6 @@ public class Chatroom extends BaseEntity{
 
     @Column
     private LocalDateTime latestContentTime;
-
-//    @Column
-//    private String opponentProfileUrl;
-//    @Column
-//    private String opponentNickname;
 
     public static Chatroom from(CreateChatroomRequestDTO dto) {
         return Chatroom.builder()
