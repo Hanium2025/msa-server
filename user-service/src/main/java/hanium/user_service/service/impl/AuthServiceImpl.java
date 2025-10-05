@@ -61,7 +61,7 @@ public class AuthServiceImpl implements AuthService {
             memberRepository.save(member);
             profileRepository.save(profile);
 
-            log.info("✅ [회원가입 완료] Profile id={} for Member id={}", profile.getId(), member.getId());
+            log.info("✅ [회원가입 완료]: Profile id={} for Member id={}", profile.getId(), member.getId());
 
             return member;
         }
