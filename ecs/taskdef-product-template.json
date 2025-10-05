@@ -12,34 +12,43 @@
       "name": "product-service-task",
       "image": "${IMAGE_URI}",
       "essential": true,
+      "cpu": 0,
       "portMappings": [
         {
           "containerPort": 8084,
           "hostPort": 8084,
-          "protocol": "tcp"
+          "protocol": "tcp",
+          "name": "product-service-task-8084-tcp",
+          "appProtocol": "http"
         },
         {
-          "appProtocol": "grpc",
           "containerPort": 50051,
           "hostPort": 50051,
-          "protocol": "tcp"
+          "protocol": "tcp",
+          "name": "product-service-task-50051-tcp",
+          "appProtocol": "grpc"
         }
       ],
       "environment": [
-        {
-          "name": "SPRING_PROFILES_ACTIVE",
-          "value": "prod"
-        },
-        {
-          "name": "SPRING_APPLICATION_NAME",
-          "value": "product-service"
-        }
+        { "name": "EUREKA_CLIENT_ENABLED", "value": "true" },
+        { "name": "GRPC_PORT", "value": "50051" },
+        { "name": "EUREKA_INSTANCE_HOSTNAME", "value": "product-service.hanium.local" },
+        { "name": "DB_PORT", "value": "3306" },
+        { "name": "SPRING_CONFIG_IMPORT", "value": "configserver:http://config-service.hanium.local:8888" },
+        { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" },
+        { "name": "SPRING_APPLICATION_NAME", "value": "product-service" },
+        { "name": "SPRING_ELASTICSEARCH_URIS", "value": "http://10.0.142.27:9200" },
+        { "name": "ZIPKIN_ENDPOINT", "value": "http://zipkin-service.hanium.local:9411/api/v2/spans" },
+        { "name": "EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE", "value": "http://discovery-service.hanium.local:8761/eureka" }
+      ],
+      "secrets": [
+        { "name": "DB_HOST", "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:826331271523:secret:prod/mysql/product-service-b6oExO:host::" },
+        { "name": "DB_NAME", "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:826331271523:secret:prod/mysql/product-service-b6oExO:name::" },
+        { "name": "DB_PASSWORD", "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:826331271523:secret:prod/mysql/product-service-b6oExO:password::" },
+        { "name": "DB_USER", "valueFrom": "arn:aws:secretsmanager:ap-northeast-2:826331271523:secret:prod/mysql/product-service-b6oExO:username::" }
       ],
       "healthCheck": {
-        "command": [
-          "CMD-SHELL",
-          "curl -f http://localhost:8084/actuator/health || exit 1"
-        ],
+        "command": [ "CMD-SHELL", "curl -f http://localhost:8084/actuator/health || exit 1" ],
         "interval": 30,
         "retries": 3,
         "startPeriod": 120,
@@ -49,9 +58,31 @@
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/product-service-task",
+          "awslogs-create-group": "true",
           "awslogs-region": "ap-northeast-2",
           "awslogs-stream-prefix": "ecs"
         }
+      }
+    },
+    {
+      "name": "redis",
+      "image": "redis:7-alpine",
+      "essential": false,
+      "cpu": 0,
+      "portMappings": [
+        {
+          "containerPort": 6379,
+          "hostPort": 6379,
+          "protocol": "tcp",
+          "name": "redis-6379-tcp"
+        }
+      ],
+      "healthCheck": {
+        "command": [ "CMD-SHELL", "redis-cli ping | grep PONG || exit 1" ],
+        "interval": 5,
+        "timeout": 3,
+        "retries": 5,
+        "startPeriod": 5
       }
     }
   ]

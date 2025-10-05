@@ -43,7 +43,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         Delivery delivery = Delivery.of(trade, dto);
         deliveryRepository.save(delivery);
         tradeRepository.updateStatus(trade.getChatroom().getId(), TradeStatus.SHIPPED);
-        log.info("✅ {} 거래 {} 송장 등록 성공", dto.getTradeId(), dto.getInvoiceNo());
+        log.info("✅ {} 거래에 대한 {} 송장 등록 성공", dto.getTradeId(), dto.getInvoiceNo());
     }
 
     @Override
