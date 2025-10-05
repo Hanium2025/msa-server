@@ -4,12 +4,14 @@ import hanium.apigateway_service.dto.user.request.LoginRequestDTO;
 import hanium.apigateway_service.dto.user.request.SignUpRequestDTO;
 import hanium.apigateway_service.dto.user.request.UpdateProfileRequestDTO;
 import hanium.apigateway_service.dto.user.request.VerifySmsRequestDTO;
+import hanium.apigateway_service.dto.user.response.OtherProfileResponseDTO;
 import hanium.apigateway_service.dto.user.response.PresignedUrlResponseDTO;
 import hanium.apigateway_service.dto.user.response.ProfileDetailResponseDTO;
 import hanium.apigateway_service.dto.user.response.ProfileResponseDTO;
 import hanium.apigateway_service.mapper.UserGrpcMapperForGateway;
 import hanium.apigateway_service.security.JwtUtil;
 import hanium.common.exception.CustomException;
+import hanium.common.exception.ErrorCode;
 import hanium.common.exception.GrpcUtil;
 import hanium.common.proto.common.Empty;
 import hanium.common.proto.user.*;
@@ -187,6 +189,19 @@ public class UserGrpcClient {
         GetProfileRequest request = GetProfileRequest.newBuilder().setMemberId(memberId).build();
         try {
             return stub.toggleThirdParty(request).getMessage();
+        } catch (StatusRuntimeException e) {
+            throw new CustomException(GrpcUtil.extractErrorCode(e));
+        }
+    }
+
+    // 타 사용자 프로필 조회
+    public OtherProfileResponseDTO getOtherProfile(Long myId, Long memberId) {
+        if (myId.equals(memberId)) {
+            throw new CustomException(ErrorCode.OTHER_PROFILE_ERROR);
+        }
+        GetProfileRequest request = GetProfileRequest.newBuilder().setMemberId(memberId).build();
+        try {
+            return OtherProfileResponseDTO.from(stub.getOtherProfile(request));
         } catch (StatusRuntimeException e) {
             throw new CustomException(GrpcUtil.extractErrorCode(e));
         }

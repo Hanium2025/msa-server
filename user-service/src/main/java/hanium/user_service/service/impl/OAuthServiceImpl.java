@@ -1,5 +1,6 @@
 package hanium.user_service.service.impl;
 
+import hanium.user_service.config.AwsConfig;
 import hanium.user_service.domain.*;
 import hanium.user_service.dto.response.*;
 import hanium.user_service.repository.MemberRepository;
@@ -57,6 +58,9 @@ public class OAuthServiceImpl implements OAuthService {
     private final ProfileRepository profileRepository;
     private final RefreshTokenRepository refreshRepository;
     private final JwtUtil jwtUtil;
+    private final AwsConfig awsConfig;
+
+    private final String DEFAULT_PROFILE = "default/default_profile.png";
 
     /**
      * application.yml에 설정된 카카오 로그인 client id와 redirect uri를 반환합니다.
@@ -218,10 +222,19 @@ public class OAuthServiceImpl implements OAuthService {
                 .email(kakaoUser.getEmail()).provider(Provider.KAKAO).role(Role.USER)
                 .isAgreeMarketing(false).isAgreeThirdParty(false)
                 .build();
+
+        String imageUrl = awsConfig.getDomain() + DEFAULT_PROFILE;
+        if (kakaoProfile.getProfileImageUrl() != null
+                && !kakaoProfile.getProfileImageUrl().isBlank()
+                && kakaoProfile.getIsDefaultImage().equals("false")) {
+            imageUrl = kakaoProfile.getProfileImageUrl();
+        }
         Profile profile = Profile.builder()
                 .nickname(kakaoProfile.getNickName())
-                .imageUrl(kakaoProfile.getProfileImageUrl())
+                .imageUrl(imageUrl)
+                .score(20L)
                 .member(member).build();
+
         memberRepository.save(member);
         profileRepository.save(profile);
         log.info("✅ [New Kakao Account Signup] Login Success: id={}", member.getId());
@@ -241,10 +254,18 @@ public class OAuthServiceImpl implements OAuthService {
                 .provider(Provider.NAVER).role(Role.USER)
                 .isAgreeMarketing(false).isAgreeThirdParty(false)
                 .build();
+
+        String imageUrl = awsConfig.getDomain() + DEFAULT_PROFILE;
+        if (naverUser.getProfileImage() != null
+                && !naverUser.getProfileImage().isBlank()) {
+            imageUrl = naverUser.getProfileImage();
+        }
         Profile profile = Profile.builder()
                 .nickname(naverUser.getNickname())
-                .imageUrl(naverUser.getProfileImage())
+                .imageUrl(imageUrl)
+                .score(20L)
                 .member(member).build();
+
         memberRepository.save(member);
         profileRepository.save(profile);
         log.info("✅ [New Naver Account Signup] Login Success: id={}", member.getId());

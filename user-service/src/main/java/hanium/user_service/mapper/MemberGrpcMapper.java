@@ -1,5 +1,6 @@
 package hanium.user_service.mapper;
 
+import hanium.common.proto.product.SimpleProductResponse;
 import hanium.common.proto.user.*;
 import hanium.user_service.dto.response.*;
 
@@ -90,6 +91,27 @@ public class MemberGrpcMapper {
                 .addAllMainCategory(dto.mainCategory())
                 .setAgreeMarketing(dto.agreeMarketing())
                 .setAgree3RdParty(dto.agree3rdParty())
+                .build();
+    }
+
+    // 타 사용자 프로필 조회
+    public static GetOtherProfileResponse toOtherProfileResponse(OtherProfileResponseDTO dto) {
+        return GetOtherProfileResponse.newBuilder()
+                .setMemberId(dto.memberId())
+                .setNickname(dto.nickname())
+                .setImageUrl(dto.imageUrl())
+                .setScore(dto.score())
+                .addAllMainCategory(dto.mainCategory())
+                .addAllProducts(dto.products().stream().map(MemberGrpcMapper::toSimpleProduct).toList())
+                .build();
+    }
+
+    private static SimpleProductResponse toSimpleProduct(SimpleProductDTO dto) {
+        return SimpleProductResponse.newBuilder()
+                .setProductId(dto.productId())
+                .setTitle(dto.title())
+                .setPrice(dto.price())
+                .setImageUrl(dto.imageUrl())
                 .build();
     }
 }

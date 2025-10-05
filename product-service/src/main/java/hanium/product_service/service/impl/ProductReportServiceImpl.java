@@ -5,6 +5,7 @@ import hanium.common.exception.ErrorCode;
 import hanium.product_service.domain.Product;
 import hanium.product_service.domain.ProductReport;
 import hanium.product_service.dto.request.ReportProductRequestDTO;
+import hanium.product_service.grpc.ProfileGrpcClient;
 import hanium.product_service.repository.ProductReportRepository;
 import hanium.product_service.repository.ProductRepository;
 import hanium.product_service.service.ProductReportService;
@@ -22,6 +23,7 @@ public class ProductReportServiceImpl implements ProductReportService {
 
     private final ProductRepository productRepository;
     private final ProductReportRepository reportRepository;
+    private final ProfileGrpcClient profileGrpcClient;
 
     @PersistenceContext
     private final EntityManager em;
@@ -34,5 +36,6 @@ public class ProductReportServiceImpl implements ProductReportService {
         Product productRef = em.getReference(Product.class, dto.getProductId());
         ProductReport report = ProductReport.of(productRef, dto);
         reportRepository.save(report);
+        profileGrpcClient.updateReliabilityScoreByReport(dto.getProductId());
     }
 }

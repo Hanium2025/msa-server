@@ -2,6 +2,7 @@ package hanium.apigateway_service.controller;
 
 import hanium.apigateway_service.dto.product.response.SimpleProductDTO;
 import hanium.apigateway_service.dto.user.request.UpdateProfileRequestDTO;
+import hanium.apigateway_service.dto.user.response.OtherProfileResponseDTO;
 import hanium.apigateway_service.dto.user.response.PresignedUrlResponseDTO;
 import hanium.apigateway_service.dto.user.response.ProfileDetailResponseDTO;
 import hanium.apigateway_service.dto.user.response.ProfileResponseDTO;
@@ -59,6 +60,18 @@ public class ProfileController {
         return ResponseEntity.ok(result);
     }
 
+    // 상대 프로필 상세 조회
+    @GetMapping("/{memberId}")
+    public ResponseEntity<ResponseDTO<OtherProfileResponseDTO>> getOtherProfile(Authentication authentication,
+                                                                                @PathVariable Long memberId) {
+        Long myId = (Long) authentication.getPrincipal();
+        OtherProfileResponseDTO dto = userGrpcClient.getOtherProfile(myId, memberId);
+        ResponseDTO<OtherProfileResponseDTO> result = new ResponseDTO<>(
+                dto, HttpStatus.OK, "ID=" + memberId + "의 프로필이 조회되었습니다."
+        );
+        return ResponseEntity.ok(result);
+    }
+
     // (마이페이지) 마케팅 동의 토글
     @PostMapping("/toggle/marketing")
     public ResponseEntity<?> toggleAgreeMarketing(Authentication authentication) {
@@ -84,6 +97,16 @@ public class ProfileController {
         List<SimpleProductDTO> result = productGrpcClient.getSellingProducts(memberId);
         ResponseDTO<List<SimpleProductDTO>> response =
                 new ResponseDTO<>(result, HttpStatus.OK, "내 판매내역이 조회되었습니다.");
+        return ResponseEntity.ok(response);
+    }
+
+    // 내 구매내역 조회
+    @GetMapping("/trade/buy")
+    public ResponseEntity<ResponseDTO<List<SimpleProductDTO>>> getBuyingProducts(Authentication authentication) {
+        Long memberId = (Long) authentication.getPrincipal();
+        List<SimpleProductDTO> result = productGrpcClient.getBuyingProducts(memberId);
+        ResponseDTO<List<SimpleProductDTO>> response =
+                new ResponseDTO<>(result, HttpStatus.OK, "내 구매내역이 조회되었습니다.");
         return ResponseEntity.ok(response);
     }
 }

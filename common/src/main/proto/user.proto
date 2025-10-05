@@ -6,6 +6,7 @@ option java_package = "hanium.common.proto.user";
 option java_multiple_files = true;
 
 import "common.proto";  // common.proto 파일 import
+import "product.proto";
 
 service UserService {
   // 1. 사용자 회원가입
@@ -54,6 +55,12 @@ service UserService {
   // 14. 마케팅/제3자 동의 토글
   rpc ToggleMarketing(GetProfileRequest) returns (SendSmsResponse);
   rpc ToggleThirdParty(GetProfileRequest) returns (SendSmsResponse);
+
+  // 15. 신뢰도 업데이트
+  rpc UpdateScore(UpdateScoreRequest) returns (Empty);
+
+  // 16. 상대 프로필 조회
+  rpc GetOtherProfile(GetProfileRequest) returns (GetOtherProfileResponse);
 }
 
 // 1. 회원가입
@@ -187,4 +194,20 @@ message UpdateProfileRequest {
   int64 member_id = 1;
   string nickname = 2;
   string image_url = 3;
+}
+
+// 15. 신뢰도 업데이트
+message UpdateScoreRequest {
+  int64 member_id = 1;
+  int32 amount = 2;
+}
+
+// 16. 상대 프로필 조회
+message GetOtherProfileResponse {
+  int64 member_id = 1;
+  string nickname = 2;
+  string image_url = 3;
+  int64 score = 4;
+  repeated string main_category = 5;
+  repeated product.SimpleProductResponse products = 6;
 }

@@ -401,8 +401,8 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         Long chatroomId = request.getChatroomId();
         Long memberId = request.getMemberId();
         log.info("거래 진행 조회 chatroomId : {} , 사용자 아이디 : {}", chatroomId, memberId);
-        TradeStatus status = tradeService.getTradeStatus(chatroomId, memberId);
-        TradeStatusResponse tradeStatusResponse = TradeStatusResponse.newBuilder().setStatus(status.name()).build();
+        TradeStatusDTO status = tradeService.getTradeStatus(chatroomId, memberId);
+        TradeStatusResponse tradeStatusResponse = TradeStatusResponse.newBuilder().setStatus(status.getStatus()).setTradeId(status.getTradeId()).setProductId(status.getProductId()).build();
         responseObserver.onNext(tradeStatusResponse);
         responseObserver.onCompleted();
     }
@@ -498,7 +498,7 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
 
     // 택배조회
     @Override
-    public void getDeliveryInfo(GetDeliveryInfoRequest request, StreamObserver<GetDeliveryInfoResponse>  responseObserver) {
+    public void getDeliveryInfo(GetDeliveryInfoRequest request, StreamObserver<GetDeliveryInfoResponse> responseObserver) {
         try {
             responseObserver.onNext(
                     TradeGrpcMapper.toGetDeliveryInfoResponseGrpc(
@@ -509,7 +509,6 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
         }
     }
-
 
     // 토스페이먼츠 거래 요청
     @Override
@@ -522,6 +521,32 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
             responseObserver.onCompleted();
         } catch (CustomException e) {
             log.info("⚠️ confirmPayment grpc server: 오류 발생");
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // memberId에 해당하는 판매 상품 조회
+    @Override
+    public void getSellingProducts(ProductMainRequest request, StreamObserver<SimpleProductsResponse> responseObserver) {
+        try {
+            List<SimpleProductDTO> dto = productUserService.getMySellingProducts(request.getMemberId());
+            SimpleProductsResponse response = ProductGrpcMapper.toSimpleProducts(dto);
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
+            responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
+        }
+    }
+
+    // memberId에 해당하는 구매 상품 조회
+    @Override
+    public void getBuyingProducts(ProductMainRequest request, StreamObserver<SimpleProductsResponse> responseObserver) {
+        try {
+            List<SimpleProductDTO> dto = productUserService.getMyBuyingProducts(request.getMemberId());
+            SimpleProductsResponse response = ProductGrpcMapper.toSimpleProducts(dto);
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+        } catch (CustomException e) {
             responseObserver.onError(GrpcUtil.generateException(e.getErrorCode()));
         }
     }

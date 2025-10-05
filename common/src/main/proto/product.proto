@@ -105,6 +105,8 @@ service ProductService {
   // 22. 사용자의 판매 상품 내역 조회
   rpc GetSellingProducts(ProductMainRequest) returns (SimpleProductsResponse);
 
+  // 23. 사용자의 구매 상품 내역 조회
+  rpc GetBuyingProducts(ProductMainRequest) returns (SimpleProductsResponse);
 }
 
 message Empty {}
@@ -376,6 +378,8 @@ message TradeResponse{
 //거래 진행사항 응답
 message TradeStatusResponse{
   string status = 1;
+  int64 tradeId = 2;
+  int64 productId = 3;
 }
 //거래 완료 응답 -> 리뷰 작성을 위한 tradeId 반환
 message CompleteTradeResponse{
