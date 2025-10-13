@@ -76,12 +76,7 @@ public ResponseEntity<ResponseDTO<List<ChatMessageResponseDTO>>> getAllMessagesB
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 채팅방 메시지 커서 조회
-     *  GET /api/chatrooms/45/messages?limit=20
-     *  GET /api/chatrooms/45/messages?cursor=...&direction=BEFORE&limit=20  (과거 더보기)
-     *  GET /api/chatrooms/45/messages?cursor=...&direction=AFTER&limit=20   (새 메시지 보강)
-     */
+    //채팅방 메시지 커서 조회
     @GetMapping("/{chatroomId}/messages")
     public ResponseEntity<ChatMessagesCursorDTO> getMessagesByCursor(
             @PathVariable Long chatroomId,
