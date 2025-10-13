@@ -305,6 +305,49 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
 
     }
 
+    @Override
+    public void getAllMessagesByCursor(GetMessagesByCursorRequest request, StreamObserver<GetMessagesByCursorResponse> responseObserver) {
+        Long chatroomId = request.getChatRoomId();
+        String cursor  = request.getCursor();
+        int limit = request.getLimit();
+        boolean isAfter = request.getDirection()== GetMessagesByCursorRequest.Direction.AFTER;
+        // 서비스에서 DTO + 커서/hasMore까지 한 번에 얻음
+        MessagesSliceDTO slice = chatService.getMessagesByCursor(chatroomId, cursor, limit,isAfter);
+        List<ChatMessageResponseDTO> items = slice.getItems();
+
+        GetMessagesByCursorResponse.Builder resp = GetMessagesByCursorResponse.newBuilder();
+
+
+        for (ChatMessageResponseDTO dto : items) {
+            ProfileResponseDTO profileResponseDTO = profileGrpcClient.getProfileByMemberId(dto.getReceiverId());
+            String nickname =  profileResponseDTO.getNickname();
+
+            ChatResponseMessage.Builder responseMessage =
+                    ChatResponseMessage.newBuilder()
+                            .setMessageId(dto.getMessageId())
+                            .setChatroomId(dto.getChatroomId())
+                            .setSenderId(dto.getSenderId())
+                            .setReceiverId(dto.getReceiverId())
+                            .setContent(dto.getContent())
+                            .setTimestamp(dto.getTimestamp())
+                            .setReceiverNickname(nickname)
+                            .setType(MessageType.valueOf(dto.getType()));
+
+            if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
+                responseMessage.addAllImageUrls(dto.getImageUrls());
+            }
+
+            resp.addChatResponseMessage(responseMessage);
+
+        }
+        if (slice.getPrevCursor() != null) resp.setPrevCursor(slice.getPrevCursor());
+        if (slice.getNextCursor() != null) resp.setNextCursor(slice.getNextCursor());
+        resp.setHasMore(slice.isHasMore());
+
+        responseObserver.onNext(resp.build());
+        responseObserver.onCompleted();
+    }
+
     //채팅방 생성
     @Override
     public void createChatroom(CreateChatroomRequest request, StreamObserver<CreateChatroomResponse> responseObserver) {

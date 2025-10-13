@@ -7,9 +7,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.Optional;
 
 @Entity
+@Table(name="message", indexes={
+        @Index(name="idx_chat_message_room_ts_id", columnList="chatroom_id, created_at, id")})
 @Getter
 @Builder
 @NoArgsConstructor
