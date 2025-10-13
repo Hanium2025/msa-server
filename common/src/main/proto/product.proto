@@ -67,6 +67,9 @@ service ProductService {
   // 15. s3 채팅방별 채팅 내역 조회
   rpc getAllMessagesByChatroomId(GetAllMessagesByChatroomIdRequest) returns (GetAllMessagesByChatroomResponse);
 
+  // 커서 기반 채팅 내역 조회
+  rpc getAllMessagesByCursor(GetMessagesByCursorRequest) returns (GetMessagesByCursorResponse);
+
   // 16. 내가 참여한 채팅방 리스트 조회
   rpc GetMyChatrooms(ListMyChatroomsRequest)returns (ListMyChatroomsResponse);
 
@@ -330,10 +333,31 @@ message CreatePresignedUrlsResponse{
 message GetAllMessagesByChatroomIdRequest{
   int64 chatRoomId = 1;
 }
+// 커서기반 메시지 조회 요청
+message GetMessagesByCursorRequest{
+  int64 chatRoomId = 1;
+  string cursor = 2;     // base64("epochMillis|messageId")
+  int32  limit  = 3;     // 기본 20
+  enum Direction {
+    BEFORE = 0;          // cursor 이전(과거 더 보기, 위로 스크롤)
+    AFTER  = 1;          // cursor 이후(새 메시지 보강)
+  }
+  Direction direction = 4; // 기본 BEFORE
+}
+// 커서기반 메시지 조회 응답
+message GetMessagesByCursorResponse{
+  repeated ChatResponseMessage chatResponseMessage = 1;
+  string nextCursor = 2; // BEFORE용 커서(가장 오래된 행 기준)
+  string prevCursor = 3; // AFTER용 커서(가장 최신 행 기준)
+  bool   hasMore    = 4; // limit+1 또는 Slice.hasNext()로 계산
+}
+
 // 16. 채팅방 별 모든 메시지 조회 응답
 message GetAllMessagesByChatroomResponse{
   repeated ChatResponseMessage chatResponseMessage = 1;
 }
+
+
 // 17. 채팅방 생성
 message CreateChatroomRequest {
   int64 productId = 1;
