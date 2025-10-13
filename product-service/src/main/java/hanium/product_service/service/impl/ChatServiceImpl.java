@@ -16,9 +16,12 @@ import hanium.product_service.service.ChatService;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.transaction.support.TransactionTemplate;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,29 +42,33 @@ public class ChatServiceImpl implements ChatService {
     private final ChatroomTradeInfoRepository chatroomTradeInfoRepository;
     // userId → StreamObserver 저장
     private final ConcurrentHashMap<Long, StreamObserver<ChatResponseMessage>> userStreamMap = new ConcurrentHashMap<>();
-
-    @Transactional
-    @Override
-    public CreateChatroomResponseDTO createChatroom(CreateChatroomRequestDTO requestDTO) {
-        Long productId = requestDTO.getProductId();
-        Long senderId = requestDTO.getSenderId(); //구매자
-        Long receiverId = requestDTO.getReceiverId(); //판매자
-        // 1. 중복 채팅방 조회
-        Optional<Chatroom> existing = chatroomRepository
-                .findByProductIdAndMembers(productId, senderId, receiverId);
-
-        if (existing.isPresent()) {
-            return new CreateChatroomResponseDTO(existing.get().getId(), "기존 채팅방입니다");
-        }
-
-        // 5. 채팅방 저장
-        Chatroom chatroom = Chatroom.from(requestDTO);
-        // 중복 채팅방 검사
-
-        Chatroom saved = chatroomRepository.save(chatroom);
-        return new CreateChatroomResponseDTO(saved.getId(), "채팅방 생성 성공");
+    private final PlatformTransactionManager txm;
+    private final ChatroomUpsertDao chatroomUpsertDao;
+    // 읽기 전용 템플릿
+    private TransactionTemplate readTx() {
+        TransactionTemplate t = new TransactionTemplate(txm);
+        t.setReadOnly(true);
+        t.setPropagationBehavior(TransactionDefinition.PROPAGATION_SUPPORTS);
+        return t;
     }
 
+    // 새 트랜잭션 템플릿 (삽입 시도)
+    private TransactionTemplate newTx() {
+        TransactionTemplate t = new TransactionTemplate(txm);
+        t.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        return t;
+    }
+
+@Override
+@Transactional
+public CreateChatroomResponseDTO createChatroom(CreateChatroomRequestDTO dto) {
+    long id = chatroomUpsertDao.upsertAndGetId(
+            dto.getProductId(),
+            dto.getSenderId(),   // 구매자
+            dto.getReceiverId()  // 판매자
+    );
+    return new CreateChatroomResponseDTO(id, "채팅방 생성 성공"); // 멱등 결과
+}
     @Override
     public StreamObserver<ChatMessage> chat(StreamObserver<ChatResponseMessage> responseObserver) {
         return new StreamObserver<>() {
@@ -209,10 +216,11 @@ public class ChatServiceImpl implements ChatService {
         }
         return dtos;
     }
+
     //구매자 아이디로 판매자 아이디 받을 떄
     @Override
     public TradeInfoDTO getTradeInfoByChatroomIdAndMemberId(Long chatroomId, Long memberId) {
-        TradeInfoDTO tradeInfoDTO = chatroomTradeInfoRepository.findTradeInfoByChatroomIdAndMemberId(chatroomId,memberId);
+        TradeInfoDTO tradeInfoDTO = chatroomTradeInfoRepository.findTradeInfoByChatroomIdAndMemberId(chatroomId, memberId);
         return tradeInfoDTO;
     }
 
