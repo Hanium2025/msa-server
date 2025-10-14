@@ -20,7 +20,7 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
-import java.util.List;
+import java.util.*;
 
 @GrpcService
 @Slf4j
@@ -303,6 +303,64 @@ public class ProductGrpcService extends ProductServiceGrpc.ProductServiceImplBas
         responseObserver.onNext(resp.build());
         responseObserver.onCompleted();
 
+    }
+
+    @Override
+    public void getAllMessagesByCursor(GetMessagesByCursorRequest request, StreamObserver<GetMessagesByCursorResponse> responseObserver) {
+        Long chatroomId = request.getChatRoomId();
+        String cursor = request.getCursor();
+        int limit = request.getLimit();
+        boolean isAfter = request.getDirection() == GetMessagesByCursorRequest.Direction.AFTER;
+        // 서비스에서 DTO + 커서/hasMore까지 한 번에 얻음
+        MessagesSliceDTO slice = chatService.getMessagesByCursor(chatroomId, cursor, limit, isAfter);
+        List<ChatMessageResponseDTO> items = slice.getItems();
+
+        GetMessagesByCursorResponse.Builder resp = GetMessagesByCursorResponse.newBuilder();
+
+        Set<Long> participantIds = new LinkedHashSet<>(2);
+        for (ChatMessageResponseDTO dto : items) {
+            participantIds.add(dto.getSenderId());
+            participantIds.add(dto.getReceiverId());
+            if (participantIds.size() == 2) {
+                break;
+            }
+        }
+
+        Map<Long, String> nickMap = new HashMap<>();
+
+
+        for (Long id : participantIds) {
+
+            ProfileResponseDTO profileResponseDTO = profileGrpcClient.getProfileByMemberId(id);
+            nickMap.put(id, profileResponseDTO.getNickname());
+        }
+        for (ChatMessageResponseDTO dto : items) {
+            String nickname = nickMap.getOrDefault(dto.getReceiverId(), "");
+            ChatResponseMessage.Builder responseMessage =
+                    ChatResponseMessage.newBuilder()
+                            .setMessageId(dto.getMessageId())
+                            .setChatroomId(dto.getChatroomId())
+                            .setSenderId(dto.getSenderId())
+                            .setReceiverId(dto.getReceiverId())
+                            .setContent(dto.getContent())
+                            .setTimestamp(dto.getTimestamp())
+                            .setReceiverNickname(nickname)
+                            .setType(MessageType.valueOf(dto.getType()));
+
+            if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
+                responseMessage.addAllImageUrls(dto.getImageUrls());
+            }
+
+            resp.addChatResponseMessage(responseMessage);
+
+        }
+
+        if (slice.getPrevCursor() != null) resp.setPrevCursor(slice.getPrevCursor());
+        if (slice.getNextCursor() != null) resp.setNextCursor(slice.getNextCursor());
+        resp.setHasMore(slice.isHasMore());
+
+        responseObserver.onNext(resp.build());
+        responseObserver.onCompleted();
     }
 
     //채팅방 생성
