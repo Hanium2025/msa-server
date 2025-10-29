@@ -12,14 +12,12 @@ import hanium.product_service.dto.response.CreateChatroomResponseDTO;
 import hanium.product_service.dto.response.GetMyChatroomResponseDTO;
 import hanium.product_service.dto.response.ProfileResponseDTO;
 import hanium.product_service.grpc.ProfileGrpcClient;
-import hanium.product_service.repository.ChatRepository;
-import hanium.product_service.repository.ChatroomRepository;
-import hanium.product_service.repository.MessageImageRepository;
+import hanium.product_service.repository.*;
 
 
-import hanium.product_service.repository.ProductRepository;
 import hanium.product_service.service.ChatMessageTxService;
 import io.grpc.stub.StreamObserver;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +26,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.PlatformTransactionManager;
+
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -40,8 +40,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.*;
 
 
 //단위 테스트 : Mock으로 외부 다 막고, 서비스 로직만 빠르게 검증
@@ -62,83 +61,46 @@ public class ChatServiceImplTest {
     ProfileGrpcClient profileGrpcClient;
     @Mock
     ProductRepository productRepository;
-
+    @Mock PlatformTransactionManager txm;
     @InjectMocks
     ChatServiceImpl sut; //테스트 대상
 
+    @Mock ChatroomUpsertDao chatroomUpsertDao;
 
     @Test
-    @DisplayName("createChatroom: 중복 채팅방 존재 -> 새로 생성하지 않고 기존 방 ID 반환")
-    void createChatroom_existingRoom_returnExistingRoom() {
-        //given
-        Long productId = 10L, senderId = 1L, receiverId = 2L;
+    @DisplayName("createChatroom: UPSERT로 id 반환(멱등 엔드포인트)")
+    void createChatroom_upsert_returnsId() {
+        long productId = 10L, senderId = 1L, receiverId = 2L;
+        var req = CreateChatroomRequestDTO.builder()
+                .productId(productId).senderId(senderId).receiverId(receiverId).build();
 
-        CreateChatroomRequestDTO req = CreateChatroomRequestDTO.builder()
-                .productId(productId)
-                .receiverId(receiverId)
-                .senderId(senderId).build();
+        given(chatroomUpsertDao.upsertAndGetId(productId, senderId, receiverId)).willReturn(777L);
 
-        Chatroom existing = Chatroom.builder().productId(productId).receiverId(receiverId).senderId(senderId).build();
+        var res = sut.createChatroom(req);
 
-        given(chatroomRepository.findByProductIdAndMembers(productId, senderId, receiverId))
-                .willReturn(Optional.of(existing));
-
-        //when
-        CreateChatroomResponseDTO res = sut.createChatroom(req);
-
-        //then
-        then(chatroomRepository).should().findByProductIdAndMembers(productId, senderId, receiverId);
-        then(chatroomRepository).should(never()).save(any(Chatroom.class));
-        assertThat(res.getChatroomId()).isEqualTo(existing.getId());
-        assertThat(res.getMessage()).isEqualTo("기존 채팅방입니다");
+        assertThat(res.getChatroomId()).isEqualTo(777L);
+        assertThat(res.getMessage()).isNotBlank(); // 메시지는 고정 문구여도 OK
+        verify(chatroomUpsertDao).upsertAndGetId(productId, senderId, receiverId);
+        verifyNoInteractions(chatroomRepository); // 선택
     }
 
     @Test
-    @DisplayName("createChatroom : 중복 채팅방 없음 -> 새로 생성하고 id 반환")
-    void createChatroom_noExistingRoom_createNewRoom() {
-        Long productId = 10L, senderId = 1L, receiverId = 2L;
-        var req = CreateChatroomRequestDTO.builder().productId(productId).senderId(senderId)
-                .receiverId(receiverId).build();
-        //given
-        given(chatroomRepository.findByProductIdAndMembers(productId, senderId, receiverId))
-                .willReturn(Optional.empty());
+    @DisplayName("createChatroom: 같은 키로 2번 호출해도 동일 ID 반환(멱등)")
+    void createChatroom_doubleCall_sameId() {
+        long productId = 10L, senderId = 1L, receiverId = 2L;
+        var req = CreateChatroomRequestDTO.builder()
+                .productId(productId).senderId(senderId).receiverId(receiverId).build();
 
-        // save에 들어가는 실제 파라미터 캡쳐
-        ArgumentCaptor<Chatroom> captor = ArgumentCaptor.forClass(Chatroom.class);
+        given(chatroomUpsertDao.upsertAndGetId(productId, senderId, receiverId)).willReturn(777L);
 
-        //저장 결과
-        given(chatroomRepository.save(any(Chatroom.class)))
-                .willAnswer(invocation -> {
-                    Chatroom c = invocation.getArgument(0); // 실제로 save()에 들어온 객체
-                    return Chatroom.builder()
-                            .id(999L) // DB에서 채번된 것처럼 ID 넣기
-                            .productId(c.getProductId())
-                            .senderId(c.getSenderId())
-                            .receiverId(c.getReceiverId())
-                            .latestContentTime(c.getLatestContentTime())
-                            .build();
-                });
+        var r1 = sut.createChatroom(req);
+        var r2 = sut.createChatroom(req);
 
-        //when
-        CreateChatroomResponseDTO responseDTO = sut.createChatroom(req);
-
-
-        //then
-        assertThat(responseDTO.getChatroomId()).isEqualTo(999L);
-        assertThat(responseDTO.getMessage()).isEqualTo("채팅방 생성 성공");
-
-        then(chatroomRepository).should().findByProductIdAndMembers(productId, senderId, receiverId);
-        then(chatroomRepository).should().save(captor.capture());
-
-        Chatroom saved = captor.getValue();
-
-        assertThat(saved.getProductId()).isEqualTo(productId);
-        assertThat(saved.getSenderId()).isEqualTo(senderId);
-        assertThat(saved.getReceiverId()).isEqualTo(receiverId);
-
-        assertThat(responseDTO.getChatroomId()).isEqualTo(999L);
-        assertThat(responseDTO.getMessage()).isEqualTo("채팅방 생성 성공");
+        assertThat(r1.getChatroomId()).isEqualTo(777L);
+        assertThat(r2.getChatroomId()).isEqualTo(777L);
+        verify(chatroomUpsertDao, times(2)).upsertAndGetId(productId, senderId, receiverId);
     }
+
 
     @Test
     @DisplayName("getAllMessageByChatroomId : 특정 채팅방의 모든 메시지 조회")
@@ -352,6 +314,8 @@ public class ChatServiceImplTest {
 
 
     }
+
+
 
 
 }
