@@ -8,15 +8,18 @@ import hanium.product_service.domain.MessageImage;
 import hanium.product_service.domain.MessageType;
 import hanium.product_service.dto.request.ChatMessageRequestDTO;
 import hanium.product_service.dto.request.CreateChatroomRequestDTO;
+import hanium.product_service.dto.request.MessagesSliceDTO;
 import hanium.product_service.dto.response.*;
 import hanium.product_service.grpc.ProfileGrpcClient;
 import hanium.product_service.repository.*;
 import hanium.product_service.service.ChatMessageTxService;
 import hanium.product_service.service.ChatService;
+import hanium.product_service.util.CursorUtil;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -215,6 +218,82 @@ public CreateChatroomResponseDTO createChatroom(CreateChatroomRequestDTO dto) {
             dtos.add(dto);
         }
         return dtos;
+    }
+
+    @Override
+    public MessagesSliceDTO getMessagesByCursor(Long chatroomId, String cursor, int limit, boolean isAfter) {
+
+        Pageable pageable = PageRequest.of(
+                0,
+                limit > 0 ? Math.min(limit, 200):20,
+                Sort.by(Sort.Direction.DESC, "createdAt").and(Sort.by(Sort.Direction.DESC, "id"))
+        );
+
+        CursorUtil.Decoded cur = (cursor == null || cursor.isBlank()) ? null : CursorUtil.decode(cursor);
+
+
+        Slice<Message> slice;
+       if(cur == null){
+              slice = chatRepository.findRecent(chatroomId, pageable);
+       }else if (isAfter) {
+           // AFTER는 ASC로 뽑아와서 역순으로 바꿔서 응답은 항상 DESC
+           Slice<Message> asc = chatRepository.findAfterAsc(chatroomId, cur.ts(), cur.id(), pageable);
+           List<Message> reversed = new ArrayList<>(asc.getContent());
+           Collections.reverse(reversed);
+           slice = new SliceImpl<>(reversed, pageable, asc.hasNext());
+       } else {
+           slice = chatRepository.findBefore(chatroomId, cur.ts(), cur.id(), pageable);
+       }
+
+        List<Message> messages = slice.getContent();
+        boolean hasMore = slice.hasNext();
+
+        //이미지 조인(현재 페이지 메시지만)
+        List<Long> ids = messages.stream().map(Message::getId).toList();
+        Map<Long, List<String>> imageMap = new LinkedHashMap<>();
+        if(!ids.isEmpty()){
+            for(MessageImage mi : messageImageRepository.findAllByMessageIdIn(ids)){
+                if (mi == null || mi.getMessage() == null) continue;
+                Long mid = mi.getMessage().getId();
+                String url = mi.getImageUrl();
+                if (url == null || url.isBlank()) continue;
+                imageMap.computeIfAbsent(mid, k -> new ArrayList<>()).add(url);
+            }
+        }
+        //dto변환
+        List<ChatMessageResponseDTO>  items = messages.stream()
+                .map(m->{
+                    long ts = m.getCreatedAt() == null ? 0L
+                            : m.getCreatedAt().atZone(ZoneId.of("Asia/Seoul")).toInstant().toEpochMilli();
+
+                    return ChatMessageResponseDTO.builder()
+                            .messageId(m.getId())
+                            .chatroomId(m.getChatroom().getId())
+                            .senderId(m.getSenderId())
+                            .receiverId(m.getReceiverId())
+                            .content(m.getContent())
+                            .timestamp(ts)
+                            .type(m.getMessageType() != null ? m.getMessageType().name() : MessageType.TEXT.name())
+                            .imageUrls(imageMap.getOrDefault(m.getId(), List.of()))
+                            .build();
+                })
+                .toList();
+
+        String prevCursor ="";
+        String nextCursor ="";
+        if(!messages.isEmpty()){
+            Message first = messages.get(0);
+            Message last = messages.get(messages.size()-1);
+
+            prevCursor = CursorUtil.encode(first.getCreatedAt(), first.getId()); // AFTER용
+            nextCursor = CursorUtil.encode(last.getCreatedAt(), last.getId());   // BEFORE용
+        }
+        return MessagesSliceDTO.builder()
+                .items(items)
+                .prevCursor(prevCursor)
+                .nextCursor(nextCursor)
+                .hasMore(hasMore)
+                .build();
     }
 
     //구매자 아이디로 판매자 아이디 받을 떄

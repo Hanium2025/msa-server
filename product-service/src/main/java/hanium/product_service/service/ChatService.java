@@ -2,6 +2,7 @@ package hanium.product_service.service;
 
 import hanium.common.proto.product.*;
 import hanium.product_service.dto.request.CreateChatroomRequestDTO;
+import hanium.product_service.dto.request.MessagesSliceDTO;
 import hanium.product_service.dto.response.ChatMessageResponseDTO;
 import hanium.product_service.dto.response.CreateChatroomResponseDTO;
 import hanium.product_service.dto.response.GetMyChatroomResponseDTO;
@@ -22,6 +23,9 @@ public interface ChatService{
 
      //채팅방별 메시지 조회
     List<ChatMessageResponseDTO> getAllMessageByChatroomId(Long chatroomId);
+
+    //채팅방 별 메시지 조회 with cursor
+   MessagesSliceDTO getMessagesByCursor(Long chatroomId, String cursor, int limit,boolean isAfter);
 
     //채팅방별 상품 아이디와 판매자 아이디 조회
     TradeInfoDTO getTradeInfoByChatroomIdAndMemberId(Long chatroomId, Long memberId);

@@ -1,116 +1,82 @@
 syntax = "proto3";
-
 package hanium.common.proto.product;
-
 option java_package = "hanium.common.proto.product";
 option java_multiple_files = true;
-
 import "common.proto";
-
 service ProductService {
   // 1. 메인페이지 조회
   rpc GetProductMain(ProductMainRequest) returns (ProductMainResponse);
-
   // 1. 상품 등록
   rpc RegisterProduct(RegisterProductRequest) returns (ProductResponse);
-
   // 2. 상품 조회
   rpc GetProduct(GetProductRequest) returns (ProductResponse);
-
   // 3. 상품 수정
   rpc UpdateProduct(UpdateProductRequest) returns (ProductResponse);
   rpc DeleteImage(DeleteImageRequest) returns (DeleteImageResponse);
-
   // 4. 상품 삭제
   rpc DeleteProduct(GetProductRequest) returns (Empty);
-
   // 5. 상품 찜
   rpc LikeProduct(GetProductRequest) returns (LikeProductResponse);
-
   // 6. 상품 찜 목록 조회
   rpc GetLikeProducts(GetLikedProductsRequest) returns (LikedProductsResponse);
-
   // 7. 상품 검색 요청
   rpc SearchProduct(ProductSearchRequest) returns (ProductSearchResponse);
-
   // 8. 상품 검색 기록 조회
   rpc ProductSearchHistory(ProductSearchHistoryRequest) returns (ProductSearchHistoryResponse);
-
   // 9. 상품 검색 기록 선택 삭제
   rpc DeleteProductSearchHistory(DeleteProductSearchHistoryRequest) returns (Empty);
-
   // 10. 상품 검색 기록 전체 삭제
   rpc DeleteAllProductSearchHistory(DeleteAllProductSearchHistoryRequest) returns (Empty);
-
   // 11. 상품 카테고리별 보기
   rpc GetProductByCategory(GetProductByCategoryRequest) returns (SimpleProductsResponse);
-
   // 12. 상품 신고
   rpc ReportProduct(ReportProductRequest) returns (Empty);
-
   // 13. 거래 평가 페이지 정보
   rpc GetTradeReviewPageInfo(GetTradeReviewPageRequest) returns (GetTradeReviewPageResponse);
-
   // 14. 거래 평가
   rpc TradeReview(TradeReviewRequest) returns (Empty);
-
   //채팅
   // 14. 채팅방 생성
   rpc CreateChatroom(CreateChatroomRequest) returns (CreateChatroomResponse);
-
   // 13. 실시간 채팅
   rpc Chat(stream ChatMessage) returns (stream ChatResponseMessage);
-
   // 14. s3 PresignedUrls 발급
   rpc CreatePresignedUrls(CreatePresignedUrlsRequest) returns (CreatePresignedUrlsResponse);
-
   // 15. s3 채팅방별 채팅 내역 조회
   rpc getAllMessagesByChatroomId(GetAllMessagesByChatroomIdRequest) returns (GetAllMessagesByChatroomResponse);
+
+  // 커서 기반 채팅 내역 조회
+  rpc getAllMessagesByCursor(GetMessagesByCursorRequest) returns (GetMessagesByCursorResponse);
 
   // 16. 내가 참여한 채팅방 리스트 조회
   rpc GetMyChatrooms(ListMyChatroomsRequest)returns (ListMyChatroomsResponse);
 
-
   // 17. 직거래 요청
   rpc DirectTrade(TradeRequest) returns (TradeResponse);
-
   // 18. 직거래 수락
   rpc AcceptDirectTrade(TradeRequest) returns (TradeResponse);
-
   // 18. 택배거래 요청
   rpc ParcelTrade(TradeRequest) returns (TradeResponse);
-
   // 18. 택배거래 수락
   rpc AcceptParcelTrade(TradeRequest) returns (TradeResponse);
-
   // 거래 완료
   rpc CompleteTrade(TradeRequest) returns (CompleteTradeResponse);
-
   // 10. User-service서 주요 활동 카테고리 조회
   rpc GetMainCategory(ProductMainRequest) returns (GetMainCategoryResponse);
-
   //현재 거래 상태 조회
   rpc getTradeStatus(TradeRequest) returns (TradeStatusResponse);
-
   // 송장 등록
   rpc CreateWayBill(CreateWayBillRequest) returns (Empty);
-
   // 택배 조회
   rpc GetDeliveryInfo(GetDeliveryInfoRequest) returns (GetDeliveryInfoResponse);
-
-
   // 21. 토스페이먼츠 결제 승인 요청
   rpc ConfirmPayment(ConfirmPaymentRequest) returns (Empty);
-
   // 22. 사용자의 판매 상품 내역 조회
   rpc GetSellingProducts(ProductMainRequest) returns (SimpleProductsResponse);
-
   // 23. 사용자의 구매 상품 내역 조회
   rpc GetBuyingProducts(ProductMainRequest) returns (SimpleProductsResponse);
 }
-
 message Empty {}
-
 message ProductMainRequest {
   int64 member_id = 1;
 }
@@ -128,7 +94,6 @@ message CategoryMain {
   string name = 1;
   string image_url = 2;
 }
-
 // 1. 상품 등록
 message RegisterProductRequest {
   int64 seller_id = 1;
@@ -138,7 +103,6 @@ message RegisterProductRequest {
   string category = 5;
   repeated string image_urls = 6;
 }
-
 message ProductResponse {
   int64 product_id = 1;
   int64 seller_id = 2;
@@ -159,13 +123,11 @@ message ProductImageResponse {
   int64 product_image_id = 1;
   string image_url = 2;
 }
-
 // 2. 상품 조회
 message GetProductRequest {
   int64 member_id = 1;
   int64 product_id = 2;
 }
-
 // 3. 상품 수정
 message UpdateProductRequest {
   int64 member_id = 1;
@@ -184,12 +146,10 @@ message DeleteImageRequest {
 message DeleteImageResponse {
   int32 left_img_count = 1;
 }
-
 // 5. 상품 찜 / 찜 취소
 message LikeProductResponse {
   bool likeCanceled = 1;
 }
-
 // 6. 상품 찜 목록 조회
 message GetLikedProductsRequest {
   int64 member_id = 1;
@@ -198,7 +158,6 @@ message GetLikedProductsRequest {
 message LikedProductsResponse {
   repeated SimpleProductResponse likedProducts = 1;
 }
-
 // 7. 상품 검색 요청
 message ProductSearchRequest {
   int64 member_id = 1;
@@ -209,12 +168,10 @@ message ProductSearchRequest {
 message ProductSearchResponse {
   repeated SimpleProductResponse productList = 1;
 }
-
 // 8. 상품 검색 기록 조회
 message ProductSearchHistoryRequest {
   int64 member_id = 1;
 }
-
 message ProductSearchHistoryResponse {
   repeated ProductSearchHistory productSearchHistoryList = 1;
 }
@@ -222,18 +179,15 @@ message ProductSearchHistory {
   int64 search_id = 1;
   string keyword = 2;
 }
-
 // 9. 상품 검색 기록 선택 삭제
 message DeleteProductSearchHistoryRequest {
   int64 search_id = 1;
   int64 member_id = 2;
 }
-
 // 10. 상품 검색 기록 전체 삭제
 message DeleteAllProductSearchHistoryRequest {
   int64 member_id = 1;
 }
-
 // 11. 상품 카테고리별 조회 요청
 message GetProductByCategoryRequest {
   int64 member_id = 1;
@@ -244,7 +198,6 @@ message GetProductByCategoryRequest {
 message SimpleProductsResponse {
   repeated SimpleProductResponse products = 1;
 }
-
 // 12. 상품 신고
 message ReportProductRequest {
   int64 member_id = 1;
@@ -252,18 +205,15 @@ message ReportProductRequest {
   string reason = 3;
   string details = 4;
 }
-
 // 13. 거래 평가 페이지 정보 요청
 message GetTradeReviewPageRequest {
   int64 trade_id = 1;
   int64 member_id = 2;
 }
-
 message GetTradeReviewPageResponse {
   string title = 1;
   string nickname = 2;
 }
-
 // 14. 거래 평가
 message TradeReviewRequest {
   int64 trade_id = 1;
@@ -271,7 +221,6 @@ message TradeReviewRequest {
   double rating = 3;
   string comment = 4;
 }
-
 // 14. 채팅 메시지
 message ChatMessage {
   int64 chatroomId = 1;
@@ -282,7 +231,6 @@ message ChatMessage {
   MessageType type = 6;
   repeated string imageUrls = 7;
 }
-
 // 14. 채팅 메시지 응답
 message ChatResponseMessage {
   int64 chatroomId = 1;
@@ -315,7 +263,6 @@ message PresignedUrl {
   string getUrl = 2;
   string key = 3;
 }
-
 // 15. PresingedUrl 요청
 message CreatePresignedUrlsRequest {
   int64 chatroomId = 1;
@@ -330,10 +277,31 @@ message CreatePresignedUrlsResponse{
 message GetAllMessagesByChatroomIdRequest{
   int64 chatRoomId = 1;
 }
+// 커서기반 메시지 조회 요청
+message GetMessagesByCursorRequest{
+  int64 chatRoomId = 1;
+  string cursor = 2;     // base64("epochMillis|messageId")
+  int32  limit  = 3;     // 기본 20
+  enum Direction {
+    BEFORE = 0;          // cursor 이전(과거 더 보기, 위로 스크롤)
+    AFTER  = 1;          // cursor 이후(새 메시지 보강)
+  }
+  Direction direction = 4; // 기본 BEFORE
+}
+// 커서기반 메시지 조회 응답
+message GetMessagesByCursorResponse{
+  repeated ChatResponseMessage chatResponseMessage = 1;
+  string nextCursor = 2; // BEFORE용 커서(가장 오래된 행 기준)
+  string prevCursor = 3; // AFTER용 커서(가장 최신 행 기준)
+  bool   hasMore    = 4; // limit+1 또는 Slice.hasNext()로 계산
+}
+
 // 16. 채팅방 별 모든 메시지 조회 응답
 message GetAllMessagesByChatroomResponse{
   repeated ChatResponseMessage chatResponseMessage = 1;
 }
+
+
 // 17. 채팅방 생성
 message CreateChatroomRequest {
   int64 productId = 1;
@@ -359,13 +327,11 @@ message ChatroomSummary{
   string opponentProfileUrl = 7;
   string opponentNickname = 8;
   int64 sellerId = 9;
-
 }
 // 16. 채팅방 리스트
 message ListMyChatroomsResponse {
   repeated ChatroomSummary items = 1;
 }
-
 // 19, 20. 거래 요청
 message TradeRequest{
   int64 chatroomId = 1;
@@ -386,12 +352,10 @@ message CompleteTradeResponse{
   int64 tradeId = 1;
   int64 opponentId = 2;
 }
-
 // 주요 활동 카테고리 조회
 message GetMainCategoryResponse {
   repeated string category = 1;
 }
-
 // 송장 등록
 message CreateWayBillRequest {
   int64 trade_id = 1;
@@ -399,26 +363,22 @@ message CreateWayBillRequest {
   string code = 3;
   string invoice_number = 4;
 }
-
 // 택배 조회 요청
 message GetDeliveryInfoRequest {
   int64 trade_id = 1;
   int64 member_id = 2;
 }
-
 // 택배 조회 응답
 message GetDeliveryInfoResponse {
   string code = 1;
   string invoice_number = 2;
   repeated DeliveryStatusSummary delivery_status_summary = 3;
 }
-
 message DeliveryStatusSummary{
   string time = 1;
   string location = 2;
   string status = 3;
 }
-
 // 21. 토스페이먼츠 결제 승인 요청
 message ConfirmPaymentRequest {
   int64 trade_id = 1;
